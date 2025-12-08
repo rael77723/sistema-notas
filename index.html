@@ -12,6 +12,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -25,7 +26,8 @@
             --aprov-color: #047857; --aprov-bg: #ecfdf5;     
 
             /* Cores KPI */
-            --kpi-header-bg: #b91c1c; --kpi-sub-bg: #e2e8f0;
+            --kpi-header-bg: #b91c1c;
+            --kpi-sub-bg: #e2e8f0;
 
             /* Cores Status Serviço */
             --st-red-bg: #fee2e2; --st-red-text: #b91c1c;
@@ -71,19 +73,15 @@
             padding: 0 16px; font-size: 0.85rem;
         }
 
-        /* Botão Adicionar (+) */
         .add-btn { background-color: var(--primary); color: white; width: 44px; padding: 0; }
         .add-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
 
-        /* Botões de Navegação (Escuros) */
         .nav-btn { background-color: #1e293b; color: white; }
         .nav-btn:hover { background-color: #0f172a; transform: translateY(-2px); }
 
-        /* Botão Excel (Verde) */
         .excel-btn { background-color: #107c41; color: white; gap: 8px; }
         .excel-btn:hover { background-color: #0c5e31; transform: translateY(-2px); }
 
-        /* Botão PDF (Dentro dos Modais) */
         .pdf-btn { 
             background-color: white; border: 1px solid var(--border); color: var(--text-main); 
             height: 36px; padding: 0 12px; font-size: 0.75rem; gap: 6px; box-shadow: none;
@@ -199,10 +197,27 @@
         .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 600; }
         .kpi-row-fiscal { background-color: #fff; }
         .kpi-row-grey { background-color: #e2e8f0; }
+        
+        /* KPI Inputs & Badge Input */
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; }
+        
+        /* NOVO: Input do Badge (Substitui o span) */
+        .kpi-badge-input {
+            background: white; 
+            color: var(--kpi-header-bg); 
+            border: none; 
+            border-radius: 4px; 
+            font-weight: 800; 
+            width: 40px; 
+            text-align: center;
+            outline: none;
+            font-size: 0.9rem;
+            padding: 2px;
+        }
+
         .red-text { color: #b91c1c; }
 
-        /* --- MODAL DE SERVIÇOS --- */
+        /* --- MODAL SERVIÇOS --- */
         .services-modal-body { padding: 1.5rem; }
         .services-table-wrapper { overflow-x: auto; border: 1px solid #000; }
         .services-table { width: 100%; border-collapse: collapse; min-width: 1500px; }
@@ -210,7 +225,7 @@
         .services-table td { border: 1px solid #000; padding: 0; background: white; height: 36px; }
         .svc-input { width: 100%; height: 100%; padding: 0 8px; border: none; outline: none; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: var(--text-main); background: transparent; }
         
-        /* Selects Customizados - CORREÇÃO DO BUG DE COR */
+        /* Selects Customizados */
         .svc-select {
             display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0;
             font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase;
@@ -219,35 +234,26 @@
             background-repeat: no-repeat; background-position: right 4px center; background-size: 10px;
         }
         
-        /* Força as opções a serem brancas sempre */
+        /* CORREÇÃO DO BUG: Options sempre brancos */
         .svc-select option {
             background-color: white !important;
             color: #1e293b !important;
             font-weight: normal;
         }
 
-        /* Cores Específicas dos Status (Célula) */
+        /* Cores Status */
         .st-red { background-color: var(--st-red-bg); color: var(--st-red-text); }
         .st-green { background-color: var(--st-green-bg); color: var(--st-green-text); }
         .st-blue { background-color: var(--st-blue-bg); color: var(--st-blue-text); }
         .st-yellow { background-color: var(--st-yellow-bg); color: var(--st-yellow-text); }
 
-        .add-row-btn-container {
-            display: flex; justify-content: center; padding: 1rem;
-            background: transparent; border: none;
-        }
-
-        .btn-plus-row {
-            background: var(--primary); color: white; border: none; width: 40px; height: 40px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 24px; transition: transform 0.2s; box-shadow: var(--shadow-md);
-        }
+        .add-row-btn-container { display: flex; justify-content: center; padding: 1rem; background: transparent; border: none; }
+        .btn-plus-row { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s; box-shadow: var(--shadow-md); }
         .btn-plus-row:hover { transform: scale(1.1); }
 
         /* XML Import Area */
         .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; margin-bottom: 1rem; }
-        
-        /* Considerações Area */
+        /* Considerações */
         .notes-textarea { width: 100%; height: 400px; padding: 1.5rem; border: none; outline: none; font-size: 1rem; line-height: 1.6; resize: none; background: #fafafa; }
 
     </style>
@@ -262,16 +268,13 @@
             <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
                 <span class="material-icons-round">description</span>
             </button>
-
             <button class="nav-btn excel-btn" onclick="exportMainExcel()">
                 <span class="material-icons-round" style="font-size: 18px;">table_view</span>
                 EXPORTAR EXCEL
             </button>
-            
-            <button class="nav-btn" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
-            <button class="nav-btn" onclick="openServicesModal()">SERVIÇOS</button>
-            <button class="nav-btn" onclick="openKPIModal()">KPI</button>
-            
+            <button class="nav-btn btn-dark" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
+            <button class="nav-btn btn-dark" onclick="openServicesModal()">SERVIÇOS</button>
+            <button class="nav-btn btn-dark" onclick="openKPIModal()">KPI</button>
             <button id="btnNovo" class="add-btn" title="Adicionar Nova Nota">
                 <span class="material-icons-round">add</span>
             </button>
@@ -355,7 +358,10 @@
                         </table>
                     </div>
                     <div class="kpi-table-wrapper">
-                        <div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<span class="kpi-count-badge">0</span></div>
+                        <div class="kpi-header-row">
+                            NOTAS DE SERVIÇO CHECKLIST
+                            <input type="text" class="kpi-badge-input" value="0" maxlength="2" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)">
+                        </div>
                         <table class="kpi-table">
                             <tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr>
                             <script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script>
@@ -455,6 +461,7 @@
 
     <script>
         // --- CONEXÃO SUPABASE ---
+        // (SUBSTITUA PELAS SUAS CHAVES DO SUPABASE)
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -498,6 +505,21 @@
 
         function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+
+        // --- NOVO: EXPORTAR PDF VISUAL (KPI) ---
+        async function exportKPIPDF() {
+            const element = document.getElementById('kpiContent');
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
+            
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Paisagem
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('KPI_Relatorio.pdf');
+        }
 
         // --- IMPORTAR XML ---
         function processXML() {
@@ -585,7 +607,6 @@
             
             if (chartInstance) chartInstance.destroy();
             
-            // Só desenha se houver dados, senão desenha vazio para não quebrar
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -753,13 +774,6 @@
             const rows = servicesData.map(s => [s.fornecedor, s.tipo_servico, s.envio_nf, s.status_po, s.responsavel, s.setor, s.pedido_compra]);
             doc.autoTable({ head: [columns], body: rows, startY: 20 });
             doc.save("servicos.pdf");
-        }
-        function exportKPIPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
-            doc.text("Relatório KPI", 14, 15);
-            doc.setFontSize(10); doc.text("Relatório gerado automaticamente.", 14, 25);
-            doc.save("kpi.pdf");
         }
 
         // KPI LOGIC
