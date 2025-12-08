@@ -811,6 +811,41 @@
         // Fechar modais ao clicar fora
         window.onclick = function(e) { if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
 
+// --- FUNÇÃO REALTIME (ATUALIZAÇÃO AUTOMÁTICA) ---
+        function setupRealtime() {
+            // Escuta mudanças na tabela 'notas'
+            supabase.channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'notas' },
+                (payload) => {
+                    console.log('Mudança detectada em Notas!', payload);
+                    loadData(); // Recarrega a tabela e gráficos
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'servicos' },
+                (payload) => {
+                    console.log('Mudança detectada em Serviços!', payload);
+                    loadData(); // Recarrega se houver mudança em serviços também
+                }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'consideracoes' },
+                (payload) => {
+                    console.log('Mudança detectada em Considerações!', payload);
+                    // Opcional: Se quiser recarregar o texto da modal de considerações se ela estiver aberta
+                    // Mas geralmente só loadData() já garante os dados frescos
+                }
+            )
+            .subscribe();
+        }
+
+        // Adicione esta chamada na inicialização:
+        setupRealtime();
+
         // Start
         loadData();
     </script>
