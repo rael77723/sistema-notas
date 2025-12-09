@@ -29,15 +29,11 @@
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        /* Header */
         header { background: linear-gradient(to right, #ffffff, #f1f5f9); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); z-index: 10; flex-shrink: 0; }
         .header-left h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
         .header-actions { display: flex; gap: 1rem; align-items: center; }
 
-        /* Buttons */
-        .add-btn, .nav-btn, .excel-btn, .pdf-btn, .reset-btn, .btn-xml {
-            border: none; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px; font-size: 0.8rem;
-        }
+        .add-btn, .nav-btn, .excel-btn, .pdf-btn, .reset-btn, .btn-xml { border: none; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px; font-size: 0.8rem; }
         .add-btn { background-color: var(--primary); color: white; width: 40px; padding: 0; }
         .nav-btn { background-color: #1e293b; color: white; }
         .excel-btn { background-color: #107c41; color: white; gap: 8px; }
@@ -45,68 +41,31 @@
         .pdf-btn { background-color: white; border: 1px solid var(--border); color: var(--text-main); gap: 6px; box-shadow: none; }
         .reset-btn { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; gap: 6px; box-shadow: none; }
 
-        /* Layout */
         .main-content { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
         .card-bubble { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; flex-shrink: 0; }
         
-        /* Table Main */
         .table-wrapper { display: flex; flex-direction: column; }
         .table-scroll { overflow: auto; width: 100%; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
         thead { background-color: #f8fafc; position: sticky; top: 0; z-index: 5; }
-        
-        th {
-            text-align: left; padding: 12px 16px; font-weight: 800; color: var(--text-main); 
-            text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; 
-            border-bottom: 2px solid var(--border); vertical-align: bottom;
-        }
+        th { text-align: left; padding: 12px 16px; font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; border-bottom: 2px solid var(--border); vertical-align: bottom; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); white-space: nowrap; }
         td.text-long-col { white-space: nowrap; max-width: none; }
         tbody tr:hover { background-color: #f1f5f9; }
         th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2) { text-align: center; }
 
-        /* CORREÇÃO DO DASHBOARD PRINCIPAL */
-        .dashboard-container { 
-            padding: 1.5rem; 
-            display: flex; 
-            align-items: center; 
-            gap: 2rem; 
-            min-height: 200px;
-        }
-        .chart-box { 
-            position: relative; 
-            height: 180px; 
-            width: 180px; 
-            flex-shrink: 0; 
-        }
-        .stats-box { 
-            flex: 1; 
-            display: grid; 
-            grid-template-columns: repeat(4, 1fr); /* Força 4 colunas */
-            gap: 1rem; 
-            align-content: center;
-        }
-        .stat-item { 
-            padding: 1rem; 
-            border-radius: 12px; 
-            border: 1px solid var(--border); 
-            display: flex; 
-            flex-direction: column; 
-            gap: 4px; 
-            background: white;
-            height: 100px; /* Altura fixa para alinhar */
-            justify-content: center;
-        }
+        .dashboard-container { padding: 1.5rem; display: flex; align-items: center; gap: 2rem; min-height: 200px; }
+        .chart-box { position: relative; height: 180px; width: 180px; flex-shrink: 0; }
+        .stats-box { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-content: center; }
+        .stat-item { padding: 1rem; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; background: white; height: 100px; justify-content: center; }
         .stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
         .stat-count { font-size: 1.8rem; font-weight: 800; line-height: 1; }
         .stat-value { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
-        
         .stat-fiscal { border-left: 5px solid var(--fiscal-color); background: var(--fiscal-bg); } .stat-fiscal .stat-count { color: var(--fiscal-color); }
         .stat-compras { border-left: 5px solid var(--compras-color); background: var(--compras-bg); } .stat-compras .stat-count { color: var(--compras-color); }
         .stat-almoxarifado { border-left: 5px solid var(--almox-color); background: var(--almox-bg); } .stat-almoxarifado .stat-count { color: var(--almox-color); }
         .stat-aprovacao { border-left: 5px solid var(--aprov-color); background: var(--aprov-bg); } .stat-aprovacao .stat-count { color: var(--aprov-color); }
 
-        /* Badges */
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
         .bg-fiscal { background: var(--fiscal-bg); color: var(--fiscal-color); border: 1px solid #fcd34d; }
         .bg-compras { background: var(--compras-bg); color: var(--compras-color); border: 1px solid #fecaca; }
@@ -118,11 +77,20 @@
         .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
 
-        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 50; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        
+        /* CORREÇÃO DO "X" FEIO */
+        .close-btn { 
+            background: transparent; border: none; cursor: pointer; color: var(--text-muted); 
+            display: flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;
+        }
+        .close-btn:hover { background-color: #f1f5f9; color: var(--text-main); }
+        .close-btn span { font-size: 24px; } /* Garante tamanho do ícone */
+
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
@@ -131,7 +99,6 @@
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
 
-        /* KPI CSS */
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
@@ -145,70 +112,35 @@
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
 
-        /* SERVIÇOS / CHECKLIST CSS */
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
-        .services-table-wrapper { overflow-x: auto; border: 1px solid #000; max-height: 55vh; }
-        .services-table { width: 100%; border-collapse: collapse; min-width: 1600px; }
+        
+        /* CORREÇÃO TABELA VAZANDO E SCROLL */
+        .services-table-wrapper { 
+            overflow: auto; /* Permite scroll em ambas direções */
+            border: 2px solid #b91c1c; /* Borda vermelha para combinar */
+            max-height: 55vh; 
+            border-radius: 8px 8px 0 0; /* Arredonda topo */
+        }
+        .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; } /* Separate para sticky funcionar */
         
         .services-table th { 
             background-color: var(--kpi-header-bg); color: white; font-weight: 800; 
             padding: 8px; border: 1px solid #000; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap; 
-            vertical-align: top; /* Importante para alinhar texto e filtro */
+            vertical-align: top;
+            position: sticky; top: 0; z-index: 10; /* Fixa o cabeçalho */
         }
         
-        /* CORREÇÃO DO FILTRO (FAIXA BRANCA) */
-        .filter-input {
-            display: block;
-            width: 100%;
-            margin-top: 4px;
-            padding: 4px;
-            font-size: 0.7rem;
-            border: none;
-            border-radius: 4px;
-            color: #333;
-            background: rgba(255, 255, 255, 0.9); /* Branco translúcido */
-            box-sizing: border-box; /* Garante que padding não estoure */
-        }
-
+        .filter-input { display: block; width: 100%; margin-top: 4px; padding: 4px; font-size: 0.7rem; border: none; border-radius: 4px; color: #333; background: rgba(255, 255, 255, 0.9); box-sizing: border-box; }
         .services-table td { border: 1px solid #000; padding: 0; background: white; height: 36px; }
         .svc-input { width: 100%; height: 100%; padding: 0 8px; border: none; outline: none; font-size: 0.85rem; background: transparent; }
-        
-        .svc-select { 
-            display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0;
-            font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0;
-            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
-            background-repeat: no-repeat; background-position: right 4px center; background-size: 10px;
-        }
+        .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
         .st-red { background: #fee2e2; color: #b91c1c; } .st-green { background: #dcfce7; color: #166534; }
         .st-blue { background: #eff6ff; color: #1d4ed8; } .st-yellow { background: #fffbeb; color: #b45309; }
 
-        /* CORREÇÃO DASHBOARD CHECKLIST */
-        .dash-checklist-container { 
-            display: flex; 
-            gap: 2rem; 
-            align-items: center; /* Alinha verticalmente */
-            margin-top: 10px; 
-            background: #fff;
-            padding: 1rem;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-        .checklist-stats-grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr); /* 4 colunas fixas */
-            gap: 1rem;
-        }
-        .dash-card-check { 
-            height: 80px; /* ALTURA FIXA PARA NÃO ESTICAR */
-            padding: 0.8rem; 
-            border-radius: 8px; 
-            border: 1px solid #e2e8f0; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center;
-        }
+        .dash-checklist-container { display: flex; gap: 2rem; align-items: center; margin-top: 10px; background: #fff; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); }
+        .checklist-stats-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+        .dash-card-check { height: 80px; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; }
         .dash-check-total { border-left: 5px solid #1e293b; background: #f8fafc; }
         .dash-check-rec { border-left: 5px solid #166534; background: #dcfce7; } .dash-check-rec .cnt { color: #166534; }
         .dash-check-pen { border-left: 5px solid #b91c1c; background: #fee2e2; } .dash-check-pen .cnt { color: #b91c1c; }
@@ -222,6 +154,10 @@
         .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
         .notes-textarea { width: 100%; height: 400px; padding: 1.5rem; border: none; outline: none; font-size: 1rem; line-height: 1.6; resize: none; background: #fafafa; }
         .checklist-date-input { background: transparent; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 1rem; color: #1e293b; font-weight: 600; width: 200px; }
+        
+        /* Modal de Erro Customizado */
+        .error-modal { border-left: 5px solid #b91c1c; }
+        .error-icon { color: #b91c1c; background: #fee2e2; width: 50px; height: 50px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto; }
     </style>
 </head>
 <body>
@@ -231,12 +167,19 @@
             <h1>Notas Fiscais para Correção</h1>
         </div>
         <div class="header-actions">
-            <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()"><span class="material-icons-round">description</span></button>
-            <button class="nav-btn excel-btn" onclick="exportMainExcel()"><span class="material-icons-round" style="font-size: 18px;">table_view</span>EXPORTAR EXCEL</button>
+            <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
+                <span class="material-icons-round">description</span>
+            </button>
+            <button class="nav-btn excel-btn" onclick="exportMainExcel()">
+                <span class="material-icons-round" style="font-size: 18px;">table_view</span>
+                EXPORTAR EXCEL
+            </button>
             <button class="nav-btn" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
             <button class="nav-btn" onclick="openServicesModal()">CHECKLIST</button>
             <button class="nav-btn" onclick="openKPIModal()">KPI</button>
-            <button id="btnNovo" class="add-btn" title="Adicionar Nova Nota"><span class="material-icons-round">add</span></button>
+            <button id="btnNovo" class="add-btn" title="Adicionar Nova Nota">
+                <span class="material-icons-round">add</span>
+            </button>
         </div>
     </header>
 
@@ -256,14 +199,13 @@
 
         <div class="card-bubble dashboard-container">
             <div class="chart-box"><canvas id="sectorChart"></canvas></div>
-            <div class="stats-box" id="statsBox">
-                </div>
+            <div class="stats-box" id="statsBox"></div>
         </div>
     </div>
 
     <div class="modal-overlay" id="xmlModal">
         <div class="modal" style="max-width: 600px;">
-            <div class="modal-header"><h2>Importar XML</h2><button class="close-btn" onclick="closeXMLModal()">x</button></div>
+            <div class="modal-header"><h2>Importar XML</h2><button class="close-btn" onclick="closeXMLModal()"><span class="material-icons-round">close</span></button></div>
             <div class="modal-body"><textarea id="xmlInput" class="xml-textarea" placeholder="Cole o XML aqui..."></textarea></div>
             <div class="form-footer"><button class="btn-primary" onclick="processXML()">Processar</button></div>
         </div>
@@ -271,7 +213,7 @@
 
     <div class="modal-overlay" id="notesModal">
         <div class="modal" style="max-width: 800px;">
-            <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()">x</button></div>
+            <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()"><span class="material-icons-round">close</span></button></div>
             <textarea id="notesArea" class="notes-textarea"></textarea>
             <div class="form-footer"><span id="notesStatus" style="color:green;margin-right:auto;"></span><button class="btn-primary" onclick="saveNotes()">Salvar</button></div>
         </div>
@@ -281,7 +223,10 @@
         <div class="modal kpi-modal-container">
             <div class="modal-header">
                 <h2>Indicadores de Performance (KPI)</h2>
-                <div style="display:flex;gap:10px;"><button class="pdf-btn" onclick="exportKPIPDF()">EXPORTAR PDF</button><button class="close-btn" onclick="closeKPIModal()">x</button></div>
+                <div style="display:flex;gap:10px;">
+                    <button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
+                    <button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button>
+                </div>
             </div>
             <div class="kpi-grid" id="kpiContent">
                 <div class="kpi-column" id="colMercadoria"></div>
@@ -297,8 +242,12 @@
     <div class="modal-overlay" id="servicesModal">
         <div class="modal kpi-modal-container">
             <div class="modal-header">
-                <div style="display: flex; gap: 1rem; align-items: center;"><h2>Checklist</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
-                <div style="display: flex; gap: 10px; align-items: center;"><button class="reset-btn" onclick="openResetModal()">RESETAR</button><button class="pdf-btn" onclick="exportServicesPDF()">EXPORTAR PDF</button><button class="close-btn" onclick="closeServicesModal()">x</button></div>
+                <div style="display: flex; gap: 1rem; align-items: center;"><h2>Checklist de serviços fixos</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="reset-btn" onclick="openResetModal()"><span class="material-icons-round" style="font-size:16px">restart_alt</span> RESETAR</button>
+                    <button class="pdf-btn" onclick="exportServicesPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
+                    <button class="close-btn" onclick="closeServicesModal()"><span class="material-icons-round">close</span></button>
+                </div>
             </div>
             
             <div class="services-modal-body" id="checklistBody">
@@ -340,11 +289,13 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="resetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Senha para Resetar</h3><input type="password" id="resetPassword" class="input-field" style="margin:1rem 0;"><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeResetModal()">Cancelar</button><button class="btn-primary" onclick="confirmReset()">OK</button></div></div></div>
+    <div class="modal-overlay" id="resetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Resetar Checklist?</h3><p style="color:#64748b;margin:10px 0;">Isso mudará todos os status para "PENDENTE".</p><input type="password" id="resetPassword" class="input-field" style="margin:1rem 0;text-align:center;" placeholder="Senha..."><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeResetModal()">Cancelar</button><button class="btn-primary" onclick="confirmReset()">Confirmar</button></div></div></div>
+
+    <div class="modal-overlay" id="errorModal"><div class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;"><div class="error-icon"><span class="material-icons-round" style="font-size:30px">error_outline</span></div><h3 style="margin-top:1rem;color:#b91c1c;">Senha Incorreta</h3><p style="color:#64748b;margin-bottom:1.5rem;">A senha informada não confere.</p><button class="btn-primary" onclick="document.getElementById('errorModal').classList.remove('active')">Tentar Novamente</button></div></div>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="formModalBody">
-            <div class="modal-header"><h2>Nota</h2><button class="close-btn" onclick="closeModal()">x</button></div>
+            <div class="modal-header"><h2>Nota</h2><button class="close-btn" onclick="closeModal()"><span class="material-icons-round">close</span></button></div>
             <form id="nfForm">
                 <div class="modal-body">
                     <input type="hidden" id="editId">
@@ -370,10 +321,10 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="deleteModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Excluir?</h3><div style="display:flex;gap:10px;justify-content:center;margin-top:20px;"><button class="btn-ghost" onclick="closeDeleteModal()">Não</button><button class="btn-danger" style="background:#dc2626;color:white;padding:10px 20px;border:none;border-radius:8px;" onclick="confirmDeleteRow()">Sim</button></div></div></div>
+    <div class="modal-overlay" id="deleteModal"><div class="modal confirm-modal"><div class="icon-circle"><span class="material-icons-round">delete_forever</span></div><h3 style="margin-top:1rem;">Excluir?</h3><div class="confirm-actions"><button class="btn-ghost" onclick="closeDeleteModal()">Não</button><button class="btn-danger" onclick="confirmDeleteRow()">Sim</button></div></div></div>
 
     <script>
-        // --- SUPABASE KEYS ---
+        // --- SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -389,32 +340,15 @@
             if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
         }
 
-        // --- DASHBOARD PRINCIPAL ---
-        function updateDashboard() {
-            const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
-            nfs.forEach(nf => {
-                const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
-                if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; }
-            });
-            const statsBox = document.getElementById('statsBox');
-            statsBox.innerHTML = '';
-            Object.keys(map).forEach(key => {
-                const cssClass = 'stat-' + key.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a').trim();
-                const totalFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(map[key].t);
-                statsBox.innerHTML += `<div class="stat-item ${cssClass}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">Total: ${totalFmt}</span></div>`;
-            });
-            const ctx = document.getElementById('sectorChart').getContext('2d');
-            const dataValues = Object.values(map).map(m => m.c);
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: dataValues, backgroundColor: ['#b45309', '#b91c1c', '#1d4ed8', '#047857'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: {display: false} } } });
-        }
-
-        // --- CHECKLIST DASHBOARD ---
+        // --- DASHBOARD CHECKLIST ---
         function updateChecklistDashboard() {
+            // Normaliza para maiúsculo e remove acentos para contar certo
+            const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+            
             const total = servicesData.length;
-            const received = servicesData.filter(s => s.envio_nf === 'RECEBIDO').length;
-            const pending = servicesData.filter(s => s.envio_nf === 'PENDENTE').length;
-            const notDone = servicesData.filter(s => s.envio_nf === 'NÃO PRESTADO').length;
+            const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO') || normalize(s.envio_nf).includes('LANCADO')).length;
+            const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
+            const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
 
             document.getElementById('chkTotal').innerText = total;
             document.getElementById('chkRec').innerText = received;
@@ -424,6 +358,65 @@
             const ctx = document.getElementById('checkChart').getContext('2d');
             if (checklistChartInstance) checklistChartInstance.destroy();
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
+        }
+
+        // --- EXPORT PDF CHECKLIST (SCROLL FIX) ---
+        async function exportServicesPDF() {
+            const element = document.getElementById('checklistBody');
+            const dateTitle = document.getElementById('checklistDate').value;
+            
+            // 1. Clona a tabela para remover o scroll e exibir tudo
+            const originalTableWrapper = document.querySelector('.services-table-wrapper');
+            const originalTable = document.getElementById('svcTable');
+            
+            // Cria um container temporário fora da tela
+            const tempContainer = document.createElement('div');
+            tempContainer.style.position = 'absolute';
+            tempContainer.style.left = '-9999px';
+            tempContainer.style.top = '0';
+            tempContainer.style.width = '1800px'; // Largura fixa grande para caber colunas
+            tempContainer.style.background = 'white';
+            
+            // Clona a tabela
+            const tableClone = originalTable.cloneNode(true);
+            
+            // Adiciona título no clone
+            const title = document.createElement('h2');
+            title.innerText = `Checklist de Serviços Fixos - ${dateTitle}`;
+            title.style.fontFamily = 'sans-serif';
+            title.style.marginBottom = '20px';
+            
+            tempContainer.appendChild(title);
+            tempContainer.appendChild(tableClone);
+            document.body.appendChild(tempContainer);
+
+            // 2. Tira o print do clone
+            const canvas = await html2canvas(tempContainer, { scale: 1.5 });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            
+            pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
+            pdf.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
+
+            // 3. Remove o clone
+            document.body.removeChild(tempContainer);
+        }
+
+        // --- RESET CHECKLIST ---
+        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
+        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
+        async function confirmReset() {
+            if(document.getElementById('resetPassword').value === 'Aht2025') {
+                await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0);
+                loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); });
+            } else {
+                closeResetModal();
+                document.getElementById('errorModal').classList.add('active'); // Abre modal de erro bonito
+            }
         }
 
         // --- SERVICES RENDER ---
@@ -444,33 +437,18 @@
             });
         }
 
-        // --- FILTROS ---
-        function filterServices(colIndex, val) {
-            const table = document.getElementById("svcTable");
-            const tr = table.getElementsByTagName("tr");
-            const filter = val.toUpperCase();
-            for (let i = 1; i < tr.length; i++) {
-                const td = tr[i].getElementsByTagName("td")[colIndex];
-                if (td) {
-                    const input = td.querySelector('input, select');
-                    const txtValue = input ? input.value : td.textContent || td.innerText;
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none";
-                }
-            }
-        }
+        // --- OUTRAS FUNÇÕES (MANTIDAS) ---
+        // (Copiar todas as outras funções: updateDashboard, renderTable, filtros, modals, CRUD notas, etc. do código anterior)
+        // Para economizar espaço aqui, estou focando nas correções.
+        // AS FUNÇÕES ABAIXO SÃO AS PADRÃO DO SISTEMA:
 
-        // --- FUNÇÕES CRUD/UTILS ---
-        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
-        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
-        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
-        
-        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
-        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
-        async function confirmReset() {
-            if(document.getElementById('resetPassword').value === 'Aht2025') {
-                await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0);
-                loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); });
-            } else alert("Senha incorreta!");
+        function updateDashboard() {
+            const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
+            nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } });
+            document.getElementById('statsBox').innerHTML = Object.keys(map).map(key => { const css = 'stat-'+key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); return `<div class="stat-item ${css}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">R$ ${map[key].t.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span></div>` }).join('');
+            const ctx = document.getElementById('sectorChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } });
         }
 
         function renderTable() {
@@ -485,41 +463,29 @@
             updateDashboard();
         }
 
-        // --- EXPORT PDF CHECKLIST ---
-        async function exportServicesPDF() {
-            const element = document.getElementById('checklistBody'); const dateTitle = document.getElementById('checklistDate').value;
-            const canvas = await html2canvas(element, { scale: 1.5 });
-            const imgData = canvas.toDataURL('image/png'); const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
-            pdf.setFontSize(16); pdf.text(`Checklist - ${dateTitle}`, 14, 15);
-            const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth() - 20; const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight); pdf.save(`checklist.pdf`);
-        }
-
-        // Modais e CRUD
+        function filterServices(colIndex, val) { const table = document.getElementById("svcTable"); const tr = table.getElementsByTagName("tr"); const filter = val.toUpperCase(); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName("td")[colIndex]; if (td) { const input = td.querySelector('input, select'); const txtValue = input ? input.value : td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none"; } } }
+        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
+        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
+        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
+        
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         function openServicesModal() { renderServicesTable(); updateChecklistDashboard(); document.getElementById('servicesModal').classList.add('active'); }
         function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
         function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
-        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value=''; }
+        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
         function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
         function openDeleteModal(id, svc) { itemToDeleteId = id; isDeletingService = svc; document.getElementById('deleteModal').classList.add('active'); }
-        async function confirmDeleteRow() { 
-            const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId);
-            if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); }
-            else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); }
-            closeDeleteModal(); 
-        }
-        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO'||v==='CORREÇÃO') return 'st-yellow'; return ''; }
+        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
+        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
-        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido:!current}).eq('id', id); loadData(); }
+        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
         async function editRow(id) { const nf=nfs.find(n=>n.id===id); document.getElementById('editId').value=id; document.getElementById('modalTitle').innerText="Editar Nota"; document.getElementById('setor').value=nf.setor; document.getElementById('tipo').value=nf.tipo; document.getElementById('fornecedor').value=nf.fornecedor; document.getElementById('valor').value=nf.valor; document.getElementById('dataEmissao').value=nf.emissao; document.getElementById('obsErro').value=nf.obs_erro; document.getElementById('pedido').value=nf.pedido; document.getElementById('linhaPedido').value=nf.linha_pedido; document.getElementById('dataInclusao').value=nf.inclusao; document.getElementById('dataVencimento').value=nf.vencimento; document.getElementById('referencia').value=nf.referencia; document.getElementById('chave').value=nf.chave; document.getElementById('respCorrecao').value=nf.resp_correcao; document.getElementById('obsCorrecao').value=nf.obs_correcao; document.getElementById('modalOverlay').classList.add('active'); }
         document.getElementById('nfForm').addEventListener('submit', async(e)=>{ e.preventDefault(); const id=document.getElementById('editId').value; const data={ setor:document.getElementById('setor').value, tipo:document.getElementById('tipo').value, fornecedor:document.getElementById('fornecedor').value, valor:document.getElementById('valor').value, emissao:document.getElementById('dataEmissao').value, obs_erro:document.getElementById('obsErro').value, pedido:document.getElementById('pedido').value, linha_pedido:document.getElementById('linhaPedido').value, inclusao:document.getElementById('dataInclusao').value||null, vencimento:document.getElementById('dataVencimento').value||null, referencia:document.getElementById('referencia').value, chave:document.getElementById('chave').value, resp_correcao:document.getElementById('respCorrecao').value, obs_correcao:document.getElementById('obsCorrecao').value }; if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); closeModal(); loadData(); });
         document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
         window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
         
-        // --- KPI & XML & EXPORT (Mantidos Igual) ---
         function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{if(nf.corrigido)return; const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){if(v>=today&&v<=next10)updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today)updateStat(stats[tk][2],s,em,nf.fornecedor);}}); function updateStat(o,sec,d,sup){if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}} document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
         async function exportKPIPDF() { const element=document.getElementById('kpiContent'); const canvas=await html2canvas(element,{scale:2}); const imgData=canvas.toDataURL('image/png'); const pdf=new jspdf.jsPDF('l','mm','a4'); const imgProps=pdf.getImageProperties(imgData); const pdfWidth=pdf.internal.pageSize.getWidth(); const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width; pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight); pdf.save('KPI.pdf'); }
