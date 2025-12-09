@@ -105,10 +105,11 @@
         .kpi-header-row { background-color: var(--kpi-header-bg); color: white; padding: 8px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .kpi-count-badge { background: white; color: var(--kpi-header-bg); padding: 2px 8px; border-radius: 4px; font-weight: 800; }
         .kpi-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .kpi-table th, .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; }
-        .kpi-table th { background: #cbd5e1; color: black; }
+        .kpi-table th { background-color: #cbd5e1; border: 1px solid #000; color: #000; padding: 6px; text-align: center; font-weight: 700; font-size: 0.75rem; }
+        .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 600; }
+        .kpi-row-fiscal { background-color: #fff; }
+        .kpi-row-grey { background-color: #e2e8f0; }
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; }
-        .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
 
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
@@ -220,13 +221,16 @@
         <div class="modal kpi-modal-container">
             <div class="modal-header">
                 <h2>Indicadores de Performance (KPI)</h2>
-                <div style="display:flex;gap:10px;"><button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button><button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button></div>
+                <div style="display:flex;gap:10px;">
+                    <button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
+                    <button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button>
+                </div>
             </div>
             <div class="kpi-grid" id="kpiContent">
                 <div class="kpi-column" id="colMercadoria"></div>
                 <div class="kpi-column">
                     <div class="kpi-table-wrapper"><div class="kpi-header-row">INFORMAÇÕES COMPLEMENTARES</div><table class="kpi-table"><tr><th>MIGO SEM MIRO</th><th>NOTAS RECUSADAS</th></tr><tr><td style="height:40px;"><input type="number" class="kpi-manual-input" value="0"></td><td><input type="text" class="kpi-manual-input" value="-"></td></tr><tr><td colspan="2" style="background:#ccc;text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" class="kpi-manual-input" style="width:60%;text-align:left;" value="-"></td></tr></table></div>
-                    <div class="kpi-table-wrapper"><div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<input type="text" class="kpi-badge-input" value="0" maxlength="2" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)"></div><table class="kpi-table"><tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr><script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script></table></div>
+                    <div class="kpi-table-wrapper"><div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<span class="kpi-count-badge" id="kpiChecklistCount">0</span></div><table class="kpi-table"><tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr><script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script></table></div>
                 </div>
                 <div class="kpi-column" id="colServico"></div>
             </div>
@@ -250,17 +254,17 @@
                         <thead>
                             <tr>
                                 <th style="width: 30px;"></th>
-                                <th>FORN.<input class="filter-input" onkeyup="filterServices(1, this.value)"></th>
-                                <th>TIPO<input class="filter-input" onkeyup="filterServices(2, this.value)"></th>
-                                <th style="width: 140px;">ENVIO NF<input class="filter-input" onkeyup="filterServices(3, this.value)"></th>
-                                <th style="width: 140px;">STATUS PO<input class="filter-input" onkeyup="filterServices(4, this.value)"></th>
-                                <th>RESP<input class="filter-input" onkeyup="filterServices(5, this.value)"></th>
-                                <th>SETOR<input class="filter-input" onkeyup="filterServices(6, this.value)"></th>
-                                <th>COD<input class="filter-input" onkeyup="filterServices(7, this.value)"></th>
-                                <th>CONTA<input class="filter-input" onkeyup="filterServices(8, this.value)"></th>
-                                <th>PED<input class="filter-input" onkeyup="filterServices(9, this.value)"></th>
-                                <th>OBS<input class="filter-input" onkeyup="filterServices(10, this.value)"></th>
-                                <th>SAP<input class="filter-input" onkeyup="filterServices(11, this.value)"></th>
+                                <th>FORN.<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(1, this.value)"></th>
+                                <th>TIPO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(2, this.value)"></th>
+                                <th style="width: 140px;">ENVIO NF<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(3, this.value)"></th>
+                                <th style="width: 140px;">STATUS PO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(4, this.value)"></th>
+                                <th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(5, this.value)"></th>
+                                <th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(6, this.value)"></th>
+                                <th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(7, this.value)"></th>
+                                <th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(8, this.value)"></th>
+                                <th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(9, this.value)"></th>
+                                <th>OBS<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(10, this.value)"></th>
+                                <th>SAP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(11, this.value)"></th>
                             </tr>
                         </thead>
                         <tbody id="svcTableBody"></tbody>
@@ -340,6 +344,7 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 await loadData();
+                // SE O MODAL ESTIVER ABERTO, ATUALIZA EM TEMPO REAL NA TELA
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -348,17 +353,12 @@
         }
         setupRealtime();
 
-        // --- DASHBOARD CHECKLIST CORRIGIDO ---
+        // --- DASHBOARD CHECKLIST ---
         function updateChecklistDashboard() {
-            // Normaliza removendo acentos e passando para maiúsculo
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-            
             const total = servicesData.length;
-            // "Recebido" apenas se Envio NF for RECEBIDO (Ignora Status PO)
             const received = servicesData.filter(s => normalize(s.envio_nf) === 'RECEBIDO').length;
-            // "Pendente" se Envio NF for PENDENTE
             const pending = servicesData.filter(s => normalize(s.envio_nf) === 'PENDENTE').length;
-            // "Sem Emissão" se Envio NF for NAO PRESTADO
             const notDone = servicesData.filter(s => normalize(s.envio_nf) === 'NAO PRESTADO').length;
 
             document.getElementById('chkTotal').innerText = total;
@@ -375,60 +375,38 @@
         async function exportServicesPDF() {
             const checklistBody = document.getElementById('checklistBody');
             const dateTitle = document.getElementById('checklistDate').value;
-            
-            // 1. Clona o corpo do modal
             const tempContainer = checklistBody.cloneNode(true);
+            tempContainer.style.position = 'absolute'; tempContainer.style.left = '-9999px'; tempContainer.style.top = '0'; tempContainer.style.width = '1800px'; tempContainer.style.background = 'white';
             
-            // 2. Configura o container temporário para ficar invisível mas renderizado
-            tempContainer.style.position = 'absolute';
-            tempContainer.style.left = '-9999px';
-            tempContainer.style.top = '0';
-            tempContainer.style.width = '1800px'; // Força largura total
-            tempContainer.style.background = 'white';
-            
-            // 3. Corrige a tabela no clone (remove scroll)
             const tableWrapper = tempContainer.querySelector('.services-table-wrapper');
-            if(tableWrapper) {
-                tableWrapper.style.overflow = 'visible';
-                tableWrapper.style.maxHeight = 'none';
-                tableWrapper.style.border = 'none';
-            }
+            if(tableWrapper) { tableWrapper.style.overflow = 'visible'; tableWrapper.style.maxHeight = 'none'; tableWrapper.style.border = 'none'; }
 
-            // 4. TRUQUE DO GRÁFICO: Converte o Canvas original em Imagem e põe no clone
             const originalCanvas = document.getElementById('checkChart');
             if(originalCanvas) {
-                const imgUrl = originalCanvas.toDataURL('image/png'); // Pega imagem do gráfico atual
+                const imgUrl = originalCanvas.toDataURL('image/png');
                 const clonedCanvasDiv = tempContainer.querySelector('#checkChart').parentNode;
-                clonedCanvasDiv.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%;">`; // Substitui canvas por img
+                clonedCanvasDiv.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%;">`;
             }
 
-            // Adiciona título
             const title = document.createElement('h2');
             title.innerText = `Checklist de serviços fixos - ${dateTitle}`;
-            title.style.fontFamily = 'sans-serif';
-            title.style.marginBottom = '20px';
-            title.style.padding = '20px 20px 0 20px';
+            title.style.fontFamily = 'sans-serif'; title.style.marginBottom = '20px'; title.style.padding = '20px 20px 0 20px';
             tempContainer.insertBefore(title, tempContainer.firstChild);
 
             document.body.appendChild(tempContainer);
-
-            // 5. Gera o PDF do clone completo
             const canvas = await html2canvas(tempContainer, { scale: 1.5, useCORS: true });
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Paisagem
-            
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
             const imgProps = pdf.getImageProperties(imgData);
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
             
-            // Se for muito alto, cria multiplas páginas (simples resize aqui)
             if (pdfHeight > pdf.internal.pageSize.getHeight()) {
                 const ratio = pdf.internal.pageSize.getHeight() / pdfHeight;
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight());
             } else {
                 pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
             }
-            
             pdf.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
             document.body.removeChild(tempContainer);
         }
@@ -464,7 +442,6 @@
             });
         }
 
-        // --- RESTO DAS FUNÇÕES (MANTER IGUAIS) ---
         function updateDashboard() {
             const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
             nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } });
@@ -509,7 +486,20 @@
         document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
         window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
         
-        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{if(nf.corrigido)return; const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){if(v>=today&&v<=next10)updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today)updateStat(stats[tk][2],s,em,nf.fornecedor);}}); function updateStat(o,sec,d,sup){if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}} document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); }
+        // --- KPI & XML & EXPORT ---
+        function calculateKPIs() { 
+            const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); 
+            const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; 
+            function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} 
+            nfs.forEach(nf=>{if(nf.corrigido)return; const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){if(v>=today&&v<=next10)updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today)updateStat(stats[tk][2],s,em,nf.fornecedor);}}); 
+            function updateStat(o,sec,d,sup){if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}} 
+            document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); 
+            
+            // --- AUTOMATIC KPI COUNT FOR CHECKLIST ---
+            const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+            const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
+            document.getElementById('kpiChecklistCount').innerText = checklistPendingCount;
+        }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
         async function exportKPIPDF() { const element=document.getElementById('kpiContent'); const canvas=await html2canvas(element,{scale:2}); const imgData=canvas.toDataURL('image/png'); const pdf=new jspdf.jsPDF('l','mm','a4'); const imgProps=pdf.getImageProperties(imgData); const pdfWidth=pdf.internal.pageSize.getWidth(); const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width; pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight); pdf.save('KPI.pdf'); }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
