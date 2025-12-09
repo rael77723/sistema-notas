@@ -77,7 +77,6 @@
         .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
 
-        /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -159,7 +158,7 @@
         .error-modal { border-left: 5px solid #b91c1c; }
         .error-icon { color: #b91c1c; background: #fee2e2; width: 50px; height: 50px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto; }
         
-        /* DELETE MODAL FIX */
+        /* DELETE MODAL FIX - VISUAL BONITO */
         .confirm-modal { max-width: 400px; text-align: center; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
         .confirm-modal h3 { margin-top: 1rem; color: #1e293b; }
         .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
@@ -343,7 +342,8 @@
         // --- SUPABASE KEYS ---
         // (SUBSTITUA PELAS SUAS CHAVES DO SUPABASE)
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w
+';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
@@ -388,7 +388,7 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- EXPORT PDF CHECKLIST (SCROLL + CHART FIX) ---
+        // --- EXPORT PDF CHECKLIST ---
         async function exportServicesPDF() {
             const checklistBody = document.getElementById('checklistBody');
             const dateTitle = document.getElementById('checklistDate').value;
@@ -474,7 +474,8 @@
                 const tr = document.createElement('tr');
                 let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
                 const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
-                tr.innerHTML = `<td><div class="actions-cell"><button class="icon-btn" onclick="editRow(${nf.id})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${nf.id}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus(${nf.id}, ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave?nf.chave.substring(0,20)+'...':'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
+                // --- FIX: Pass ID as string to editRow ---
+                tr.innerHTML = `<td><div class="actions-cell"><button class="icon-btn" onclick="editRow('${nf.id}')"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${nf.id}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus(${nf.id}, ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave?nf.chave.substring(0,20)+'...':'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
                 tbody.appendChild(tr);
             });
             updateDashboard();
@@ -494,7 +495,6 @@
         function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
         
-        // --- DELETE FIX: Ensure IDs are passed correctly ---
         function openDeleteModal(id, svc) { 
             itemToDeleteId = id; 
             isDeletingService = svc; 
@@ -512,14 +512,16 @@
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
         async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
         
-        // --- EDIT ROW FIX: Robust check ---
+        // --- EDIT ROW ROBUST ---
         async function editRow(id) { 
-            // Use loose comparison (==) just in case types mismatch
-            const nf = nfs.find(n => n.id == id); 
-            if(!nf) { console.error("Nota não encontrada:", id); return; }
+            // Force string comparison for safety
+            const nf = nfs.find(n => String(n.id) === String(id)); 
+            if(!nf) return; 
 
-            document.getElementById('editId').value = id; 
+            document.getElementById('editId').value = nf.id; 
             document.getElementById('modalTitle').innerText = "Editar Nota"; 
+            
+            // Fill safely
             document.getElementById('setor').value = nf.setor || ''; 
             document.getElementById('tipo').value = nf.tipo || ''; 
             document.getElementById('fornecedor').value = nf.fornecedor || ''; 
@@ -534,6 +536,7 @@
             document.getElementById('chave').value = nf.chave || ''; 
             document.getElementById('respCorrecao').value = nf.resp_correcao || ''; 
             document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; 
+            
             document.getElementById('modalOverlay').classList.add('active'); 
         }
 
