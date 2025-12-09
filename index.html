@@ -77,7 +77,8 @@
         .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
 
-        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 50; }
+        /* Modals */
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 100; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -110,6 +111,7 @@
         .kpi-row-fiscal { background-color: #fff; }
         .kpi-row-grey { background-color: #e2e8f0; }
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; }
+        .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
 
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
@@ -156,6 +158,12 @@
         
         .error-modal { border-left: 5px solid #b91c1c; }
         .error-icon { color: #b91c1c; background: #fee2e2; width: 50px; height: 50px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto; }
+        
+        /* DELETE MODAL FIX */
+        .confirm-modal { max-width: 400px; text-align: center; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .confirm-modal h3 { margin-top: 1rem; color: #1e293b; }
+        .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
+        .confirm-actions { display: flex; gap: 10px; justify-content: center; }
     </style>
 </head>
 <body>
@@ -203,7 +211,7 @@
 
     <div class="modal-overlay" id="xmlModal">
         <div class="modal" style="max-width: 600px;">
-            <div class="modal-header"><h2>Importar XML</h2><button class="close-btn" onclick="closeXMLModal()"><span class="material-icons-round">close</span></button></div>
+            <div class="modal-header"><h2>Importar XML</h2><button class="close-btn" onclick="closeXMLModal()"><span>&times;</span></button></div>
             <div class="modal-body"><textarea id="xmlInput" class="xml-textarea" placeholder="Cole o XML aqui..."></textarea></div>
             <div class="form-footer"><button class="btn-primary" onclick="processXML()">Processar</button></div>
         </div>
@@ -211,7 +219,7 @@
 
     <div class="modal-overlay" id="notesModal">
         <div class="modal" style="max-width: 800px;">
-            <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()"><span class="material-icons-round">close</span></button></div>
+            <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()"><span>&times;</span></button></div>
             <textarea id="notesArea" class="notes-textarea"></textarea>
             <div class="form-footer"><span id="notesStatus" style="color:green;margin-right:auto;"></span><button class="btn-primary" onclick="saveNotes()">Salvar</button></div>
         </div>
@@ -223,14 +231,14 @@
                 <h2>Indicadores de Performance (KPI)</h2>
                 <div style="display:flex;gap:10px;">
                     <button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
-                    <button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button>
+                    <button class="close-btn" onclick="closeKPIModal()"><span>&times;</span></button>
                 </div>
             </div>
             <div class="kpi-grid" id="kpiContent">
                 <div class="kpi-column" id="colMercadoria"></div>
                 <div class="kpi-column">
                     <div class="kpi-table-wrapper"><div class="kpi-header-row">INFORMAÇÕES COMPLEMENTARES</div><table class="kpi-table"><tr><th>MIGO SEM MIRO</th><th>NOTAS RECUSADAS</th></tr><tr><td style="height:40px;"><input type="number" class="kpi-manual-input" value="0"></td><td><input type="text" class="kpi-manual-input" value="-"></td></tr><tr><td colspan="2" style="background:#ccc;text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" class="kpi-manual-input" style="width:60%;text-align:left;" value="-"></td></tr></table></div>
-                    <div class="kpi-table-wrapper"><div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<span class="kpi-count-badge" id="kpiChecklistCount">0</span></div><table class="kpi-table"><tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr><script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script></table></div>
+                    <div class="kpi-table-wrapper"><div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<span class="kpi-count-badge" id="kpiChecklistCount" style="background:white;color:#b91c1c;padding:2px 10px;border-radius:4px;font-weight:800;">0</span></div><table class="kpi-table"><tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr><script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script></table></div>
                 </div>
                 <div class="kpi-column" id="colServico"></div>
             </div>
@@ -244,7 +252,7 @@
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <button class="reset-btn" onclick="openResetModal()"><span class="material-icons-round" style="font-size:16px">restart_alt</span> RESETAR</button>
                     <button class="pdf-btn" onclick="exportServicesPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
-                    <button class="close-btn" onclick="closeServicesModal()"><span class="material-icons-round">close</span></button>
+                    <button class="close-btn" onclick="closeServicesModal()"><span>&times;</span></button>
                 </div>
             </div>
             
@@ -293,7 +301,7 @@
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="formModalBody">
-            <div class="modal-header"><h2>Nota</h2><button class="close-btn" onclick="closeModal()"><span class="material-icons-round">close</span></button></div>
+            <div class="modal-header"><h2>Nota</h2><button class="close-btn" onclick="closeModal()"><span>&times;</span></button></div>
             <form id="nfForm">
                 <div class="modal-body">
                     <input type="hidden" id="editId">
@@ -319,7 +327,17 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="deleteModal"><div class="modal confirm-modal"><div class="icon-circle"><span class="material-icons-round">delete_forever</span></div><h3 style="margin-top:1rem;">Excluir?</h3><div class="confirm-actions"><button class="btn-ghost" onclick="closeDeleteModal()">Não</button><button class="btn-danger" onclick="confirmDeleteRow()">Sim</button></div></div></div>
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal confirm-modal">
+            <div class="icon-circle"><span class="material-icons-round">delete_forever</span></div>
+            <h3 class="confirm-title">Excluir Linha?</h3>
+            <p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p>
+            <div class="confirm-actions">
+                <button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         // --- SUPABASE KEYS ---
@@ -344,7 +362,6 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 await loadData();
-                // SE O MODAL ESTIVER ABERTO, ATUALIZA EM TEMPO REAL NA TELA
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -357,9 +374,9 @@
         function updateChecklistDashboard() {
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const total = servicesData.length;
-            const received = servicesData.filter(s => normalize(s.envio_nf) === 'RECEBIDO').length;
-            const pending = servicesData.filter(s => normalize(s.envio_nf) === 'PENDENTE').length;
-            const notDone = servicesData.filter(s => normalize(s.envio_nf) === 'NAO PRESTADO').length;
+            const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
+            const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
+            const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
 
             document.getElementById('chkTotal').innerText = total;
             document.getElementById('chkRec').innerText = received;
@@ -476,17 +493,77 @@
         function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
         function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
-        function openDeleteModal(id, svc) { itemToDeleteId = id; isDeletingService = svc; document.getElementById('deleteModal').classList.add('active'); }
-        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
+        
+        // --- DELETE FIX: Ensure IDs are passed correctly ---
+        function openDeleteModal(id, svc) { 
+            itemToDeleteId = id; 
+            isDeletingService = svc; 
+            document.getElementById('deleteModal').classList.add('active'); 
+        }
+        async function confirmDeleteRow() { 
+            const tbl = isDeletingService ? 'servicos' : 'notas'; 
+            await supabase.from(tbl).delete().eq('id', itemToDeleteId); 
+            if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } 
+            else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } 
+            closeDeleteModal(); 
+        }
+
         function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
         async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
-        async function editRow(id) { const nf=nfs.find(n=>n.id===id); document.getElementById('editId').value=id; document.getElementById('modalTitle').innerText="Editar Nota"; document.getElementById('setor').value=nf.setor; document.getElementById('tipo').value=nf.tipo; document.getElementById('fornecedor').value=nf.fornecedor; document.getElementById('valor').value=nf.valor; document.getElementById('dataEmissao').value=nf.emissao; document.getElementById('obsErro').value=nf.obs_erro; document.getElementById('pedido').value=nf.pedido; document.getElementById('linhaPedido').value=nf.linha_pedido; document.getElementById('dataInclusao').value=nf.inclusao; document.getElementById('dataVencimento').value=nf.vencimento; document.getElementById('referencia').value=nf.referencia; document.getElementById('chave').value=nf.chave; document.getElementById('respCorrecao').value=nf.resp_correcao; document.getElementById('obsCorrecao').value=nf.obs_correcao; document.getElementById('modalOverlay').classList.add('active'); }
-        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ e.preventDefault(); const id=document.getElementById('editId').value; const data={ setor:document.getElementById('setor').value, tipo:document.getElementById('tipo').value, fornecedor:document.getElementById('fornecedor').value, valor:document.getElementById('valor').value, emissao:document.getElementById('dataEmissao').value, obs_erro:document.getElementById('obsErro').value, pedido:document.getElementById('pedido').value, linha_pedido:document.getElementById('linhaPedido').value, inclusao:document.getElementById('dataInclusao').value||null, vencimento:document.getElementById('dataVencimento').value||null, referencia:document.getElementById('referencia').value, chave:document.getElementById('chave').value, resp_correcao:document.getElementById('respCorrecao').value, obs_correcao:document.getElementById('obsCorrecao').value }; if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); closeModal(); loadData(); });
+        
+        // --- EDIT ROW FIX: Robust check ---
+        async function editRow(id) { 
+            // Use loose comparison (==) just in case types mismatch
+            const nf = nfs.find(n => n.id == id); 
+            if(!nf) { console.error("Nota não encontrada:", id); return; }
+
+            document.getElementById('editId').value = id; 
+            document.getElementById('modalTitle').innerText = "Editar Nota"; 
+            document.getElementById('setor').value = nf.setor || ''; 
+            document.getElementById('tipo').value = nf.tipo || ''; 
+            document.getElementById('fornecedor').value = nf.fornecedor || ''; 
+            document.getElementById('valor').value = nf.valor || ''; 
+            document.getElementById('dataEmissao').value = nf.emissao || ''; 
+            document.getElementById('obsErro').value = nf.obs_erro || ''; 
+            document.getElementById('pedido').value = nf.pedido || ''; 
+            document.getElementById('linhaPedido').value = nf.linha_pedido || ''; 
+            document.getElementById('dataInclusao').value = nf.inclusao || ''; 
+            document.getElementById('dataVencimento').value = nf.vencimento || ''; 
+            document.getElementById('referencia').value = nf.referencia || ''; 
+            document.getElementById('chave').value = nf.chave || ''; 
+            document.getElementById('respCorrecao').value = nf.resp_correcao || ''; 
+            document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; 
+            document.getElementById('modalOverlay').classList.add('active'); 
+        }
+
+        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ 
+            e.preventDefault(); 
+            const id = document.getElementById('editId').value; 
+            const data = { 
+                setor:document.getElementById('setor').value, 
+                tipo:document.getElementById('tipo').value, 
+                fornecedor:document.getElementById('fornecedor').value, 
+                valor:document.getElementById('valor').value, 
+                emissao:document.getElementById('dataEmissao').value, 
+                obs_erro:document.getElementById('obsErro').value, 
+                pedido:document.getElementById('pedido').value, 
+                linha_pedido:document.getElementById('linhaPedido').value, 
+                inclusao:document.getElementById('dataInclusao').value||null, 
+                vencimento:document.getElementById('dataVencimento').value||null, 
+                referencia:document.getElementById('referencia').value, 
+                chave:document.getElementById('chave').value, 
+                resp_correcao:document.getElementById('respCorrecao').value, 
+                obs_correcao:document.getElementById('obsCorrecao').value 
+            }; 
+            if(id) await supabase.from('notas').update(data).eq('id', id); 
+            else await supabase.from('notas').insert([data]); 
+            closeModal(); loadData(); 
+        });
+
         document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
         window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
         
-        // --- KPI & XML & EXPORT ---
         function calculateKPIs() { 
             const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); 
             const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; 
@@ -495,7 +572,7 @@
             function updateStat(o,sec,d,sup){if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}} 
             document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); 
             
-            // --- AUTOMATIC KPI COUNT FOR CHECKLIST ---
+            // AUTOMATIC KPI COUNT FOR CHECKLIST
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
             document.getElementById('kpiChecklistCount').innerText = checklistPendingCount;
