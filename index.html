@@ -82,14 +82,13 @@
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
         .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         
-        /* CORREÇÃO DO "X" FEIO */
         .close-btn { 
             background: transparent; border: none; cursor: pointer; color: var(--text-muted); 
             display: flex; align-items: center; justify-content: center;
             width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s;
         }
         .close-btn:hover { background-color: #f1f5f9; color: var(--text-main); }
-        .close-btn span { font-size: 24px; } /* Garante tamanho do ícone */
+        .close-btn span { font-size: 24px; }
 
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
@@ -102,7 +101,7 @@
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
-        .kpi-table-wrapper { background: white; border: 2px solid #000; }
+        .kpi-table-wrapper { background: white; border: 2px solid #000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
         .kpi-header-row { background-color: var(--kpi-header-bg); color: white; padding: 8px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .kpi-count-badge { background: white; color: var(--kpi-header-bg); padding: 2px 8px; border-radius: 4px; font-weight: 800; }
         .kpi-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
@@ -114,20 +113,19 @@
 
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
         
-        /* CORREÇÃO TABELA VAZANDO E SCROLL */
         .services-table-wrapper { 
-            overflow: auto; /* Permite scroll em ambas direções */
-            border: 2px solid #b91c1c; /* Borda vermelha para combinar */
+            overflow: auto; 
+            border: 2px solid #b91c1c; 
             max-height: 55vh; 
-            border-radius: 8px 8px 0 0; /* Arredonda topo */
+            border-radius: 8px 8px 0 0; 
         }
-        .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; } /* Separate para sticky funcionar */
+        .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; }
         
         .services-table th { 
             background-color: var(--kpi-header-bg); color: white; font-weight: 800; 
             padding: 8px; border: 1px solid #000; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap; 
             vertical-align: top;
-            position: sticky; top: 0; z-index: 10; /* Fixa o cabeçalho */
+            position: sticky; top: 0; z-index: 10;
         }
         
         .filter-input { display: block; width: 100%; margin-top: 4px; padding: 4px; font-size: 0.7rem; border: none; border-radius: 4px; color: #333; background: rgba(255, 255, 255, 0.9); box-sizing: border-box; }
@@ -155,7 +153,6 @@
         .notes-textarea { width: 100%; height: 400px; padding: 1.5rem; border: none; outline: none; font-size: 1rem; line-height: 1.6; resize: none; background: #fafafa; }
         .checklist-date-input { background: transparent; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 1rem; color: #1e293b; font-weight: 600; width: 200px; }
         
-        /* Modal de Erro Customizado */
         .error-modal { border-left: 5px solid #b91c1c; }
         .error-icon { color: #b91c1c; background: #fee2e2; width: 50px; height: 50px; border-radius: 50%; display:flex; align-items:center; justify-content:center; margin: 0 auto; }
     </style>
@@ -223,10 +220,7 @@
         <div class="modal kpi-modal-container">
             <div class="modal-header">
                 <h2>Indicadores de Performance (KPI)</h2>
-                <div style="display:flex;gap:10px;">
-                    <button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
-                    <button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button>
-                </div>
+                <div style="display:flex;gap:10px;"><button class="pdf-btn" onclick="exportKPIPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button><button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button></div>
             </div>
             <div class="kpi-grid" id="kpiContent">
                 <div class="kpi-column" id="colMercadoria"></div>
@@ -324,7 +318,8 @@
     <div class="modal-overlay" id="deleteModal"><div class="modal confirm-modal"><div class="icon-circle"><span class="material-icons-round">delete_forever</span></div><h3 style="margin-top:1rem;">Excluir?</h3><div class="confirm-actions"><button class="btn-ghost" onclick="closeDeleteModal()">Não</button><button class="btn-danger" onclick="confirmDeleteRow()">Sim</button></div></div></div>
 
     <script>
-        // --- SUPABASE CONFIG ---
+        // --- SUPABASE KEYS ---
+        // (SUBSTITUA PELAS SUAS CHAVES DO SUPABASE)
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -340,15 +335,31 @@
             if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
         }
 
-        // --- DASHBOARD CHECKLIST ---
+        function setupRealtime() {
+            supabase.channel('custom-all-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
+                await loadData();
+                if(document.getElementById('servicesModal').classList.contains('active')) {
+                    renderServicesTable(); updateChecklistDashboard();
+                }
+            })
+            .subscribe();
+        }
+        setupRealtime();
+
+        // --- DASHBOARD CHECKLIST CORRIGIDO ---
         function updateChecklistDashboard() {
-            // Normaliza para maiúsculo e remove acentos para contar certo
+            // Normaliza removendo acentos e passando para maiúsculo
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             
             const total = servicesData.length;
-            const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO') || normalize(s.envio_nf).includes('LANCADO')).length;
-            const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
-            const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
+            // "Recebido" apenas se Envio NF for RECEBIDO (Ignora Status PO)
+            const received = servicesData.filter(s => normalize(s.envio_nf) === 'RECEBIDO').length;
+            // "Pendente" se Envio NF for PENDENTE
+            const pending = servicesData.filter(s => normalize(s.envio_nf) === 'PENDENTE').length;
+            // "Sem Emissão" se Envio NF for NAO PRESTADO
+            const notDone = servicesData.filter(s => normalize(s.envio_nf) === 'NAO PRESTADO').length;
 
             document.getElementById('chkTotal').innerText = total;
             document.getElementById('chkRec').innerText = received;
@@ -360,49 +371,65 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- EXPORT PDF CHECKLIST (SCROLL FIX) ---
+        // --- EXPORT PDF CHECKLIST (SCROLL + CHART FIX) ---
         async function exportServicesPDF() {
-            const element = document.getElementById('checklistBody');
+            const checklistBody = document.getElementById('checklistBody');
             const dateTitle = document.getElementById('checklistDate').value;
             
-            // 1. Clona a tabela para remover o scroll e exibir tudo
-            const originalTableWrapper = document.querySelector('.services-table-wrapper');
-            const originalTable = document.getElementById('svcTable');
+            // 1. Clona o corpo do modal
+            const tempContainer = checklistBody.cloneNode(true);
             
-            // Cria um container temporário fora da tela
-            const tempContainer = document.createElement('div');
+            // 2. Configura o container temporário para ficar invisível mas renderizado
             tempContainer.style.position = 'absolute';
             tempContainer.style.left = '-9999px';
             tempContainer.style.top = '0';
-            tempContainer.style.width = '1800px'; // Largura fixa grande para caber colunas
+            tempContainer.style.width = '1800px'; // Força largura total
             tempContainer.style.background = 'white';
             
-            // Clona a tabela
-            const tableClone = originalTable.cloneNode(true);
-            
-            // Adiciona título no clone
+            // 3. Corrige a tabela no clone (remove scroll)
+            const tableWrapper = tempContainer.querySelector('.services-table-wrapper');
+            if(tableWrapper) {
+                tableWrapper.style.overflow = 'visible';
+                tableWrapper.style.maxHeight = 'none';
+                tableWrapper.style.border = 'none';
+            }
+
+            // 4. TRUQUE DO GRÁFICO: Converte o Canvas original em Imagem e põe no clone
+            const originalCanvas = document.getElementById('checkChart');
+            if(originalCanvas) {
+                const imgUrl = originalCanvas.toDataURL('image/png'); // Pega imagem do gráfico atual
+                const clonedCanvasDiv = tempContainer.querySelector('#checkChart').parentNode;
+                clonedCanvasDiv.innerHTML = `<img src="${imgUrl}" style="width:100%; height:100%;">`; // Substitui canvas por img
+            }
+
+            // Adiciona título
             const title = document.createElement('h2');
-            title.innerText = `Checklist de Serviços Fixos - ${dateTitle}`;
+            title.innerText = `Checklist de serviços fixos - ${dateTitle}`;
             title.style.fontFamily = 'sans-serif';
             title.style.marginBottom = '20px';
-            
-            tempContainer.appendChild(title);
-            tempContainer.appendChild(tableClone);
+            title.style.padding = '20px 20px 0 20px';
+            tempContainer.insertBefore(title, tempContainer.firstChild);
+
             document.body.appendChild(tempContainer);
 
-            // 2. Tira o print do clone
-            const canvas = await html2canvas(tempContainer, { scale: 1.5 });
+            // 5. Gera o PDF do clone completo
+            const canvas = await html2canvas(tempContainer, { scale: 1.5, useCORS: true });
             const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Paisagem
             
             const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+            const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
             
-            pdf.addImage(imgData, 'PNG', 10, 10, pdfWidth, pdfHeight);
+            // Se for muito alto, cria multiplas páginas (simples resize aqui)
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) {
+                const ratio = pdf.internal.pageSize.getHeight() / pdfHeight;
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight());
+            } else {
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            }
+            
             pdf.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
-
-            // 3. Remove o clone
             document.body.removeChild(tempContainer);
         }
 
@@ -415,7 +442,7 @@
                 loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); });
             } else {
                 closeResetModal();
-                document.getElementById('errorModal').classList.add('active'); // Abre modal de erro bonito
+                document.getElementById('errorModal').classList.add('active');
             }
         }
 
@@ -437,11 +464,7 @@
             });
         }
 
-        // --- OUTRAS FUNÇÕES (MANTIDAS) ---
-        // (Copiar todas as outras funções: updateDashboard, renderTable, filtros, modals, CRUD notas, etc. do código anterior)
-        // Para economizar espaço aqui, estou focando nas correções.
-        // AS FUNÇÕES ABAIXO SÃO AS PADRÃO DO SISTEMA:
-
+        // --- RESTO DAS FUNÇÕES (MANTER IGUAIS) ---
         function updateDashboard() {
             const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
             nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } });
