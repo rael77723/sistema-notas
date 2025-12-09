@@ -16,25 +16,14 @@
 
     <style>
         :root {
-            --primary: #4f46e5; --primary-hover: #4338ca; --bg-body: #f8fafc; --surface: #ffffff;
+            --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0;
-            
-            /* Cores Setores */
             --fiscal-color: #b45309; --fiscal-bg: #fffbeb; 
             --compras-color: #b91c1c; --compras-bg: #fef2f2; 
             --almox-color: #1d4ed8; --almox-bg: #eff6ff;     
             --aprov-color: #047857; --aprov-bg: #ecfdf5;     
-
-            /* Cores KPI Header */
-            --kpi-header-bg: #b91c1c; --kpi-sub-bg: #e2e8f0;
-
-            /* Cores Status Serviço */
-            --st-red-bg: #fee2e2; --st-red-text: #b91c1c;
-            --st-green-bg: #dcfce7; --st-green-text: #166534;
-            --st-blue-bg: #eff6ff; --st-blue-text: #1d4ed8; 
-            --st-yellow-bg: #fffbeb; --st-yellow-text: #b45309; 
-
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --kpi-header-bg: #b91c1c;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -45,34 +34,73 @@
         .header-left h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
         .header-actions { display: flex; gap: 1rem; align-items: center; }
 
-        /* Botões */
-        .add-btn, .nav-btn, .export-btn, .pdf-btn, .reset-btn { border: none; height: 44px; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px; font-size: 0.85rem; }
-        .add-btn { background-color: var(--primary); color: white; width: 44px; padding: 0; } .add-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
-        .nav-btn { background-color: #1e293b; color: white; } .nav-btn:hover { background-color: #0f172a; transform: translateY(-2px); }
-        .excel-btn { background-color: #107c41; color: white; gap: 8px; } .excel-btn:hover { background-color: #0c5e31; transform: translateY(-2px); }
-        .btn-xml { background-color: #f59e0b; color: white; width: 44px; padding: 0; } .btn-xml:hover { background-color: #d97706; transform: translateY(-2px); }
-        
-        /* Botões dentro do Modal */
-        .pdf-btn { background-color: white; border: 1px solid var(--border); color: var(--text-main); height: 36px; padding: 0 12px; font-size: 0.75rem; gap: 6px; box-shadow: none; }
-        .pdf-btn:hover { background-color: #f1f5f9; color: var(--kpi-header-bg); border-color: var(--kpi-header-bg); }
-        .reset-btn { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; height: 36px; padding: 0 12px; font-size: 0.75rem; gap: 6px; box-shadow: none; }
-        .reset-btn:hover { background-color: #fecaca; }
+        /* Buttons */
+        .add-btn, .nav-btn, .excel-btn, .pdf-btn, .reset-btn, .btn-xml {
+            border: none; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px; font-size: 0.8rem;
+        }
+        .add-btn { background-color: var(--primary); color: white; width: 40px; padding: 0; }
+        .nav-btn { background-color: #1e293b; color: white; }
+        .excel-btn { background-color: #107c41; color: white; gap: 8px; }
+        .btn-xml { background-color: #f59e0b; color: white; width: 40px; padding: 0; }
+        .pdf-btn { background-color: white; border: 1px solid var(--border); color: var(--text-main); gap: 6px; box-shadow: none; }
+        .reset-btn { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; gap: 6px; box-shadow: none; }
 
-        /* Layout Principal */
+        /* Layout */
         .main-content { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
         .card-bubble { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; flex-shrink: 0; }
         
-        /* Tabela Main */
+        /* Table Main */
         .table-wrapper { display: flex; flex-direction: column; }
         .table-scroll { overflow: auto; width: 100%; }
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
         thead { background-color: #f8fafc; position: sticky; top: 0; z-index: 5; }
-        th { text-align: left; padding: 16px 20px; font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; border-bottom: 2px solid var(--border); }
-        td { padding: 14px 20px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); white-space: nowrap; }
-        td.text-long-col { white-space: nowrap; max-width: none; }
-        th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2) { text-align: center; }
         
-        /* Dashboard Colors */
+        th {
+            text-align: left; padding: 12px 16px; font-weight: 800; color: var(--text-main); 
+            text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; 
+            border-bottom: 2px solid var(--border); vertical-align: bottom;
+        }
+        td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); white-space: nowrap; }
+        td.text-long-col { white-space: nowrap; max-width: none; }
+        tbody tr:hover { background-color: #f1f5f9; }
+        th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2) { text-align: center; }
+
+        /* CORREÇÃO DO DASHBOARD PRINCIPAL */
+        .dashboard-container { 
+            padding: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 2rem; 
+            min-height: 200px;
+        }
+        .chart-box { 
+            position: relative; 
+            height: 180px; 
+            width: 180px; 
+            flex-shrink: 0; 
+        }
+        .stats-box { 
+            flex: 1; 
+            display: grid; 
+            grid-template-columns: repeat(4, 1fr); /* Força 4 colunas */
+            gap: 1rem; 
+            align-content: center;
+        }
+        .stat-item { 
+            padding: 1rem; 
+            border-radius: 12px; 
+            border: 1px solid var(--border); 
+            display: flex; 
+            flex-direction: column; 
+            gap: 4px; 
+            background: white;
+            height: 100px; /* Altura fixa para alinhar */
+            justify-content: center;
+        }
+        .stat-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .stat-count { font-size: 1.8rem; font-weight: 800; line-height: 1; }
+        .stat-value { font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
+        
         .stat-fiscal { border-left: 5px solid var(--fiscal-color); background: var(--fiscal-bg); } .stat-fiscal .stat-count { color: var(--fiscal-color); }
         .stat-compras { border-left: 5px solid var(--compras-color); background: var(--compras-bg); } .stat-compras .stat-count { color: var(--compras-color); }
         .stat-almoxarifado { border-left: 5px solid var(--almox-color); background: var(--almox-bg); } .stat-almoxarifado .stat-count { color: var(--almox-color); }
@@ -84,105 +112,116 @@
         .bg-compras { background: var(--compras-bg); color: var(--compras-color); border: 1px solid #fecaca; }
         .bg-almox { background: var(--almox-bg); color: var(--almox-color); border: 1px solid #bfdbfe; }
         .bg-aprov { background: var(--aprov-bg); color: var(--aprov-color); border: 1px solid #a7f3d0; }
-        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; cursor: pointer; user-select: none; border: 1px solid transparent; }
+        .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
         .status-pill.pending { background-color: #fee2e2; color: #dc2626; border-color: #fecaca; }
         .status-pill.completed { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
-
-        /* Icons */
-        .actions-cell { display: flex; gap: 4px; justify-content: center; }
-        .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; display: flex; }
-        .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); }
-        .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
+        .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
+        .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
 
         /* Modals */
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 50; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
-        .modal-header { padding: 1.5rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-        .close-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); }
+        .modal-header { padding: 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.5rem; }
-        .form-group { display: flex; flex-direction: column; gap: 8px; }
-        .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
-        .input-field { padding: 12px; border: 1px solid var(--border); border-radius: 10px; font-size: 0.95rem; color: var(--text-main); background-color: #fff; outline: none; }
-        .form-footer { margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 1rem; }
-        .btn { padding: 12px 24px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; }
-        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: #dc2626; color: white; flex: 1; }
-        .confirm-modal { max-width: 400px; text-align: center; padding: 2rem; }
-        .icon-circle { width: 60px; height: 60px; background: #fee2e2; color: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+        .input-field { padding: 10px; border: 1px solid var(--border); border-radius: 8px; width: 100%; outline: none; }
+        .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
+        .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
 
-        /* KPI Specifics */
+        /* KPI CSS */
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
-        .kpi-table-wrapper { background: white; border: 2px solid #000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .kpi-header-row { background-color: var(--kpi-header-bg); color: white; padding: 8px; font-weight: 800; text-align: center; text-transform: uppercase; font-size: 0.9rem; border-bottom: 2px solid #000; display: flex; justify-content: space-between; align-items: center; }
+        .kpi-table-wrapper { background: white; border: 2px solid #000; }
+        .kpi-header-row { background-color: var(--kpi-header-bg); color: white; padding: 8px; font-weight: 800; display: flex; justify-content: space-between; align-items: center; }
         .kpi-count-badge { background: white; color: var(--kpi-header-bg); padding: 2px 8px; border-radius: 4px; font-weight: 800; }
         .kpi-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-        .kpi-table th { background-color: #cbd5e1; border: 1px solid #000; color: #000; padding: 6px; text-align: center; font-weight: 700; font-size: 0.75rem; }
-        .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 600; }
-        .kpi-row-fiscal { background-color: #fff; }
-        .kpi-row-grey { background-color: #e2e8f0; }
+        .kpi-table th, .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+        .kpi-table th { background: #cbd5e1; color: black; }
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; }
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
-        .red-text { color: #b91c1c; }
+        .red-text { color: #b91c1c; font-weight: 800; }
 
-        /* Checklist / Serviços Specifics */
-        .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 2rem; }
-        .services-table-wrapper { overflow-x: auto; border: 1px solid #000; max-height: 60vh; }
+        /* SERVIÇOS / CHECKLIST CSS */
+        .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .services-table-wrapper { overflow-x: auto; border: 1px solid #000; max-height: 55vh; }
         .services-table { width: 100%; border-collapse: collapse; min-width: 1600px; }
-        .services-table th { background-color: var(--kpi-header-bg); color: white; font-weight: 800; padding: 8px; border: 1px solid #000; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap; }
-        .services-table td { border: 1px solid #000; padding: 0; background: white; height: 36px; }
         
-        /* Filtro Input no Header */
+        .services-table th { 
+            background-color: var(--kpi-header-bg); color: white; font-weight: 800; 
+            padding: 8px; border: 1px solid #000; text-transform: uppercase; font-size: 0.75rem; white-space: nowrap; 
+            vertical-align: top; /* Importante para alinhar texto e filtro */
+        }
+        
+        /* CORREÇÃO DO FILTRO (FAIXA BRANCA) */
         .filter-input {
-            width: 100%; margin-top: 4px; padding: 2px 4px; font-size: 0.7rem; border: none; border-radius: 2px; color: #333;
+            display: block;
+            width: 100%;
+            margin-top: 4px;
+            padding: 4px;
+            font-size: 0.7rem;
+            border: none;
+            border-radius: 4px;
+            color: #333;
+            background: rgba(255, 255, 255, 0.9); /* Branco translúcido */
+            box-sizing: border-box; /* Garante que padding não estoure */
         }
 
-        .svc-input { width: 100%; height: 100%; padding: 0 8px; border: none; outline: none; font-size: 0.85rem; font-family: 'Inter', sans-serif; color: var(--text-main); background: transparent; }
+        .services-table td { border: 1px solid #000; padding: 0; background: white; height: 36px; }
+        .svc-input { width: 100%; height: 100%; padding: 0 8px; border: none; outline: none; font-size: 0.85rem; background: transparent; }
         
-        .svc-select {
+        .svc-select { 
             display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0;
-            font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase;
-            appearance: none; cursor: pointer; padding: 0; margin: 0;
+            font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0;
             background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
             background-repeat: no-repeat; background-position: right 4px center; background-size: 10px;
         }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
-        .st-red { background-color: var(--st-red-bg); color: var(--st-red-text); }
-        .st-green { background-color: var(--st-green-bg); color: var(--st-green-text); }
-        .st-blue { background-color: var(--st-blue-bg); color: var(--st-blue-text); }
-        .st-yellow { background-color: var(--st-yellow-bg); color: var(--st-yellow-text); }
+        .st-red { background: #fee2e2; color: #b91c1c; } .st-green { background: #dcfce7; color: #166534; }
+        .st-blue { background: #eff6ff; color: #1d4ed8; } .st-yellow { background: #fffbeb; color: #b45309; }
 
-        .add-row-btn-container { display: flex; justify-content: center; padding: 1rem; background: transparent; border: none; }
-        .btn-plus-row { background: var(--primary); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; transition: transform 0.2s; box-shadow: var(--shadow-md); }
-        .btn-plus-row:hover { transform: scale(1.1); }
-
-        /* Checklist Title Input */
-        .checklist-date-input {
-            background: transparent; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 1rem; color: #1e293b; font-weight: 600; width: 200px;
+        /* CORREÇÃO DASHBOARD CHECKLIST */
+        .dash-checklist-container { 
+            display: flex; 
+            gap: 2rem; 
+            align-items: center; /* Alinha verticalmente */
+            margin-top: 10px; 
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
         }
-
-        /* Dashboard Checklist Colors */
-        .dash-checklist-container { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 10px; }
-        .dash-card-check { flex: 1; min-width: 200px; padding: 1rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; }
+        .checklist-stats-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 colunas fixas */
+            gap: 1rem;
+        }
+        .dash-card-check { 
+            height: 80px; /* ALTURA FIXA PARA NÃO ESTICAR */
+            padding: 0.8rem; 
+            border-radius: 8px; 
+            border: 1px solid #e2e8f0; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center;
+        }
         .dash-check-total { border-left: 5px solid #1e293b; background: #f8fafc; }
         .dash-check-rec { border-left: 5px solid #166534; background: #dcfce7; } .dash-check-rec .cnt { color: #166534; }
         .dash-check-pen { border-left: 5px solid #b91c1c; background: #fee2e2; } .dash-check-pen .cnt { color: #b91c1c; }
         .dash-check-nop { border-left: 5px solid #1d4ed8; background: #eff6ff; } .dash-check-nop .cnt { color: #1d4ed8; }
-        .cnt { font-size: 1.5rem; font-weight: 800; margin-top: 5px; }
-        .lbl { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+        .cnt { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
+        .lbl { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
 
-        /* Dashboard Geral */
-        .dashboard-container { padding: 1.5rem; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 2rem; }
-        .chart-box { position: relative; height: 220px; width: 220px; }
-        .stats-box { flex: 1; min-width: 300px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; }
-
-        .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; margin-bottom: 1rem; }
+        .add-row-btn-container { display: flex; justify-content: center; padding: 10px; }
+        .btn-plus-row { background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-md); }
+        
+        .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
         .notes-textarea { width: 100%; height: 400px; padding: 1.5rem; border: none; outline: none; font-size: 1rem; line-height: 1.6; resize: none; background: #fafafa; }
+        .checklist-date-input { background: transparent; border: 1px solid #e2e8f0; border-radius: 6px; padding: 4px 8px; font-size: 1rem; color: #1e293b; font-weight: 600; width: 200px; }
     </style>
 </head>
 <body>
@@ -192,19 +231,12 @@
             <h1>Notas Fiscais para Correção</h1>
         </div>
         <div class="header-actions">
-            <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
-                <span class="material-icons-round">description</span>
-            </button>
-            <button class="nav-btn excel-btn" onclick="exportMainExcel()">
-                <span class="material-icons-round" style="font-size: 18px;">table_view</span>
-                EXPORTAR EXCEL
-            </button>
-            <button class="nav-btn btn-dark" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
-            <button class="nav-btn btn-dark" onclick="openServicesModal()">CHECKLIST</button>
-            <button class="nav-btn btn-dark" onclick="openKPIModal()">KPI</button>
-            <button id="btnNovo" class="add-btn" title="Adicionar Nova Nota">
-                <span class="material-icons-round">add</span>
-            </button>
+            <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()"><span class="material-icons-round">description</span></button>
+            <button class="nav-btn excel-btn" onclick="exportMainExcel()"><span class="material-icons-round" style="font-size: 18px;">table_view</span>EXPORTAR EXCEL</button>
+            <button class="nav-btn" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
+            <button class="nav-btn" onclick="openServicesModal()">CHECKLIST</button>
+            <button class="nav-btn" onclick="openKPIModal()">KPI</button>
+            <button id="btnNovo" class="add-btn" title="Adicionar Nova Nota"><span class="material-icons-round">add</span></button>
         </div>
     </header>
 
@@ -224,37 +256,24 @@
 
         <div class="card-bubble dashboard-container">
             <div class="chart-box"><canvas id="sectorChart"></canvas></div>
-            <div class="stats-box" id="statsBox"></div>
+            <div class="stats-box" id="statsBox">
+                </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="xmlModal">
         <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2>Importar XML da Nota</h2>
-                <button class="close-btn" onclick="closeXMLModal()"><span class="material-icons-round">close</span></button>
-            </div>
-            <div class="modal-body">
-                <p style="margin-bottom: 1rem; color: #64748b; font-size: 0.9rem;">Cole o conteúdo do arquivo XML abaixo:</p>
-                <textarea id="xmlInput" class="xml-textarea" placeholder="<xml>..."></textarea>
-            </div>
-            <div class="form-footer">
-                <button class="nav-btn btn-primary" style="width: auto; padding: 0 20px;" onclick="processXML()">Processar</button>
-            </div>
+            <div class="modal-header"><h2>Importar XML</h2><button class="close-btn" onclick="closeXMLModal()">x</button></div>
+            <div class="modal-body"><textarea id="xmlInput" class="xml-textarea" placeholder="Cole o XML aqui..."></textarea></div>
+            <div class="form-footer"><button class="btn-primary" onclick="processXML()">Processar</button></div>
         </div>
     </div>
 
     <div class="modal-overlay" id="notesModal">
         <div class="modal" style="max-width: 800px;">
-            <div class="modal-header">
-                <h2>Considerações Gerais</h2>
-                <button class="close-btn" onclick="closeNotesModal()"><span class="material-icons-round">close</span></button>
-            </div>
-            <textarea id="notesArea" class="notes-textarea" placeholder="Escreva aqui observações importantes..."></textarea>
-            <div class="form-footer">
-                <span id="notesStatus" style="margin-right: auto; font-size: 0.8rem; color: green;"></span>
-                <button class="nav-btn btn-primary" style="width: auto; padding: 0 20px;" onclick="saveNotes()">Salvar Alterações</button>
-            </div>
+            <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()">x</button></div>
+            <textarea id="notesArea" class="notes-textarea"></textarea>
+            <div class="form-footer"><span id="notesStatus" style="color:green;margin-right:auto;"></span><button class="btn-primary" onclick="saveNotes()">Salvar</button></div>
         </div>
     </div>
 
@@ -262,38 +281,13 @@
         <div class="modal kpi-modal-container">
             <div class="modal-header">
                 <h2>Indicadores de Performance (KPI)</h2>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button class="pdf-btn" onclick="exportKPIPDF()">
-                        <span class="material-icons-round" style="font-size: 16px;">picture_as_pdf</span>
-                        EXPORTAR PDF
-                    </button>
-                    <button class="close-btn" onclick="closeKPIModal()"><span class="material-icons-round">close</span></button>
-                </div>
+                <div style="display:flex;gap:10px;"><button class="pdf-btn" onclick="exportKPIPDF()">EXPORTAR PDF</button><button class="close-btn" onclick="closeKPIModal()">x</button></div>
             </div>
             <div class="kpi-grid" id="kpiContent">
                 <div class="kpi-column" id="colMercadoria"></div>
                 <div class="kpi-column">
-                    <div class="kpi-table-wrapper">
-                        <div class="kpi-header-row">INFORMAÇÕES COMPLEMENTARES</div>
-                        <table class="kpi-table">
-                            <tr><th>MIGO SEM MIRO</th><th>NOTAS RECUSADAS</th></tr>
-                            <tr>
-                                <td style="height:40px;"><input type="number" class="kpi-manual-input" value="0" style="font-size:1.2rem;"></td>
-                                <td><input type="text" class="kpi-manual-input" value="-"></td>
-                            </tr>
-                            <tr><td colspan="2" style="background:#ccc;text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" class="kpi-manual-input" style="width:60%;text-align:left;" value="-"></td></tr>
-                        </table>
-                    </div>
-                    <div class="kpi-table-wrapper">
-                        <div class="kpi-header-row">
-                            NOTAS DE SERVIÇO CHECKLIST
-                            <input type="text" class="kpi-badge-input" value="0" maxlength="2" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)">
-                        </div>
-                        <table class="kpi-table">
-                            <tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr>
-                            <script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script>
-                        </table>
-                    </div>
+                    <div class="kpi-table-wrapper"><div class="kpi-header-row">INFORMAÇÕES COMPLEMENTARES</div><table class="kpi-table"><tr><th>MIGO SEM MIRO</th><th>NOTAS RECUSADAS</th></tr><tr><td style="height:40px;"><input type="number" class="kpi-manual-input" value="0"></td><td><input type="text" class="kpi-manual-input" value="-"></td></tr><tr><td colspan="2" style="background:#ccc;text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" class="kpi-manual-input" style="width:60%;text-align:left;" value="-"></td></tr></table></div>
+                    <div class="kpi-table-wrapper"><div class="kpi-header-row">NOTAS DE SERVIÇO CHECKLIST<input type="text" class="kpi-badge-input" value="0" maxlength="2" oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,2)"></div><table class="kpi-table"><tr><th>PRESTADOR</th><th>RESPONSÁVEL</th><th>PRESTADOR</th><th>RESPONSÁVEL</th></tr><script>for(let i=0;i<10;i++) document.write(`<tr><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td><td><input class="kpi-manual-input"></td></tr>`)</script></table></div>
                 </div>
                 <div class="kpi-column" id="colServico"></div>
             </div>
@@ -303,21 +297,8 @@
     <div class="modal-overlay" id="servicesModal">
         <div class="modal kpi-modal-container">
             <div class="modal-header">
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <h2>Checklist de serviços fixos</h2>
-                    <input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)">
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button class="reset-btn" onclick="openResetModal()">
-                        <span class="material-icons-round" style="font-size: 16px;">restart_alt</span>
-                        RESETAR STATUS
-                    </button>
-                    <button class="pdf-btn" onclick="exportServicesPDF()">
-                        <span class="material-icons-round" style="font-size: 16px;">picture_as_pdf</span>
-                        EXPORTAR PDF
-                    </button>
-                    <button class="close-btn" onclick="closeServicesModal()"><span class="material-icons-round">close</span></button>
-                </div>
+                <div style="display: flex; gap: 1rem; align-items: center;"><h2>Checklist</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
+                <div style="display: flex; gap: 10px; align-items: center;"><button class="reset-btn" onclick="openResetModal()">RESETAR</button><button class="pdf-btn" onclick="exportServicesPDF()">EXPORTAR PDF</button><button class="close-btn" onclick="closeServicesModal()">x</button></div>
             </div>
             
             <div class="services-modal-body" id="checklistBody">
@@ -325,7 +306,8 @@
                     <table class="services-table" id="svcTable">
                         <thead>
                             <tr>
-                                <th style="width: 30px;"></th> <th>FORN.<input class="filter-input" onkeyup="filterServices(1, this.value)"></th>
+                                <th style="width: 30px;"></th>
+                                <th>FORN.<input class="filter-input" onkeyup="filterServices(1, this.value)"></th>
                                 <th>TIPO<input class="filter-input" onkeyup="filterServices(2, this.value)"></th>
                                 <th style="width: 140px;">ENVIO NF<input class="filter-input" onkeyup="filterServices(3, this.value)"></th>
                                 <th style="width: 140px;">STATUS PO<input class="filter-input" onkeyup="filterServices(4, this.value)"></th>
@@ -341,61 +323,34 @@
                         <tbody id="svcTableBody"></tbody>
                     </table>
                 </div>
-                <div class="add-row-btn-container">
-                    <button class="btn-plus-row" onclick="addServiceRow()">+</button>
-                </div>
+                <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addServiceRow()">+</button></div>
 
                 <div class="dash-checklist-container">
-                    <div style="width: 250px; position: relative; height: 250px;">
+                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;">
                         <canvas id="checkChart"></canvas>
                     </div>
-                    <div style="flex: 1; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                        <div class="dash-card-check dash-check-total">
-                            <span class="lbl">TOTAL NOTAS</span>
-                            <span class="cnt" id="chkTotal">0</span>
-                        </div>
-                        <div class="dash-card-check dash-check-rec">
-                            <span class="lbl">RECEBIDAS</span>
-                            <span class="cnt" id="chkRec">0</span>
-                        </div>
-                        <div class="dash-card-check dash-check-pen">
-                            <span class="lbl">PENDENTES</span>
-                            <span class="cnt" id="chkPen">0</span>
-                        </div>
-                        <div class="dash-card-check dash-check-nop">
-                            <span class="lbl">SEM EMISSÃO</span>
-                            <span class="cnt" id="chkNop">0</span>
-                        </div>
+                    <div class="checklist-stats-grid">
+                        <div class="dash-card-check dash-check-total"><span class="lbl">TOTAL</span><span class="cnt" id="chkTotal">0</span></div>
+                        <div class="dash-card-check dash-check-rec"><span class="lbl">RECEBIDAS</span><span class="cnt" id="chkRec">0</span></div>
+                        <div class="dash-card-check dash-check-pen"><span class="lbl">PENDENTES</span><span class="cnt" id="chkPen">0</span></div>
+                        <div class="dash-card-check dash-check-nop"><span class="lbl">SEM EMISSÃO</span><span class="cnt" id="chkNop">0</span></div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="resetModal">
-        <div class="modal" style="max-width: 400px; text-align: center; padding: 2rem;">
-            <h3>Resetar Checklist?</h3>
-            <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Isso mudará todos os status para "PENDENTE".</p>
-            <input type="password" id="resetPassword" class="input-field" placeholder="Digite a senha..." style="text-align: center; margin-bottom: 1rem;">
-            <div style="display:flex; gap:10px; justify-content:center;">
-                <button class="btn-ghost" onclick="closeResetModal()">Cancelar</button>
-                <button class="btn-primary" onclick="confirmReset()">Confirmar</button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="resetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Senha para Resetar</h3><input type="password" id="resetPassword" class="input-field" style="margin:1rem 0;"><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeResetModal()">Cancelar</button><button class="btn-primary" onclick="confirmReset()">OK</button></div></div></div>
 
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="formModalBody">
-            <div class="modal-header">
-                <h2 id="modalTitle">Adicionar nova linha de nota</h2>
-                <button class="close-btn" onclick="closeModal()"><span class="material-icons-round">close</span></button>
-            </div>
+            <div class="modal-header"><h2>Nota</h2><button class="close-btn" onclick="closeModal()">x</button></div>
             <form id="nfForm">
                 <div class="modal-body">
                     <input type="hidden" id="editId">
                     <div class="form-grid">
                         <div class="form-group"><label>Setor</label><select id="setor" class="input-field" required><option value="FISCAL">FISCAL</option><option value="COMPRAS">COMPRAS</option><option value="ALMOXARIFADO">ALMOXARIFADO</option><option value="APROVAÇÃO">APROVAÇÃO</option></select></div>
-                        <div class="form-group"><label>Tipo de NF</label><select id="tipo" class="input-field" required><option value="MERCADORIA">MERCADORIA</option><option value="SERVIÇO">SERVIÇO</option><option value="CTE">CTE</option></select></div>
+                        <div class="form-group"><label>Tipo</label><select id="tipo" class="input-field" required><option value="MERCADORIA">MERCADORIA</option><option value="SERVIÇO">SERVIÇO</option><option value="CTE">CTE</option></select></div>
                         <div class="form-group"><label>Fornecedor</label><input type="text" id="fornecedor" class="input-field" required></div>
                         <div class="form-group"><label>Pedido</label><input type="text" id="pedido" class="input-field"></div>
                         <div class="form-group"><label>Linha</label><input type="text" id="linhaPedido" class="input-field"></div>
@@ -404,166 +359,58 @@
                         <div class="form-group"><label>Inclusão</label><input type="date" id="dataInclusao" class="input-field"></div>
                         <div class="form-group"><label>Vencimento</label><input type="date" id="dataVencimento" class="input-field"></div>
                         <div class="form-group"><label>Ref.</label><input type="text" id="referencia" class="input-field"></div>
-                        <div class="form-group" style="grid-column: span 2;"><label>Chave</label><input type="text" id="chave" class="input-field" style="width:100%"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Chave</label><input type="text" id="chave" class="input-field"></div>
                         <div class="form-group"><label>Resp.</label><input type="text" id="respCorrecao" class="input-field"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Erro</label><textarea id="obsErro" rows="2" class="input-field"></textarea></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Correção</label><textarea id="obsCorrecao" rows="2" class="input-field"></textarea></div>
                     </div>
-                    <div class="form-footer">
-                        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancelar</button>
-                        <button type="submit" class="btn btn-primary" id="btnSave">Salvar</button>
-                    </div>
+                    <div class="form-footer"><button type="button" class="btn-ghost" onclick="closeModal()">Cancelar</button><button type="submit" class="btn-primary">Salvar</button></div>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="modal-overlay" id="deleteModal">
-        <div class="modal confirm-modal">
-            <div class="icon-circle"><span class="material-icons-round">delete_forever</span></div>
-            <h3 class="confirm-title">Excluir Linha?</h3>
-            <p class="confirm-text">Tem certeza que deseja remover esta linha?</p>
-            <div class="confirm-actions">
-                <button class="btn btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="btn btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-overlay" id="deleteModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Excluir?</h3><div style="display:flex;gap:10px;justify-content:center;margin-top:20px;"><button class="btn-ghost" onclick="closeDeleteModal()">Não</button><button class="btn-danger" style="background:#dc2626;color:white;padding:10px 20px;border:none;border-radius:8px;" onclick="confirmDeleteRow()">Sim</button></div></div></div>
 
     <script>
-        // --- CONEXÃO SUPABASE (SUBSTITUA PELAS SUAS CHAVES!) ---
+        // --- SUPABASE KEYS ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        let nfs = [];
-        let servicesData = [];
-        let chartInstance = null;
-        let checklistChartInstance = null;
-        let itemToDeleteId = null;
-        let isDeletingService = false;
+        let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
         async function loadData() {
-            // Notas
             const { data: nData } = await supabase.from('notas').select('*').order('created_at', {ascending:false});
             if(nData) { nfs = nData; renderTable(); }
-
-            // Serviços
             const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(sData) servicesData = sData;
-
-            // Checklist Data Titulo
             const { data: cData } = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
             if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
         }
 
-        // --- CHECKLIST / SERVIÇOS LOGIC ---
-        function openServicesModal() { 
-            renderServicesTable(); 
-            updateChecklistDashboard();
-            document.getElementById('servicesModal').classList.add('active'); 
-        }
-        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
-
-        async function saveChecklistDate(val) {
-            await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val });
-        }
-
-        // --- RESET CHECKLIST ---
-        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
-        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
-        
-        async function confirmReset() {
-            const pwd = document.getElementById('resetPassword').value;
-            if(pwd === 'Aht2025') {
-                // Update All in Supabase
-                const { error } = await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); // neq 0 is a trick to update all
-                if(!error) {
-                    alert("Checklist resetado com sucesso!");
-                    loadData().then(() => {
-                        renderServicesTable();
-                        updateChecklistDashboard();
-                        closeResetModal();
-                    });
-                }
-            } else {
-                alert("Senha incorreta!");
-            }
-        }
-
-        // --- FILTER LOGIC ---
-        function filterServices(colIndex, val) {
-            const table = document.getElementById("svcTable");
-            const tr = table.getElementsByTagName("tr");
-            const filter = val.toUpperCase();
-
-            for (let i = 1; i < tr.length; i++) { // Skip header
-                const td = tr[i].getElementsByTagName("td")[colIndex];
-                if (td) {
-                    // Check inputs and selects inside TD
-                    const input = td.querySelector('input, select');
-                    const txtValue = input ? input.value : td.textContent || td.innerText;
-                    
-                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }
-            }
-        }
-
-        // --- RENDER SERVICES ---
-        function renderServicesTable() {
-            const tbody = document.getElementById('svcTableBody');
-            tbody.innerHTML = '';
-            
-            servicesData.forEach((row) => {
-                const tr = document.createElement('tr');
-                // Coluna Delete
-                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${row.id}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
-                
-                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => {
-                    let cssClass = 'svc-select ' + getStatusClass(val);
-                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
-                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
-                };
-
-                tr.innerHTML = delTd + `
-                    <td>${createInput('fornecedor', row.fornecedor)}</td>
-                    <td>${createInput('tipo_servico', row.tipo_servico)}</td>
-                    <td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td>
-                    <td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td>
-                    <td>${createInput('responsavel', row.responsavel)}</td>
-                    <td>${createInput('setor', row.setor)}</td>
-                    <td>${createInput('cod_cadastro', row.cod_cadastro)}</td>
-                    <td>${createInput('conta_razao', row.conta_razao)}</td>
-                    <td>${createInput('pedido_compra', row.pedido_compra)}</td>
-                    <td>${createInput('observacao', row.observacao)}</td>
-                    <td>${createInput('texto_sap', row.texto_sap)}</td>
-                `;
-                tbody.appendChild(tr);
+        // --- DASHBOARD PRINCIPAL ---
+        function updateDashboard() {
+            const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
+            nfs.forEach(nf => {
+                const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
+                if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; }
             });
+            const statsBox = document.getElementById('statsBox');
+            statsBox.innerHTML = '';
+            Object.keys(map).forEach(key => {
+                const cssClass = 'stat-' + key.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a').trim();
+                const totalFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(map[key].t);
+                statsBox.innerHTML += `<div class="stat-item ${cssClass}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">Total: ${totalFmt}</span></div>`;
+            });
+            const ctx = document.getElementById('sectorChart').getContext('2d');
+            const dataValues = Object.values(map).map(m => m.c);
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: dataValues, backgroundColor: ['#b45309', '#b91c1c', '#1d4ed8', '#047857'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: {display: false} } } });
         }
 
-        async function updateServiceData(id, field, value) {
-            await supabase.from('servicos').update({ [field]: value }).eq('id', id);
-            const row = servicesData.find(s => s.id === id);
-            if(row) row[field] = value;
-        }
-
-        async function addServiceRow() {
-            const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select();
-            if(!error && data) {
-                servicesData.push(data[0]);
-                renderServicesTable();
-                updateChecklistDashboard();
-            }
-        }
-
+        // --- CHECKLIST DASHBOARD ---
         function updateChecklistDashboard() {
-            // Recalcula stats baseado no array local (que já está atualizado pelos onchange)
             const total = servicesData.length;
             const received = servicesData.filter(s => s.envio_nf === 'RECEBIDO').length;
             const pending = servicesData.filter(s => s.envio_nf === 'PENDENTE').length;
@@ -576,188 +423,111 @@
 
             const ctx = document.getElementById('checkChart').getContext('2d');
             if (checklistChartInstance) checklistChartInstance.destroy();
+            checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
+        }
 
-            checklistChartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Recebido', 'Pendente', 'Sem Emissão'],
-                    datasets: [{
-                        data: [received, pending, notDone],
-                        backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'],
-                        borderWidth: 0
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } }
+        // --- SERVICES RENDER ---
+        function renderServicesTable() {
+            const tbody = document.getElementById('svcTableBody');
+            tbody.innerHTML = '';
+            servicesData.forEach((row) => {
+                const tr = document.createElement('tr');
+                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${row.id}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
+                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
+                const createSelect = (field, val, options) => {
+                    let cssClass = 'svc-select ' + getStatusClass(val);
+                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
+                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
+                };
+                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
+                tbody.appendChild(tr);
             });
         }
 
-        // --- EXPORT PDF CHECKLIST ---
-        async function exportServicesPDF() {
-            const element = document.getElementById('checklistBody');
-            const dateTitle = document.getElementById('checklistDate').value;
-            
-            // Usando html2canvas para pegar o visual exato
-            const canvas = await html2canvas(element, { scale: 1.5 });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); // Paisagem
-            
-            pdf.setFontSize(16);
-            pdf.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
-            
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            
-            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight);
-            pdf.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
-        }
-
-        // --- MAIN TABLE & KPI (Resto do código mantido igual) ---
-        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
-        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
-        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
-        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
-        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-        
-        function openDeleteModal(id, svc) { 
-            itemToDeleteId = id; 
-            isDeletingService = svc; 
-            document.getElementById('deleteModal').classList.add('active'); 
-        }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
-        
-        async function confirmDeleteRow() { 
-            const tbl = isDeletingService ? 'servicos' : 'notas';
-            await supabase.from(tbl).delete().eq('id', itemToDeleteId);
-            
-            // Remove localmente para não precisar reload
-            if(isDeletingService) {
-                servicesData = servicesData.filter(s => s.id !== itemToDeleteId);
-                renderServicesTable();
-                updateChecklistDashboard();
-            } else {
-                nfs = nfs.filter(n => n.id !== itemToDeleteId);
-                renderTable();
+        // --- FILTROS ---
+        function filterServices(colIndex, val) {
+            const table = document.getElementById("svcTable");
+            const tr = table.getElementsByTagName("tr");
+            const filter = val.toUpperCase();
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td")[colIndex];
+                if (td) {
+                    const input = td.querySelector('input, select');
+                    const txtValue = input ? input.value : td.textContent || td.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none";
+                }
             }
-            closeDeleteModal(); 
         }
 
-        function getStatusClass(val) {
-            if(!val) return '';
-            const v = val.toUpperCase();
-            if(v === 'PENDENTE') return 'st-red';
-            if(v === 'RECEBIDO' || v === 'LANÇADO') return 'st-green';
-            if(v === 'NÃO PRESTADO') return 'st-blue';
-            if(v === 'APROVAÇÃO' || v === 'CORREÇÃO') return 'st-yellow';
-            return '';
-        }
-
-        function parseMoney(valueStr) { if (!valueStr) return 0; let clean = valueStr.toString().replace(/[^\d.,]/g, ''); if (clean.includes(',')) clean = clean.replace(/\./g, '').replace(',', '.'); const val = parseFloat(clean); return isNaN(val) ? 0 : val; }
-        const formatCurrency = (val) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val);
-        const formatDate = (dateString) => { if(!dateString) return '-'; const [y, m, d] = dateString.split('-'); return `${d}/${m}/${y}`; };
-
-        // --- MAIN DASHBOARD & TABLE ---
-        function updateDashboard() {
-            const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
-            nfs.forEach(nf => {
-                const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
-                if (map[s]) { map[s].c++; map[s].t += parseMoney(nf.valor); }
-            });
-            const statsBox = document.getElementById('statsBox');
-            statsBox.innerHTML = '';
-            Object.keys(map).forEach(key => {
-                const cssClass = 'stat-' + key.toLowerCase().replace(/ç/g, 'c').replace(/ã/g, 'a').trim();
-                const totalFmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(map[key].t);
-                statsBox.innerHTML += `<div class="stat-item ${cssClass}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">Total: ${totalFmt}</span></div>`;
-            });
-            const ctx = document.getElementById('sectorChart').getContext('2d');
-            const data = { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] };
-            if (chartInstance) chartInstance.destroy();
-            chartInstance = new Chart(ctx, { type: 'doughnut', data, options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } });
+        // --- FUNÇÕES CRUD/UTILS ---
+        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
+        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
+        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
+        
+        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
+        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
+        async function confirmReset() {
+            if(document.getElementById('resetPassword').value === 'Aht2025') {
+                await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0);
+                loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); });
+            } else alert("Senha incorreta!");
         }
 
         function renderTable() {
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = '';
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
             nfs.forEach(nf => {
                 const tr = document.createElement('tr');
-                let badgeClass = 'bg-fiscal';
-                if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
-                const stClass = nf.corrigido ? 'completed' : 'pending';
-                const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE';
-                const stIcon = nf.corrigido ? 'check_circle' : 'lock';
+                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
+                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
                 tr.innerHTML = `<td><div class="actions-cell"><button class="icon-btn" onclick="editRow(${nf.id})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${nf.id}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus(${nf.id}, ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave?nf.chave.substring(0,20)+'...':'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
                 tbody.appendChild(tr);
             });
             updateDashboard();
         }
 
-        // --- XML IMPORT ---
-        function processXML() {
-            const xmlText = document.getElementById('xmlInput').value;
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const vNF = xmlDoc.getElementsByTagName("vNF")[0]?.textContent || "";
-            const dhEmi = xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent || "";
-            let chave = xmlDoc.getElementsByTagName("chNFe")[0]?.textContent || "";
-            if(!chave) { const infNFe = xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe) chave = infNFe.getAttribute("Id")?.replace("NFe", "") || ""; }
-            const dup = xmlDoc.getElementsByTagName("dup")[0];
-            const dVenc = dup ? dup.getElementsByTagName("dVenc")[0]?.textContent : "";
-            document.getElementById('editId').value = ""; document.getElementById('modalTitle').innerText = "Revisar Dados do XML";
-            document.getElementById('fornecedor').value = emitNome; document.getElementById('valor').value = vNF; document.getElementById('chave').value = chave; document.getElementById('referencia').value = xmlDoc.getElementsByTagName("nNF")[0]?.textContent || "";
-            if(dhEmi) document.getElementById('dataEmissao').value = dhEmi.split('T')[0];
-            if(dVenc) document.getElementById('dataVencimento').value = dVenc; else alert("Atenção: Data de Vencimento não encontrada no XML.");
-            document.getElementById('pedido').value = ""; document.getElementById('linhaPedido').value = ""; document.getElementById('obsErro').value = "";
-            closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); 
+        // --- EXPORT PDF CHECKLIST ---
+        async function exportServicesPDF() {
+            const element = document.getElementById('checklistBody'); const dateTitle = document.getElementById('checklistDate').value;
+            const canvas = await html2canvas(element, { scale: 1.5 });
+            const imgData = canvas.toDataURL('image/png'); const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            pdf.setFontSize(16); pdf.text(`Checklist - ${dateTitle}`, 14, 15);
+            const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth() - 20; const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight); pdf.save(`checklist.pdf`);
         }
 
-        // --- CRUD NOTA ---
-        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
-        async function editRow(id) {
-            const nf = nfs.find(n=>n.id===id);
-            document.getElementById('editId').value = id; document.getElementById('modalTitle').innerText = "Editar Nota";
-            document.getElementById('setor').value = nf.setor; document.getElementById('tipo').value = nf.tipo; document.getElementById('fornecedor').value = nf.fornecedor; document.getElementById('valor').value = nf.valor;
-            document.getElementById('dataEmissao').value = nf.emissao; document.getElementById('obsErro').value = nf.obs_erro; document.getElementById('pedido').value = nf.pedido; document.getElementById('linhaPedido').value = nf.linha_pedido;
-            document.getElementById('dataInclusao').value = nf.inclusao; document.getElementById('dataVencimento').value = nf.vencimento; document.getElementById('referencia').value = nf.referencia; document.getElementById('chave').value = nf.chave;
-            document.getElementById('respCorrecao').value = nf.resp_correcao; document.getElementById('obsCorrecao').value = nf.obs_correcao;
-            document.getElementById('modalOverlay').classList.add('active');
+        // Modais e CRUD
+        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
+        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
+        function openServicesModal() { renderServicesTable(); updateChecklistDashboard(); document.getElementById('servicesModal').classList.add('active'); }
+        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
+        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
+        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value=''; }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+        function openDeleteModal(id, svc) { itemToDeleteId = id; isDeletingService = svc; document.getElementById('deleteModal').classList.add('active'); }
+        async function confirmDeleteRow() { 
+            const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId);
+            if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); }
+            else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); }
+            closeDeleteModal(); 
         }
-        document.getElementById('nfForm').addEventListener('submit', async (e)=>{
-            e.preventDefault(); const id = document.getElementById('editId').value;
-            const data = { setor: document.getElementById('setor').value, tipo: document.getElementById('tipo').value, fornecedor: document.getElementById('fornecedor').value, valor: document.getElementById('valor').value, emissao: document.getElementById('dataEmissao').value, obs_erro: document.getElementById('obsErro').value, pedido: document.getElementById('pedido').value, linha_pedido: document.getElementById('linhaPedido').value, inclusao: document.getElementById('dataInclusao').value || null, vencimento: document.getElementById('dataVencimento').value || null, referencia: document.getElementById('referencia').value, chave: document.getElementById('chave').value, resp_correcao: document.getElementById('respCorrecao').value, obs_correcao: document.getElementById('obsCorrecao').value };
-            if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]);
-            closeModal(); loadData();
-        });
-
-        // --- EXPORTS ---
-        function exportMainExcel() { const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb, ws, "Notas"); XLSX.writeFile(wb, "notas.xlsx"); }
-        async function exportKPIPDF() {
-            const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2 }); const imgData = canvas.toDataURL('image/png');
-            const pdf = new jspdf.jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight); pdf.save('KPI.pdf');
-        }
-
-        // --- CONSIDERATIONS ---
-        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const { data } = await supabase.from('consideracoes').select('texto').eq('id', 1).single(); if(data) document.getElementById('notesArea').value = data.texto; }
+        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO'||v==='CORREÇÃO') return 'st-yellow'; return ''; }
+        function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
+        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido:!current}).eq('id', id); loadData(); }
+        async function editRow(id) { const nf=nfs.find(n=>n.id===id); document.getElementById('editId').value=id; document.getElementById('modalTitle').innerText="Editar Nota"; document.getElementById('setor').value=nf.setor; document.getElementById('tipo').value=nf.tipo; document.getElementById('fornecedor').value=nf.fornecedor; document.getElementById('valor').value=nf.valor; document.getElementById('dataEmissao').value=nf.emissao; document.getElementById('obsErro').value=nf.obs_erro; document.getElementById('pedido').value=nf.pedido; document.getElementById('linhaPedido').value=nf.linha_pedido; document.getElementById('dataInclusao').value=nf.inclusao; document.getElementById('dataVencimento').value=nf.vencimento; document.getElementById('referencia').value=nf.referencia; document.getElementById('chave').value=nf.chave; document.getElementById('respCorrecao').value=nf.resp_correcao; document.getElementById('obsCorrecao').value=nf.obs_correcao; document.getElementById('modalOverlay').classList.add('active'); }
+        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ e.preventDefault(); const id=document.getElementById('editId').value; const data={ setor:document.getElementById('setor').value, tipo:document.getElementById('tipo').value, fornecedor:document.getElementById('fornecedor').value, valor:document.getElementById('valor').value, emissao:document.getElementById('dataEmissao').value, obs_erro:document.getElementById('obsErro').value, pedido:document.getElementById('pedido').value, linha_pedido:document.getElementById('linhaPedido').value, inclusao:document.getElementById('dataInclusao').value||null, vencimento:document.getElementById('dataVencimento').value||null, referencia:document.getElementById('referencia').value, chave:document.getElementById('chave').value, resp_correcao:document.getElementById('respCorrecao').value, obs_correcao:document.getElementById('obsCorrecao').value }; if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); closeModal(); loadData(); });
+        document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
+        window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
+        
+        // --- KPI & XML & EXPORT (Mantidos Igual) ---
+        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{if(nf.corrigido)return; const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){if(v>=today&&v<=next10)updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today)updateStat(stats[tk][2],s,em,nf.fornecedor);}}); function updateStat(o,sec,d,sup){if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}} document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); }
+        function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
+        async function exportKPIPDF() { const element=document.getElementById('kpiContent'); const canvas=await html2canvas(element,{scale:2}); const imgData=canvas.toDataURL('image/png'); const pdf=new jspdf.jsPDF('l','mm','a4'); const imgProps=pdf.getImageProperties(imgData); const pdfWidth=pdf.internal.pageSize.getWidth(); const pdfHeight=(imgProps.height*pdfWidth)/imgProps.width; pdf.addImage(imgData,'PNG',0,0,pdfWidth,pdfHeight); pdf.save('KPI.pdf'); }
+        function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
+        function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
+        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
         function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
-        async function saveNotes() { const txt = document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({ id: 1, texto: txt }); document.getElementById('notesStatus').innerText = "Salvo!"; setTimeout(() => document.getElementById('notesStatus').innerText = "", 2000); }
-
-        document.getElementById('btnNovo').onclick = ()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
-        window.onclick = function(e) { if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); }
-
-        // --- KPI CALC ---
-        function calculateKPIs() {
-            const today = new Date(); today.setHours(0,0,0,0); const next10Days = new Date(today); next10Days.setDate(today.getDate() + 10);
-            const stats = { merc: { 0: { title: "NOTAS DE MERCADORIA PENDENTES:", total: 0, sectors: initSectors() }, 1: { title: "A VENCER (10 DIAS):", total: 0, sectors: initSectors() }, 2: { title: "VENCIDAS:", total: 0, sectors: initSectors() } }, serv: { 0: { title: "SERVIÇOS PENDENTES:", total: 0, sectors: initSectors() }, 1: { title: "A VENCER (10 DIAS):", total: 0, sectors: initSectors() }, 2: { title: "VENCIDAS:", total: 0, sectors: initSectors() } } };
-            function initSectors() { return { 'COMPRAS': { c:0, d:null, s:'-' }, 'FISCAL': { c:0, d:null, s:'-' }, 'APROVAÇÃO': { c:0, d:null, s:'-' }, 'ALMOXARIFADO': { c:0, d:null, s:'-' } }; }
-            nfs.forEach(nf => { if (nf.corrigido) return; const tk = nf.tipo === 'MERCADORIA' ? 'merc' : 'serv'; const s = nf.setor; const em = nf.emissao ? new Date(nf.emissao+'T00:00:00') : null; const v = nf.vencimento ? new Date(nf.vencimento+'T00:00:00') : null; updateStat(stats[tk][0], s, em, nf.fornecedor); if (v) { if (v >= today && v <= next10Days) updateStat(stats[tk][1], s, em, nf.fornecedor); if (v < today) updateStat(stats[tk][2], s, em, nf.fornecedor); } });
-            function updateStat(o, sec, d, sup) { if(!o.sectors[sec]) return; o.total++; o.sectors[sec].c++; if(d && (!o.sectors[sec].d || d < o.sectors[sec].d)) { o.sectors[sec].d = d; o.sectors[sec].s = sup; } }
-            document.getElementById('colMercadoria').innerHTML = renderKPITables(stats.merc); document.getElementById('colServico').innerHTML = renderKPITables(stats.serv);
-        }
-        function renderKPITables(d) {
-            let h = ''; [0,1,2].forEach(i => { const g = d[i]; h += `<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s, idx) => { const r = g.sectors[s]; const ds = (r.c>0 && r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h += `<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`; }); h += `</table></div>`; }); return h;
-        }
+        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
 
         loadData();
     </script>
