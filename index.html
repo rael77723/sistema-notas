@@ -370,7 +370,7 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- NOVO: EXPORT PDF CHECKLIST (VETORIAL) ---
+        // --- EXPORT PDF CHECKLIST (COM CORES) ---
         async function exportServicesPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
@@ -406,7 +406,31 @@
                 theme: 'grid',
                 styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
                 headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
-                columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } }
+                columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } },
+                // LÓGICA DE COR ADICIONADA AQUI
+                didParseCell: function(data) {
+                    if (data.section === 'body') {
+                        // Verifica colunas ENVIO NF (index 2) e STATUS PO (index 3)
+                        if (data.column.index === 2 || data.column.index === 3) {
+                            const text = (data.cell.raw || '').toString().toUpperCase();
+
+                            if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) {
+                                data.cell.styles.fillColor = [254, 226, 226]; // #fee2e2 (Vermelho Claro)
+                                data.cell.styles.textColor = [185, 28, 28];   // #b91c1c (Vermelho Escuro)
+                            } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) {
+                                data.cell.styles.fillColor = [220, 252, 231]; // #dcfce7 (Verde Claro)
+                                data.cell.styles.textColor = [22, 101, 52];   // #166534 (Verde Escuro)
+                            } else if (text.includes('NÃO PRESTADO')) {
+                                data.cell.styles.fillColor = [239, 246, 255]; // #eff6ff (Azul Claro)
+                                data.cell.styles.textColor = [29, 78, 216];   // #1d4ed8 (Azul Escuro)
+                            } else if (text.includes('APROVAÇÃO')) {
+                                data.cell.styles.fillColor = [255, 251, 235]; // #fffbeb (Amarelo Claro)
+                                data.cell.styles.textColor = [180, 83, 9];    // #b45309 (Laranja Escuro)
+                            }
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                }
             });
 
             doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
@@ -550,24 +574,19 @@
         document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
         window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
         
-        // --- NOVA LÓGICA DO KPI (CORRIGIDO) ---
         function calculateKPIs() { 
             const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); 
             const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; 
             function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} 
             
             nfs.forEach(nf=>{
-                // REMOVIDO O FILTRO DE CORRIGIDO
                 const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; 
                 const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
-                
-                // Se o setor não existe na estrutura, ignora
                 if(!stats[tk][0].sectors[s]) return;
 
                 const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; 
                 const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; 
                 
-                // 1. Sempre conta no total (Independente do botão corrigido)
                 updateStat(stats[tk][0],s,em,nf.fornecedor); 
                 
                 if(v){
