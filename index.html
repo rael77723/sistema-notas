@@ -407,25 +407,22 @@
                 styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
                 headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
                 columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } },
-                // LÓGICA DE COR ADICIONADA AQUI
                 didParseCell: function(data) {
                     if (data.section === 'body') {
-                        // Verifica colunas ENVIO NF (index 2) e STATUS PO (index 3)
                         if (data.column.index === 2 || data.column.index === 3) {
                             const text = (data.cell.raw || '').toString().toUpperCase();
-
                             if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) {
-                                data.cell.styles.fillColor = [254, 226, 226]; // #fee2e2 (Vermelho Claro)
-                                data.cell.styles.textColor = [185, 28, 28];   // #b91c1c (Vermelho Escuro)
+                                data.cell.styles.fillColor = [254, 226, 226]; // #fee2e2
+                                data.cell.styles.textColor = [185, 28, 28];   // #b91c1c
                             } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) {
-                                data.cell.styles.fillColor = [220, 252, 231]; // #dcfce7 (Verde Claro)
-                                data.cell.styles.textColor = [22, 101, 52];   // #166534 (Verde Escuro)
+                                data.cell.styles.fillColor = [220, 252, 231]; // #dcfce7
+                                data.cell.styles.textColor = [22, 101, 52];   // #166534
                             } else if (text.includes('NÃO PRESTADO')) {
-                                data.cell.styles.fillColor = [239, 246, 255]; // #eff6ff (Azul Claro)
-                                data.cell.styles.textColor = [29, 78, 216];   // #1d4ed8 (Azul Escuro)
+                                data.cell.styles.fillColor = [239, 246, 255]; // #eff6ff
+                                data.cell.styles.textColor = [29, 78, 216];   // #1d4ed8
                             } else if (text.includes('APROVAÇÃO')) {
-                                data.cell.styles.fillColor = [255, 251, 235]; // #fffbeb (Amarelo Claro)
-                                data.cell.styles.textColor = [180, 83, 9];    // #b45309 (Laranja Escuro)
+                                data.cell.styles.fillColor = [255, 251, 235]; // #fffbeb
+                                data.cell.styles.textColor = [180, 83, 9];    // #b45309
                             }
                             data.cell.styles.fontStyle = 'bold';
                         }
@@ -449,7 +446,7 @@
             }
         }
 
-        // --- SERVICES RENDER ---
+        // --- SERVICES RENDER & FILTER FIX ---
         function renderServicesTable() {
             const tbody = document.getElementById('svcTableBody');
             tbody.innerHTML = '';
@@ -464,6 +461,17 @@
                 };
                 tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
                 tbody.appendChild(tr);
+            });
+
+            // --- BUG FIX: REAPPLY FILTERS AUTOMATICALLY ---
+            // Verifica se tem texto nos inputs e força o filtro novamente
+            const filters = document.querySelectorAll('.filter-input');
+            filters.forEach(input => {
+                if(input.value) {
+                    const th = input.parentElement;
+                    const colIndex = Array.prototype.indexOf.call(th.parentNode.children, th);
+                    filterServices(colIndex, input.value);
+                }
             });
         }
 
