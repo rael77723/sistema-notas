@@ -619,134 +619,36 @@
 
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
         
-        // --- NOVO EXPORT KPI VETORIAL (CORREÇÃO DE TAMANHO) ---
-        async function exportKPIPDF() {
+        // --- KPI COM VISUAL EXATO + ARQUIVO PEQUENO (JPEG COMPRESSÃO) ---
+        async function exportKPIPDF() { 
+            const element = document.getElementById('kpiContent');
+            
+            // Renderiza o elemento HTML (VISUAL EXATO)
+            const canvas = await html2canvas(element, { 
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: '#f1f5f9' // Garante que o fundo não fique transparente/preto
+            });
+            
+            // TRUQUE: Usa JPEG com 80% de qualidade.
+            // Isso reduz o arquivo de 20MB para ~800KB mantendo o visual.
+            const imgData = canvas.toDataURL('image/jpeg', 0.8);
+            
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-
-            // 1. RECALCULAR LÓGICA (Para garantir dados atualizados no PDF)
-            const today = new Date(); today.setHours(0,0,0,0);
-            const next10 = new Date(today); next10.setDate(today.getDate()+10);
-            const stats = {
-                merc: {0:{t:"NOTAS PENDENTES:",total:0,sectors:initS()},1:{t:"A VENCER (10 DIAS):",total:0,sectors:initS()},2:{t:"VENCIDAS:",total:0,sectors:initS()}},
-                serv: {0:{t:"SERVIÇOS PENDENTES:",total:0,sectors:initS()},1:{t:"A VENCER (10 DIAS):",total:0,sectors:initS()},2:{t:"VENCIDAS:",total:0,sectors:initS()}}
-            };
-            function initS(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};}
+            const pdf = new jsPDF('l', 'mm', 'a4'); 
             
-            nfs.forEach(nf=>{
-                const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; 
-                const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
-                if(!stats[tk][0].sectors[s]) return;
-                const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; 
-                const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; 
-                upStat(stats[tk][0],s,em,nf.fornecedor); 
-                if(v){ if(v>=today&&v<=next10) upStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) upStat(stats[tk][2],s,em,nf.fornecedor); }
-            }); 
-            function upStat(o,sec,d,sup){
-                if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; 
-                if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}
-            }
-
-            // --- RENDERIZAR NO PDF ---
-            doc.setFontSize(16);
-            doc.text("Dashboard de KPIs", 14, 15);
-
-            // COLUNA 1: MERCADORIA (Esquerda)
-            let finalY_Left = 25;
-            doc.setFontSize(12);
-            doc.text("MERCADORIA", 14, 22);
-            [0, 1, 2].forEach(i => {
-                const g = stats.merc[i];
-                const rows = [];
-                ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach(s => {
-                    const r = g.sectors[s];
-                    const ds = (r.c>0 && r.d) ? r.d.toLocaleDateString('pt-BR') : '-';
-                    rows.push([s, r.c, ds, r.c>0 ? r.s : '-']);
-                });
-                doc.autoTable({
-                    head: [[`${g.t} (${g.total})`, 'QTD', 'DATA', 'FORN.']],
-                    body: rows,
-                    startY: finalY_Left,
-                    margin: { left: 14, right: 155 }, // Limita a largura
-                    theme: 'grid',
-                    headStyles: { fillColor: [185, 28, 28] },
-                    styles: { fontSize: 8 },
-                });
-                finalY_Left = doc.lastAutoTable.finalY + 5;
-            });
-
-            // COLUNA 2: SERVIÇO (Direita)
-            let finalY_Right = 25;
-            doc.text("SERVIÇOS", 155, 22);
-            [0, 1, 2].forEach(i => {
-                const g = stats.serv[i];
-                const rows = [];
-                ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach(s => {
-                    const r = g.sectors[s];
-                    const ds = (r.c>0 && r.d) ? r.d.toLocaleDateString('pt-BR') : '-';
-                    rows.push([s, r.c, ds, r.c>0 ? r.s : '-']);
-                });
-                doc.autoTable({
-                    head: [[`${g.t} (${g.total})`, 'QTD', 'DATA', 'FORN.']],
-                    body: rows,
-                    startY: finalY_Right,
-                    margin: { left: 155 }, // Começa do meio pra frente
-                    theme: 'grid',
-                    headStyles: { fillColor: [185, 28, 28] },
-                    styles: { fontSize: 8 },
-                });
-                finalY_Right = doc.lastAutoTable.finalY + 5;
-            });
-
-            // COLUNA 3: MANUAL INPUTS (Pega do HTML já que são manuais)
-            // Vamos colocar em uma nova página ou abaixo se couber.
-            let startY_Manual = Math.max(finalY_Left, finalY_Right) + 10;
-            if (startY_Manual > 150) { doc.addPage(); startY_Manual = 20; }
+            const imgProps = pdf.getImageProperties(imgData); 
+            const pdfWidth = pdf.internal.pageSize.getWidth(); 
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
             
-            // Capturar dados manuais da tela
-            const inputs = document.querySelectorAll('.kpi-manual-input');
-            const migoQtd = inputs[0]?.value || '0';
-            const migoForn = inputs[2]?.value || '-'; // Indice 2 pq indice 1 é recusadas no HTML structure
-            const recusadas = inputs[1]?.value || '-';
-            
-            doc.text("INFORMAÇÕES COMPLEMENTARES", 14, startY_Manual);
-            doc.autoTable({
-                head: [['TIPO', 'VALOR / OBS']],
-                body: [
-                    ['Migo s/ Miro (Qtd)', migoQtd],
-                    ['Migo s/ Miro (Forn)', migoForn],
-                    ['Notas Recusadas', recusadas]
-                ],
-                startY: startY_Manual + 2,
-                theme: 'grid',
-                headStyles: { fillColor: [50, 50, 50] }
-            });
-
-            // Capturar Checklist Manual
-            // Os inputs do checklist começam no índice 3. São 4 inputs por linha.
-            const checkRows = [];
-            for (let i = 3; i < inputs.length; i+=4) {
-                if (inputs[i]) {
-                    checkRows.push([
-                        inputs[i].value, 
-                        inputs[i+1]?.value, 
-                        inputs[i+2]?.value, 
-                        inputs[i+3]?.value
-                    ]);
-                }
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) {
+                const ratio = pdf.internal.pageSize.getHeight() / pdfHeight;
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight());
+            } else {
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             }
             
-            doc.text("CHECKLIST MANUAL (SERVIÇOS)", 14, doc.lastAutoTable.finalY + 10);
-            doc.autoTable({
-                head: [['PRESTADOR', 'RESPONSÁVEL', 'PRESTADOR', 'RESPONSÁVEL']],
-                body: checkRows,
-                startY: doc.lastAutoTable.finalY + 12,
-                theme: 'grid',
-                headStyles: { fillColor: [185, 28, 28] },
-                styles: { fontSize: 8 }
-            });
-
-            doc.save('KPI_Dashboard.pdf');
+            pdf.save('KPI_Dashboard.pdf'); 
         }
 
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
