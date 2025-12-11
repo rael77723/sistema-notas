@@ -109,7 +109,22 @@
         .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 600; }
         .kpi-row-fiscal { background-color: #fff; }
         .kpi-row-grey { background-color: #e2e8f0; }
-        .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; }
+        
+        /* CORREÇÃO DO CSS DO INPUT PARA NÃO CORTAR O NÚMERO NO PDF */
+        .kpi-manual-input { 
+            width: 100%; 
+            border: none; 
+            background: transparent; 
+            text-align: center; 
+            font-weight: 600; 
+            outline: none; 
+            color: #b91c1c; 
+            height: 100%; /* Força altura total */
+            box-sizing: border-box; 
+            padding: 5px 0; /* Espaçamento interno */
+            display: block; /* Garante bloco */
+        }
+
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
 
@@ -370,7 +385,7 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- EXPORT PDF CHECKLIST (COM CORES) ---
+        // --- EXPORT PDF CHECKLIST (COM CORES + RESPEITANDO FILTRO) ---
         async function exportServicesPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
@@ -382,21 +397,33 @@
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
 
-            servicesData.forEach(row => {
-                const rowData = [
-                    row.fornecedor || '',
-                    row.tipo_servico || '',
-                    row.envio_nf || '',
-                    row.status_po || '',
-                    row.responsavel || '',
-                    row.setor || '',
-                    row.cod_cadastro || '',
-                    row.conta_razao || '',
-                    row.pedido_compra || '',
-                    row.observacao || '',
-                    row.texto_sap || ''
-                ];
-                tableRows.push(rowData);
+            // AGORA PEGA OS DADOS DO HTML (PARA RESPEITAR O FILTRO VISUAL)
+            const trs = document.querySelectorAll('#svcTableBody tr');
+
+            trs.forEach(tr => {
+                // VERIFICA SE A LINHA ESTÁ VISÍVEL
+                if (tr.style.display !== 'none') {
+                    // Pega os inputs dentro da linha para extrair o valor atual
+                    const inputs = tr.querySelectorAll('input, select');
+                    // Mapeia os inputs para um array de valores
+                    // Ordem no HTML: del, forn(0), tipo(1), envio(2), status(3), resp(4), setor(5), cod(6), conta(7), ped(8), obs(9), sap(10)
+                    if (inputs.length > 0) {
+                        const rowData = [
+                            inputs[0].value, // Fornecedor
+                            inputs[1].value, // Tipo
+                            inputs[2].value, // Envio NF
+                            inputs[3].value, // Status PO
+                            inputs[4].value, // Responsavel
+                            inputs[5].value, // Setor
+                            inputs[6].value, // Cod
+                            inputs[7].value, // Conta
+                            inputs[8].value, // Pedido
+                            inputs[9].value, // Obs
+                            inputs[10].value // SAP
+                        ];
+                        tableRows.push(rowData);
+                    }
+                }
             });
 
             doc.autoTable({
