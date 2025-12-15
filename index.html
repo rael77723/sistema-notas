@@ -360,7 +360,6 @@
         }
         setupRealtime();
 
-        // --- DASHBOARD CHECKLIST ---
         function updateChecklistDashboard() {
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const total = servicesData.length;
@@ -378,7 +377,6 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- EXPORT PDF CHECKLIST ---
         async function exportServicesPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
@@ -469,14 +467,15 @@
         async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
         async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
         
-        // --- FUNÇÕES DE MODAL REINTEGRADAS ---
+        // --- FUNÇÕES DE MODAL REINTEGRADAS (AQUI ESTAVA O ERRO ANTERIOR) ---
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         
+        // CORREÇÃO ORDEM DE EXECUÇÃO: TORNAR VISÍVEL ANTES DE DESENHAR O CHART
         function openServicesModal() { 
+            document.getElementById('servicesModal').classList.add('active'); 
             renderServicesTable(); 
             updateChecklistDashboard(); 
-            document.getElementById('servicesModal').classList.add('active'); 
         }
         function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
         
