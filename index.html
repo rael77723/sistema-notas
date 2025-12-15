@@ -13,6 +13,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
         :root {
@@ -41,20 +42,32 @@
         .pdf-btn { background-color: white; border: 1px solid var(--border); color: var(--text-main); gap: 6px; box-shadow: none; }
         .reset-btn { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; gap: 6px; box-shadow: none; }
 
-        .main-content { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
-        .card-bubble { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; flex-shrink: 0; }
+        .main-content { flex: 1; padding: 1.5rem; overflow-y: hidden; display: flex; flex-direction: column; gap: 1.5rem; }
+        .card-bubble { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
         
-        .table-wrapper { display: flex; flex-direction: column; }
-        .table-scroll { overflow: auto; width: 100%; }
+        .table-wrapper { flex: 1; min-height: 0; } /* Garante que a tabela ocupe o espaço restante mas não empurre o dashboard */
+        .table-scroll { overflow: auto; width: 100%; height: 100%; }
+        
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
         thead { background-color: #f8fafc; position: sticky; top: 0; z-index: 5; }
         th { text-align: left; padding: 12px 16px; font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; border-bottom: 2px solid var(--border); vertical-align: bottom; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); white-space: nowrap; }
         td.text-long-col { white-space: nowrap; max-width: none; }
         tbody tr:hover { background-color: #f1f5f9; }
-        th:nth-child(1), td:nth-child(1), th:nth-child(2), td:nth-child(2) { text-align: center; }
+        /* Ajuste nas larguras das colunas de ação */
+        th:nth-child(1) { width: 90px; text-align: center; } 
+        td:nth-child(1) { text-align: center; }
 
-        .dashboard-container { padding: 1.5rem; display: flex; align-items: center; gap: 2rem; min-height: 200px; }
+        /* DASHBOARD FIXO EM BAIXO */
+        .dashboard-container { 
+            height: 220px; /* Altura fixa para garantir visibilidade */
+            min-height: 220px; 
+            padding: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            gap: 2rem; 
+            flex-shrink: 0; /* Impede que seja esmagado */
+        }
         .chart-box { position: relative; height: 180px; width: 180px; flex-shrink: 0; }
         .stats-box { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; align-content: center; }
         .stat-item { padding: 1rem; border-radius: 12px; border: 1px solid var(--border); display: flex; flex-direction: column; gap: 4px; background: white; height: 100px; justify-content: center; }
@@ -74,8 +87,20 @@
         .status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; cursor: pointer; border: 1px solid transparent; }
         .status-pill.pending { background-color: #fee2e2; color: #dc2626; border-color: #fecaca; }
         .status-pill.completed { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
-        .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; }
+        .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
+        
+        /* ESTILO DO BOTÃO DE ARRASTAR CORRIGIDO */
+        .drag-handle { 
+            cursor: move !important; /* Cursor de movimento forçado */
+            cursor: -webkit-grabbing;
+            color: #94a3b8; 
+            padding: 6px;
+            margin-right: 2px;
+        }
+        .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
+        .drag-handle:active { cursor: grabbing; color: var(--primary); }
+        .sortable-ghost { opacity: 0.4; background-color: #f1f5f9; }
 
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
@@ -109,22 +134,7 @@
         .kpi-table td { border: 1px solid #000; padding: 6px; text-align: center; color: #000; font-weight: 600; }
         .kpi-row-fiscal { background-color: #fff; }
         .kpi-row-grey { background-color: #e2e8f0; }
-        
-        /* CORREÇÃO DO CSS DO INPUT PARA NÃO CORTAR O NÚMERO NO PDF */
-        .kpi-manual-input { 
-            width: 100%; 
-            border: none; 
-            background: transparent; 
-            text-align: center; 
-            font-weight: 600; 
-            outline: none; 
-            color: #b91c1c; 
-            height: 100%; /* Força altura total */
-            box-sizing: border-box; 
-            padding: 5px 0; /* Espaçamento interno */
-            display: block; /* Garante bloco */
-        }
-
+        .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; height: 100%; box-sizing: border-box; padding: 5px 0; display: block; }
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
 
@@ -346,10 +356,18 @@
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
         async function loadData() {
-            const { data: nData } = await supabase.from('notas').select('*').order('created_at', {ascending:false});
+            // ORDENA POR ORDEM E DEPOIS POR DATA
+            const { data: nData } = await supabase
+                .from('notas')
+                .select('*')
+                .order('ordem', {ascending: true, nullsFirst: false})
+                .order('created_at', {ascending: false});
+            
             if(nData) { nfs = nData; renderTable(); }
+            
             const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(sData) servicesData = sData;
+            
             const { data: cData } = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
             if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
         }
@@ -367,7 +385,6 @@
         }
         setupRealtime();
 
-        // --- DASHBOARD CHECKLIST ---
         function updateChecklistDashboard() {
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const total = servicesData.length;
@@ -385,52 +402,30 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- EXPORT PDF CHECKLIST (COM CORES + RESPEITANDO FILTRO) ---
         async function exportServicesPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
-
             const dateTitle = document.getElementById('checklistDate').value || 'Geral';
             doc.setFontSize(14);
             doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
-
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
-
-            // AGORA PEGA OS DADOS DO HTML (PARA RESPEITAR O FILTRO VISUAL)
             const trs = document.querySelectorAll('#svcTableBody tr');
-
             trs.forEach(tr => {
-                // VERIFICA SE A LINHA ESTÁ VISÍVEL
                 if (tr.style.display !== 'none') {
-                    // Pega os inputs dentro da linha para extrair o valor atual
                     const inputs = tr.querySelectorAll('input, select');
-                    // Mapeia os inputs para um array de valores
-                    // Ordem no HTML: del, forn(0), tipo(1), envio(2), status(3), resp(4), setor(5), cod(6), conta(7), ped(8), obs(9), sap(10)
                     if (inputs.length > 0) {
                         const rowData = [
-                            inputs[0].value, // Fornecedor
-                            inputs[1].value, // Tipo
-                            inputs[2].value, // Envio NF
-                            inputs[3].value, // Status PO
-                            inputs[4].value, // Responsavel
-                            inputs[5].value, // Setor
-                            inputs[6].value, // Cod
-                            inputs[7].value, // Conta
-                            inputs[8].value, // Pedido
-                            inputs[9].value, // Obs
-                            inputs[10].value // SAP
+                            inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value,
+                            inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value,
+                            inputs[8].value, inputs[9].value, inputs[10].value
                         ];
                         tableRows.push(rowData);
                     }
                 }
             });
-
             doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: 20,
-                theme: 'grid',
+                head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
                 styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
                 headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
                 columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } },
@@ -439,68 +434,84 @@
                         if (data.column.index === 2 || data.column.index === 3) {
                             const text = (data.cell.raw || '').toString().toUpperCase();
                             if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) {
-                                data.cell.styles.fillColor = [254, 226, 226]; // #fee2e2
-                                data.cell.styles.textColor = [185, 28, 28];   // #b91c1c
+                                data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28];
                             } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) {
-                                data.cell.styles.fillColor = [220, 252, 231]; // #dcfce7
-                                data.cell.styles.textColor = [22, 101, 52];   // #166534
+                                data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52];
                             } else if (text.includes('NÃO PRESTADO')) {
-                                data.cell.styles.fillColor = [239, 246, 255]; // #eff6ff
-                                data.cell.styles.textColor = [29, 78, 216];   // #1d4ed8
+                                data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216];
                             } else if (text.includes('APROVAÇÃO')) {
-                                data.cell.styles.fillColor = [255, 251, 235]; // #fffbeb
-                                data.cell.styles.textColor = [180, 83, 9];    // #b45309
+                                data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9];
                             }
                             data.cell.styles.fontStyle = 'bold';
                         }
                     }
                 }
             });
-
             doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
         }
 
-        // --- RESET CHECKLIST ---
-        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
-        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
-        async function confirmReset() {
-            if(document.getElementById('resetPassword').value === 'Aht2025') {
-                await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0);
-                loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); });
-            } else {
-                closeResetModal();
-                document.getElementById('errorModal').classList.add('active');
+        // --- RENDER TABLE & SORTABLE ---
+        function renderTable() {
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            nfs.forEach((nf, index) => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-id', nf.id);
+                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
+                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
+                
+                // MUDANÇA: USAR SPAN AO INVÉS DE BUTTON PARA O HANDLE
+                const dragHandle = `<span class="material-icons-round drag-handle" title="Arrastar">drag_handle</span>`;
+                
+                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
+                tbody.appendChild(tr);
+            });
+            updateDashboard();
+            initSortable();
+        }
+
+        function initSortable() {
+            const el = document.getElementById('tableBody');
+            if(el) {
+                if(el._sortable) el._sortable.destroy();
+                el._sortable = Sortable.create(el, {
+                    handle: '.drag-handle', // Agora aponta para o span
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: async function (evt) {
+                        const item = nfs.splice(evt.oldIndex, 1)[0];
+                        nfs.splice(evt.newIndex, 0, item);
+                        
+                        // Atualiza Ordem no Banco
+                        const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
+                        const { error } = await supabase.from('notas').upsert(updates, { onConflict: 'id' });
+                        if(error) console.error('Erro ao salvar ordem:', error);
+                    }
+                });
             }
         }
 
-        // --- SERVICES RENDER & FILTER FIX ---
-        function renderServicesTable() {
-            const tbody = document.getElementById('svcTableBody');
-            tbody.innerHTML = '';
-            servicesData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
-                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => {
-                    let cssClass = 'svc-select ' + getStatusClass(val);
-                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
-                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
-                };
-                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
-                tbody.appendChild(tr);
-            });
-
-            // FIX: Re-apply filters
-            const filters = document.querySelectorAll('.filter-input');
-            filters.forEach(input => {
-                if(input.value) {
-                    const th = input.parentElement;
-                    const colIndex = Array.prototype.indexOf.call(th.parentNode.children, th);
-                    filterServices(colIndex, input.value);
-                }
-            });
-        }
-
+        function filterServices(colIndex, val) { const table = document.getElementById("svcTable"); const tr = table.getElementsByTagName("tr"); const filter = val.toUpperCase(); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName("td")[colIndex]; if (td) { const input = td.querySelector('input, select'); const txtValue = input ? input.value : td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none"; } } }
+        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
+        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
+        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
+        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
+        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
+        function openServicesModal() { renderServicesTable(); updateChecklistDashboard(); document.getElementById('servicesModal').classList.add('active'); }
+        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
+        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
+        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+        function openDeleteModal(index, svc) { if(svc) { itemToDeleteId = servicesData[index].id; isDeletingService = true; } else { itemToDeleteId = nfs[index].id; isDeletingService = false; } document.getElementById('deleteModal').classList.add('active'); }
+        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
+        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
+        function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
+        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
+        async function editRow(index) { const nf = nfs[index]; if(!nf) return; document.getElementById('editId').value = nf.id; document.getElementById('modalTitle').innerText = "Editar Nota"; document.getElementById('setor').value = nf.setor || ''; document.getElementById('tipo').value = nf.tipo || ''; document.getElementById('fornecedor').value = nf.fornecedor || ''; document.getElementById('valor').value = nf.valor || ''; document.getElementById('dataEmissao').value = nf.emissao || ''; document.getElementById('obsErro').value = nf.obs_erro || ''; document.getElementById('pedido').value = nf.pedido || ''; document.getElementById('linhaPedido').value = nf.linha_pedido || ''; document.getElementById('dataInclusao').value = nf.inclusao || ''; document.getElementById('dataVencimento').value = nf.vencimento || ''; document.getElementById('referencia').value = nf.referencia || ''; document.getElementById('chave').value = nf.chave || ''; document.getElementById('respCorrecao').value = nf.resp_correcao || ''; document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; document.getElementById('modalOverlay').classList.add('active'); }
+        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ e.preventDefault(); const id = document.getElementById('editId').value; const data = { setor:document.getElementById('setor').value, tipo:document.getElementById('tipo').value, fornecedor:document.getElementById('fornecedor').value, valor:document.getElementById('valor').value, emissao:document.getElementById('dataEmissao').value, obs_erro:document.getElementById('obsErro').value, pedido:document.getElementById('pedido').value, linha_pedido:document.getElementById('linhaPedido').value, inclusao:document.getElementById('dataInclusao').value||null, vencimento:document.getElementById('dataVencimento').value||null, referencia:document.getElementById('referencia').value, chave:document.getElementById('chave').value, resp_correcao:document.getElementById('respCorrecao').value, obs_correcao:document.getElementById('obsCorrecao').value }; if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); closeModal(); loadData(); });
+        document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
+        window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
+        
         function updateDashboard() {
             const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
             nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } });
@@ -510,174 +521,9 @@
             chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } });
         }
 
-        function renderTable() {
-            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
-            nfs.forEach((nf, index) => {
-                const tr = document.createElement('tr');
-                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
-                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
-                tr.innerHTML = `<td><div class="actions-cell"><button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
-                tbody.appendChild(tr);
-            });
-            updateDashboard();
-        }
-
-        function filterServices(colIndex, val) { const table = document.getElementById("svcTable"); const tr = table.getElementsByTagName("tr"); const filter = val.toUpperCase(); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName("td")[colIndex]; if (td) { const input = td.querySelector('input, select'); const txtValue = input ? input.value : td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none"; } } }
-        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
-        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
-        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
-        
-        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
-        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
-        function openServicesModal() { renderServicesTable(); updateChecklistDashboard(); document.getElementById('servicesModal').classList.add('active'); }
-        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
-        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
-        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
-        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
-        
-        function openDeleteModal(index, svc) { 
-            if(svc) {
-                itemToDeleteId = servicesData[index].id;
-                isDeletingService = true;
-            } else {
-                itemToDeleteId = nfs[index].id;
-                isDeletingService = false;
-            }
-            document.getElementById('deleteModal').classList.add('active'); 
-        }
-        async function confirmDeleteRow() { 
-            const tbl = isDeletingService ? 'servicos' : 'notas'; 
-            await supabase.from(tbl).delete().eq('id', itemToDeleteId); 
-            if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } 
-            else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } 
-            closeDeleteModal(); 
-        }
-
-        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
-        function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
-        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
-        
-        async function editRow(index) { 
-            const nf = nfs[index];
-            if(!nf) return; 
-
-            document.getElementById('editId').value = nf.id; 
-            document.getElementById('modalTitle').innerText = "Editar Nota"; 
-            document.getElementById('setor').value = nf.setor || ''; 
-            document.getElementById('tipo').value = nf.tipo || ''; 
-            document.getElementById('fornecedor').value = nf.fornecedor || ''; 
-            document.getElementById('valor').value = nf.valor || ''; 
-            document.getElementById('dataEmissao').value = nf.emissao || ''; 
-            document.getElementById('obsErro').value = nf.obs_erro || ''; 
-            document.getElementById('pedido').value = nf.pedido || ''; 
-            document.getElementById('linhaPedido').value = nf.linha_pedido || ''; 
-            document.getElementById('dataInclusao').value = nf.inclusao || ''; 
-            document.getElementById('dataVencimento').value = nf.vencimento || ''; 
-            document.getElementById('referencia').value = nf.referencia || ''; 
-            document.getElementById('chave').value = nf.chave || ''; 
-            document.getElementById('respCorrecao').value = nf.resp_correcao || ''; 
-            document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; 
-            document.getElementById('modalOverlay').classList.add('active'); 
-        }
-
-        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ 
-            e.preventDefault(); 
-            const id = document.getElementById('editId').value; 
-            const data = { 
-                setor:document.getElementById('setor').value, 
-                tipo:document.getElementById('tipo').value, 
-                fornecedor:document.getElementById('fornecedor').value, 
-                valor:document.getElementById('valor').value, 
-                emissao:document.getElementById('dataEmissao').value, 
-                obs_erro:document.getElementById('obsErro').value, 
-                pedido:document.getElementById('pedido').value, 
-                linha_pedido:document.getElementById('linhaPedido').value, 
-                inclusao:document.getElementById('dataInclusao').value||null, 
-                vencimento:document.getElementById('dataVencimento').value||null, 
-                referencia:document.getElementById('referencia').value, 
-                chave:document.getElementById('chave').value, 
-                resp_correcao:document.getElementById('respCorrecao').value, 
-                obs_correcao:document.getElementById('obsCorrecao').value 
-            }; 
-            if(id) await supabase.from('notas').update(data).eq('id', id); 
-            else await supabase.from('notas').insert([data]); 
-            closeModal(); loadData(); 
-        });
-
-        document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
-        window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
-        
-        function calculateKPIs() { 
-            const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); 
-            const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; 
-            function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} 
-            
-            nfs.forEach(nf=>{
-                const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; 
-                const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS';
-                if(!stats[tk][0].sectors[s]) return;
-
-                const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; 
-                const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; 
-                
-                updateStat(stats[tk][0],s,em,nf.fornecedor); 
-                
-                if(v){
-                    if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); 
-                    if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor);
-                }
-            }); 
-            
-            function updateStat(o,sec,d,sup){
-                if(!o.sectors[sec])return; 
-                o.total++; 
-                o.sectors[sec].c++; 
-                if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;}
-            } 
-            
-            document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); 
-            document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); 
-            
-            const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-            const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
-            document.getElementById('kpiChecklistCount').innerText = checklistPendingCount;
-        }
-
+        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        
-        // --- KPI COM VISUAL EXATO + ARQUIVO PEQUENO (JPEG COMPRESSÃO) ---
-        async function exportKPIPDF() { 
-            const element = document.getElementById('kpiContent');
-            
-            // Renderiza o elemento HTML (VISUAL EXATO)
-            const canvas = await html2canvas(element, { 
-                scale: 2, 
-                useCORS: true,
-                backgroundColor: '#f1f5f9' // Garante que o fundo não fique transparente/preto
-            });
-            
-            // TRUQUE: Usa JPEG com 80% de qualidade.
-            // Isso reduz o arquivo de 20MB para ~800KB mantendo o visual.
-            const imgData = canvas.toDataURL('image/jpeg', 0.8);
-            
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('l', 'mm', 'a4'); 
-            
-            const imgProps = pdf.getImageProperties(imgData); 
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
-            
-            if (pdfHeight > pdf.internal.pageSize.getHeight()) {
-                const ratio = pdf.internal.pageSize.getHeight() / pdfHeight;
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight());
-            } else {
-                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-            }
-            
-            pdf.save('KPI_Dashboard.pdf'); 
-        }
-
+        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
         async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
