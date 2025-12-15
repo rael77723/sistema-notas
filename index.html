@@ -80,6 +80,7 @@
         .status-pill.completed { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
         .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
+        
         .drag-handle { cursor: move !important; cursor: -webkit-grabbing; color: #94a3b8; padding: 6px; margin-right: 2px; }
         .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
         .drag-handle:active { cursor: grabbing; color: var(--primary); }
@@ -332,6 +333,7 @@
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
         async function loadData() {
+            // ORDENA POR ORDEM E DEPOIS POR DATA
             const { data: nData } = await supabase
                 .from('notas')
                 .select('*')
@@ -340,6 +342,7 @@
             
             if(nData) { nfs = nData; renderTable(); }
             
+            // CARREGAMENTO INICIAL DO CHECKLIST (PODE FALHAR, MAS O BOTÃO AGORA RECARREGA)
             const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(sData) servicesData = sData;
             
@@ -351,7 +354,9 @@
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
-                await loadData();
+                // RECARREGA DADOS SE O MODAL ESTIVER ABERTO
+                const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+                if(data) servicesData = data;
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -359,6 +364,24 @@
             .subscribe();
         }
         setupRealtime();
+
+        // --- CORREÇÃO: FORÇA O CARREGAMENTO AO ABRIR O MODAL ---
+        async function openServicesModal() { 
+            // 1. Mostra o modal primeiro
+            document.getElementById('servicesModal').classList.add('active'); 
+            
+            // 2. Busca os dados atualizados do banco (Garante que apareçam)
+            const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+            if(data) {
+                servicesData = data;
+                // 3. Renderiza a tabela e o gráfico
+                renderServicesTable(); 
+                updateChecklistDashboard();
+            } else {
+                console.error("Falha ao carregar checklist.");
+            }
+        }
+        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
 
         function updateChecklistDashboard() {
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
@@ -385,6 +408,8 @@
             doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
+            
+            // Pega dados visíveis (respeitando filtros)
             const trs = document.querySelectorAll('#svcTableBody tr');
             trs.forEach(tr => {
                 if (tr.style.display !== 'none') {
@@ -399,6 +424,7 @@
                     }
                 }
             });
+
             doc.autoTable({
                 head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
                 styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
@@ -425,7 +451,6 @@
             doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
         }
 
-        // --- RENDER TABLE & SORTABLE ---
         function renderTable() {
             const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
             nfs.forEach((nf, index) => {
@@ -467,17 +492,8 @@
         async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
         async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
         
-        // --- FUNÇÕES DE MODAL REINTEGRADAS (AQUI ESTAVA O ERRO ANTERIOR) ---
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
-        
-        // CORREÇÃO ORDEM DE EXECUÇÃO: TORNAR VISÍVEL ANTES DE DESENHAR O CHART
-        function openServicesModal() { 
-            document.getElementById('servicesModal').classList.add('active'); 
-            renderServicesTable(); 
-            updateChecklistDashboard(); 
-        }
-        function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
         
         function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
         function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
@@ -491,6 +507,33 @@
         
         async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
+
+        function renderServicesTable() {
+            const tbody = document.getElementById('svcTableBody');
+            tbody.innerHTML = '';
+            servicesData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
+                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
+                const createSelect = (field, val, options) => {
+                    let cssClass = 'svc-select ' + getStatusClass(val);
+                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
+                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
+                };
+                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
+                tbody.appendChild(tr);
+            });
+
+            // Re-apply filters automatically
+            const filters = document.querySelectorAll('.filter-input');
+            filters.forEach(input => {
+                if(input.value) {
+                    const th = input.parentElement;
+                    const colIndex = Array.prototype.indexOf.call(th.parentNode.children, th);
+                    filterServices(colIndex, input.value);
+                }
+            });
+        }
 
         function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
