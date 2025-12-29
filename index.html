@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notas Fiscais e Checklist</title>
+    <title>Notas Fiscais e Checklist (Diagnóstico)</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
@@ -57,7 +57,6 @@
         th:nth-child(1) { width: 90px; text-align: center; } 
         td:nth-child(1) { text-align: center; }
 
-        /* DASHBOARD LAYOUT */
         .dashboard-container { height: 220px; min-height: 220px; padding: 1.5rem 3rem; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 4rem; flex-shrink: 0; }
         .chart-box { position: relative; height: 170px; width: 170px; flex-shrink: 0; }
         .stats-box { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-content: center; height: 100%; }
@@ -148,9 +147,40 @@
         .confirm-modal h3 { margin-top: 1rem; color: #1e293b; }
         .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+        /* MENSAGEM DE ERRO VISUAL */
+        #error-banner {
+            display: none;
+            background-color: #fee2e2;
+            color: #b91c1c;
+            padding: 1rem;
+            text-align: center;
+            font-weight: bold;
+            border-bottom: 1px solid #fecaca;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+        }
+        #loading-banner {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255,255,255,0.9);
+            z-index: 9998;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
     </style>
 </head>
 <body>
+
+    <div id="error-banner"></div>
+    <div id="loading-banner">Carregando sistema...</div>
 
     <header>
         <div class="header-left">
@@ -324,52 +354,79 @@
     </div>
 
     <script>
-        // --- SUPABASE KEYS ---
-        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        // --- 1. GESTÃO DE ERROS VISUAIS ---
+        function showError(msg) {
+            const banner = document.getElementById('error-banner');
+            banner.style.display = 'block';
+            banner.innerText = "ERRO: " + msg;
+            console.error(msg);
+            document.getElementById('loading-banner').style.display = 'none'; // Esconde loading se der erro
+        }
 
-        let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
-
-        // SISTEMA DE ALERTA DE ERROS
         window.onerror = function(msg, url, line) {
-            console.error("Erro Detectado:", msg);
-            // alert("Erro no sistema: " + msg);
+            showError(`Erro interno: ${msg} (Linha ${line})`);
             return false;
         };
 
+        // --- 2. CONFIGURAÇÃO SUPABASE ---
+        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
+        
+        let supabase;
+        let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
+
+        document.addEventListener("DOMContentLoaded", async () => {
+            try {
+                if (typeof window.supabase === 'undefined') {
+                    throw new Error("Biblioteca Supabase não carregou. Verifique sua internet.");
+                }
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                await loadData();
+            } catch (e) {
+                showError(e.message);
+            }
+        });
+
         async function loadData() {
             try {
-                // Tenta carregar com ordem
-                const { data: nData, error } = await supabase
+                // Tenta buscar com ordem
+                let { data: nData, error } = await supabase
                     .from('notas')
                     .select('*')
                     .order('ordem', {ascending: true, nullsFirst: false})
                     .order('created_at', {ascending: false});
                 
+                // Se falhar a ordem (coluna não existe), tenta sem ordem
                 if (error) {
-                    console.warn("Erro ao carregar com ordem. Tentando sem ordem...", error);
-                    const { data: fallback } = await supabase.from('notas').select('*').order('created_at', {ascending:false});
-                    if(fallback) { nfs = fallback; renderTable(); }
-                } else if(nData) { 
-                    nfs = nData; 
-                    renderTable(); 
+                    console.warn("Erro ao ordenar (coluna 'ordem' pode não existir). Tentando sem ordem...", error.message);
+                    const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
+                    if (fallback.error) throw fallback.error;
+                    nData = fallback.data;
                 }
 
-                // Carrega Checklist Inicial
-                const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if(sData) servicesData = sData;
-                
-                const { data: cData } = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
-                if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
+                if (nData) {
+                    nfs = nData;
+                    renderTable();
+                }
+
+                // Carrega Checklist (Sem travar se falhar)
+                const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+                if(sData.data) servicesData = sData.data;
+
+                // Carrega Config (Sem travar)
+                const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
+                if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
+
+                // Sucesso: Esconde loading
+                document.getElementById('loading-banner').style.display = 'none';
 
             } catch (err) {
-                console.error("Erro fatal:", err);
-                alert("Erro ao conectar com o banco de dados. Verifique sua conexão.");
+                showError("Falha ao carregar dados: " + err.message);
             }
         }
 
         function setupRealtime() {
+            if(!supabase) return;
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
@@ -383,7 +440,7 @@
         }
         setupRealtime();
 
-        // --- FUNÇÕES DE MODAL ---
+        // --- FUNÇÕES DE INTERFACE ---
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         
@@ -410,7 +467,9 @@
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
 
         function updateChecklistDashboard() {
-            const ctx = document.getElementById('checkChart').getContext('2d');
+            const canvas = document.getElementById('checkChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
             if(checklistChartInstance) checklistChartInstance.destroy();
             
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
@@ -428,6 +487,7 @@
         }
 
         async function exportServicesPDF() {
+            if(!window.jspdf) { alert("Biblioteca PDF não carregou."); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const dateTitle = document.getElementById('checklistDate').value || 'Geral';
@@ -496,19 +556,21 @@
             const el = document.getElementById('tableBody');
             if(el) {
                 if(el._sortable) el._sortable.destroy();
-                el._sortable = Sortable.create(el, {
-                    handle: '.drag-handle',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    onEnd: async function (evt) {
-                        try {
-                            const item = nfs.splice(evt.oldIndex, 1)[0];
-                            nfs.splice(evt.newIndex, 0, item);
-                            const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
-                            await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                        } catch(e) { console.error("Erro ao ordenar:", e); }
-                    }
-                });
+                if(typeof Sortable !== 'undefined') {
+                    el._sortable = Sortable.create(el, {
+                        handle: '.drag-handle',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: async function (evt) {
+                            try {
+                                const item = nfs.splice(evt.oldIndex, 1)[0];
+                                nfs.splice(evt.newIndex, 0, item);
+                                const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
+                                await supabase.from('notas').upsert(updates, { onConflict: 'id' });
+                            } catch(e) { console.error("Erro ao ordenar:", e); }
+                        }
+                    });
+                }
             }
         }
 
@@ -545,11 +607,22 @@
 
         function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
+        async function exportKPIPDF() { 
+            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
+            const element = document.getElementById('kpiContent');
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
+            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
+            const { jsPDF } = window.jspdf; 
+            const pdf = new jsPDF('l', 'mm', 'a4'); 
+            const imgProps = pdf.getImageProperties(imgData); 
+            const pdfWidth = pdf.internal.pageSize.getWidth(); 
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
+            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
+            pdf.save('KPI_Dashboard.pdf'); 
+        }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
-
-        loadData();
     </script>
 </body>
 </html>
