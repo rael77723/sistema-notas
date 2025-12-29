@@ -80,7 +80,6 @@
         .status-pill.completed { background-color: #dcfce7; color: #166534; border-color: #bbf7d0; }
         .icon-btn { border: none; background: transparent; color: var(--text-muted); cursor: pointer; padding: 6px; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; }
         .icon-btn:hover { background-color: #f1f5f9; color: var(--primary); } .icon-btn.delete:hover { background-color: #fee2e2; color: #dc2626; }
-        
         .drag-handle { cursor: move !important; cursor: -webkit-grabbing; color: #94a3b8; padding: 6px; margin-right: 2px; }
         .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
         .drag-handle:active { cursor: grabbing; color: var(--primary); }
@@ -325,7 +324,12 @@
     </div>
 
     <script>
-        // --- SUPABASE KEYS ---
+        // --- GESTÃO DE ERROS GLOBAL ---
+        window.onerror = function(msg, url, line) {
+            alert("Erro no Sistema:\n" + msg + "\n\nVerifique se a coluna 'ordem' foi criada corretamente no Supabase.");
+            return false;
+        };
+
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -333,30 +337,45 @@
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
         async function loadData() {
-            // ORDENA POR ORDEM E DEPOIS POR DATA
-            const { data: nData } = await supabase
-                .from('notas')
-                .select('*')
-                .order('ordem', {ascending: true, nullsFirst: false})
-                .order('created_at', {ascending: false});
-            
-            if(nData) { nfs = nData; renderTable(); }
-            
-            // CARREGAMENTO INICIAL DO CHECKLIST (PODE FALHAR, MAS O BOTÃO AGORA RECARREGA)
-            const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-            if(sData) servicesData = sData;
-            
-            const { data: cData } = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
-            if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
+            try {
+                // Tenta carregar com ORDENAÇÃO
+                const { data: nData, error } = await supabase
+                    .from('notas')
+                    .select('*')
+                    .order('ordem', {ascending: true, nullsFirst: false})
+                    .order('created_at', {ascending: false});
+                
+                if(error) {
+                    console.warn("Erro ao ordenar por 'ordem'. Tentando fallback...", error);
+                    // Fallback: Carrega sem ordem se a coluna não existir ainda
+                    const { data: fallbackData } = await supabase
+                        .from('notas')
+                        .select('*')
+                        .order('created_at', {ascending: false});
+                    if(fallbackData) { nfs = fallbackData; renderTable(); }
+                } else if(nData) { 
+                    nfs = nData; 
+                    renderTable(); 
+                }
+
+                // Carrega Checklist Inicial
+                const { data: sData } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+                if(sData) servicesData = sData;
+                
+                const { data: cData } = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
+                if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
+
+            } catch (err) {
+                console.error("Erro fatal no loadData:", err);
+                alert("Erro ao carregar dados. Verifique a conexão.");
+            }
         }
 
         function setupRealtime() {
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
-                // RECARREGA DADOS SE O MODAL ESTIVER ABERTO
-                const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if(data) servicesData = data;
+                await loadData();
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -365,25 +384,42 @@
         }
         setupRealtime();
 
-        // --- CORREÇÃO: FORÇA O CARREGAMENTO AO ABRIR O MODAL ---
+        // --- FUNÇÕES DE MODAL CORRIGIDAS ---
+        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
+        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
+        
         async function openServicesModal() { 
-            // 1. Mostra o modal primeiro
+            // 1. Mostra o modal primeiro (Isso corrige o erro do gráfico)
             document.getElementById('servicesModal').classList.add('active'); 
             
-            // 2. Busca os dados atualizados do banco (Garante que apareçam)
+            // 2. Busca dados atualizados para garantir
             const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-            if(data) {
-                servicesData = data;
-                // 3. Renderiza a tabela e o gráfico
-                renderServicesTable(); 
-                updateChecklistDashboard();
-            } else {
-                console.error("Falha ao carregar checklist.");
-            }
+            if(data) servicesData = data;
+
+            // 3. Renderiza com o modal já visível
+            renderServicesTable(); 
+            updateChecklistDashboard(); 
         }
         function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
+        
+        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
+        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
+        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+        
+        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
+        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
+        
+        function openDeleteModal(index, svc) { if(svc) { itemToDeleteId = servicesData[index].id; isDeletingService = true; } else { itemToDeleteId = nfs[index].id; isDeletingService = false; } document.getElementById('deleteModal').classList.add('active'); }
+        
+        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
+        async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
 
         function updateChecklistDashboard() {
+            const ctx = document.getElementById('checkChart').getContext('2d');
+            // Garante que o canvas tem tamanho antes de desenhar
+            if(checklistChartInstance) checklistChartInstance.destroy();
+            
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const total = servicesData.length;
             const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
@@ -395,8 +431,6 @@
             document.getElementById('chkPen').innerText = pending;
             document.getElementById('chkNop').innerText = notDone;
 
-            const ctx = document.getElementById('checkChart').getContext('2d');
-            if (checklistChartInstance) checklistChartInstance.destroy();
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
@@ -408,8 +442,6 @@
             doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
-            
-            // Pega dados visíveis (respeitando filtros)
             const trs = document.querySelectorAll('#svcTableBody tr');
             trs.forEach(tr => {
                 if (tr.style.display !== 'none') {
@@ -424,7 +456,6 @@
                     }
                 }
             });
-
             doc.autoTable({
                 head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
                 styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
@@ -480,8 +511,13 @@
                         const item = nfs.splice(evt.oldIndex, 1)[0];
                         nfs.splice(evt.newIndex, 0, item);
                         const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
-                        const { error } = await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                        if(error) console.error('Erro ao salvar ordem:', error);
+                        try {
+                            const { error } = await supabase.from('notas').upsert(updates, { onConflict: 'id' });
+                            if(error) throw error;
+                        } catch (e) {
+                            console.error('Erro ao salvar ordem:', e);
+                            alert("Erro ao salvar ordem. Verifique se a coluna 'ordem' existe.");
+                        }
                     }
                 });
             }
@@ -492,48 +528,9 @@
         async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
         async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
         
-        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
-        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
-        
-        function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
-        function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
-        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
-        function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
-        
-        function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
-        function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
-        
-        function openDeleteModal(index, svc) { if(svc) { itemToDeleteId = servicesData[index].id; isDeletingService = true; } else { itemToDeleteId = nfs[index].id; isDeletingService = false; } document.getElementById('deleteModal').classList.add('active'); }
-        
-        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
-        async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
-
-        function renderServicesTable() {
-            const tbody = document.getElementById('svcTableBody');
-            tbody.innerHTML = '';
-            servicesData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
-                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => {
-                    let cssClass = 'svc-select ' + getStatusClass(val);
-                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
-                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
-                };
-                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
-                tbody.appendChild(tr);
-            });
-
-            // Re-apply filters automatically
-            const filters = document.querySelectorAll('.filter-input');
-            filters.forEach(input => {
-                if(input.value) {
-                    const th = input.parentElement;
-                    const colIndex = Array.prototype.indexOf.call(th.parentNode.children, th);
-                    filterServices(colIndex, input.value);
-                }
-            });
-        }
+        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
+        function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
+        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
 
         function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
@@ -562,9 +559,6 @@
         async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
-        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
-        function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
-        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
 
         loadData();
     </script>
