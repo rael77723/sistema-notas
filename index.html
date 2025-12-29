@@ -324,35 +324,33 @@
     </div>
 
     <script>
-        // --- GESTÃO DE ERROS GLOBAL ---
-        window.onerror = function(msg, url, line) {
-            alert("Erro no Sistema:\n" + msg + "\n\nVerifique se a coluna 'ordem' foi criada corretamente no Supabase.");
-            return false;
-        };
-
+        // --- SUPABASE KEYS ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
+        // SISTEMA DE ALERTA DE ERROS
+        window.onerror = function(msg, url, line) {
+            console.error("Erro Detectado:", msg);
+            // alert("Erro no sistema: " + msg);
+            return false;
+        };
+
         async function loadData() {
             try {
-                // Tenta carregar com ORDENAÇÃO
+                // Tenta carregar com ordem
                 const { data: nData, error } = await supabase
                     .from('notas')
                     .select('*')
                     .order('ordem', {ascending: true, nullsFirst: false})
                     .order('created_at', {ascending: false});
                 
-                if(error) {
-                    console.warn("Erro ao ordenar por 'ordem'. Tentando fallback...", error);
-                    // Fallback: Carrega sem ordem se a coluna não existir ainda
-                    const { data: fallbackData } = await supabase
-                        .from('notas')
-                        .select('*')
-                        .order('created_at', {ascending: false});
-                    if(fallbackData) { nfs = fallbackData; renderTable(); }
+                if (error) {
+                    console.warn("Erro ao carregar com ordem. Tentando sem ordem...", error);
+                    const { data: fallback } = await supabase.from('notas').select('*').order('created_at', {ascending:false});
+                    if(fallback) { nfs = fallback; renderTable(); }
                 } else if(nData) { 
                     nfs = nData; 
                     renderTable(); 
@@ -366,8 +364,8 @@
                 if(cData) document.getElementById('checklistDate').value = cData.titulo_data;
 
             } catch (err) {
-                console.error("Erro fatal no loadData:", err);
-                alert("Erro ao carregar dados. Verifique a conexão.");
+                console.error("Erro fatal:", err);
+                alert("Erro ao conectar com o banco de dados. Verifique sua conexão.");
             }
         }
 
@@ -375,7 +373,8 @@
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
-                await loadData();
+                const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+                if(data) servicesData = data;
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -384,19 +383,14 @@
         }
         setupRealtime();
 
-        // --- FUNÇÕES DE MODAL CORRIGIDAS ---
+        // --- FUNÇÕES DE MODAL ---
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         
         async function openServicesModal() { 
-            // 1. Mostra o modal primeiro (Isso corrige o erro do gráfico)
             document.getElementById('servicesModal').classList.add('active'); 
-            
-            // 2. Busca dados atualizados para garantir
             const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(data) servicesData = data;
-
-            // 3. Renderiza com o modal já visível
             renderServicesTable(); 
             updateChecklistDashboard(); 
         }
@@ -417,7 +411,6 @@
 
         function updateChecklistDashboard() {
             const ctx = document.getElementById('checkChart').getContext('2d');
-            // Garante que o canvas tem tamanho antes de desenhar
             if(checklistChartInstance) checklistChartInstance.destroy();
             
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
@@ -508,16 +501,12 @@
                     animation: 150,
                     ghostClass: 'sortable-ghost',
                     onEnd: async function (evt) {
-                        const item = nfs.splice(evt.oldIndex, 1)[0];
-                        nfs.splice(evt.newIndex, 0, item);
-                        const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
                         try {
-                            const { error } = await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                            if(error) throw error;
-                        } catch (e) {
-                            console.error('Erro ao salvar ordem:', e);
-                            alert("Erro ao salvar ordem. Verifique se a coluna 'ordem' existe.");
-                        }
+                            const item = nfs.splice(evt.oldIndex, 1)[0];
+                            nfs.splice(evt.newIndex, 0, item);
+                            const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
+                            await supabase.from('notas').upsert(updates, { onConflict: 'id' });
+                        } catch(e) { console.error("Erro ao ordenar:", e); }
                     }
                 });
             }
