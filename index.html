@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notas Fiscais (Modo Debug)</title>
+    <title>Notas Fiscais e Checklist</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.3/dist/umd/supabase.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -16,13 +16,24 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* ESTILOS ORIGINAIS MANTIDOS */
-        :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --fiscal-color: #b45309; --fiscal-bg: #fffbeb; --compras-color: #b91c1c; --compras-bg: #fef2f2; --almox-color: #1d4ed8; --almox-bg: #eff6ff; --aprov-color: #047857; --aprov-bg: #ecfdf5; --kpi-header-bg: #b91c1c; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        :root {
+            --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0;
+            --fiscal-color: #b45309; --fiscal-bg: #fffbeb; 
+            --compras-color: #b91c1c; --compras-bg: #fef2f2; 
+            --almox-color: #1d4ed8; --almox-bg: #eff6ff;      
+            --aprov-color: #047857; --aprov-bg: #ecfdf5;      
+            --kpi-header-bg: #b91c1c;
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
         header { background: linear-gradient(to right, #ffffff, #f1f5f9); padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); z-index: 10; flex-shrink: 0; }
         .header-left h1 { font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
         .header-actions { display: flex; gap: 1rem; align-items: center; }
+
         .add-btn, .nav-btn, .excel-btn, .pdf-btn, .reset-btn, .btn-xml { border: none; height: 40px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px; font-size: 0.8rem; }
         .add-btn { background-color: var(--primary); color: white; width: 40px; padding: 0; }
         .nav-btn { background-color: #1e293b; color: white; }
@@ -30,17 +41,23 @@
         .btn-xml { background-color: #f59e0b; color: white; width: 40px; padding: 0; }
         .pdf-btn { background-color: white; border: 1px solid var(--border); color: var(--text-main); gap: 6px; box-shadow: none; }
         .reset-btn { background-color: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; gap: 6px; box-shadow: none; }
+
         .main-content { flex: 1; padding: 1.5rem; overflow-y: hidden; display: flex; flex-direction: column; gap: 1.5rem; }
         .card-bubble { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; }
+        
         .table-wrapper { flex: 1; min-height: 0; }
         .table-scroll { overflow: auto; width: 100%; height: 100%; }
+        
         table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; }
         thead { background-color: #f8fafc; position: sticky; top: 0; z-index: 5; }
         th { text-align: left; padding: 12px 16px; font-weight: 800; color: var(--text-main); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.05em; white-space: nowrap; border-bottom: 2px solid var(--border); vertical-align: bottom; }
         td { padding: 12px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text-main); white-space: nowrap; }
         td.text-long-col { white-space: nowrap; max-width: none; }
         tbody tr:hover { background-color: #f1f5f9; }
-        th:nth-child(1) { width: 90px; text-align: center; } td:nth-child(1) { text-align: center; }
+        th:nth-child(1) { width: 90px; text-align: center; } 
+        td:nth-child(1) { text-align: center; }
+
+        /* DASHBOARD LAYOUT */
         .dashboard-container { height: 220px; min-height: 220px; padding: 1.5rem 3rem; display: flex; flex-direction: row; align-items: center; justify-content: flex-start; gap: 4rem; flex-shrink: 0; }
         .chart-box { position: relative; height: 170px; width: 170px; flex-shrink: 0; }
         .stats-box { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; align-content: center; height: 100%; }
@@ -52,6 +69,7 @@
         .stat-compras { border-left: 5px solid var(--compras-color); background: var(--compras-bg); } .stat-compras .stat-count { color: var(--compras-color); }
         .stat-almoxarifado { border-left: 5px solid var(--almox-color); background: var(--almox-bg); } .stat-almoxarifado .stat-count { color: var(--almox-color); }
         .stat-aprovacao { border-left: 5px solid var(--aprov-color); background: var(--aprov-bg); } .stat-aprovacao .stat-count { color: var(--aprov-color); }
+
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
         .bg-fiscal { background: var(--fiscal-bg); color: var(--fiscal-color); border: 1px solid #fcd34d; }
         .bg-compras { background: var(--compras-bg); color: var(--compras-color); border: 1px solid #fecaca; }
@@ -66,6 +84,7 @@
         .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
         .drag-handle:active { cursor: grabbing; color: var(--primary); }
         .sortable-ghost { opacity: 0.4; background-color: #f1f5f9; }
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -73,6 +92,7 @@
         .close-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s; }
         .close-btn:hover { background-color: #f1f5f9; color: var(--text-main); }
         .close-btn span { font-size: 24px; }
+
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
@@ -80,6 +100,7 @@
         .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
@@ -94,6 +115,7 @@
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; height: 100%; box-sizing: border-box; padding: 5px 0; display: block; }
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
+
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
         .services-table-wrapper { overflow: auto; border: 2px solid #b91c1c; max-height: 55vh; border-radius: 8px 8px 0 0; }
         .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; }
@@ -104,6 +126,7 @@
         .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
         .st-red { background: #fee2e2; color: #b91c1c; } .st-green { background: #dcfce7; color: #166534; } .st-blue { background: #eff6ff; color: #1d4ed8; } .st-yellow { background: #fffbeb; color: #b45309; }
+
         .dash-checklist-container { display: flex; gap: 2rem; align-items: center; margin-top: 10px; background: #fff; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); }
         .checklist-stats-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
         .dash-card-check { height: 80px; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; }
@@ -113,6 +136,7 @@
         .dash-check-nop { border-left: 5px solid #1d4ed8; background: #eff6ff; } .dash-check-nop .cnt { color: #1d4ed8; }
         .cnt { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
         .lbl { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+
         .add-row-btn-container { display: flex; justify-content: center; padding: 10px; }
         .btn-plus-row { background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-md); }
         .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
@@ -125,39 +149,14 @@
         .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
 
-        /* DEBUG CONSOLE */
-        #debug-console {
-            position: fixed;
-            top: 0; left: 0; width: 100%;
-            background: #000; color: #0f0;
-            font-family: monospace;
-            padding: 10px;
-            font-size: 12px;
-            z-index: 10000;
-            max-height: 150px;
-            overflow-y: auto;
-            border-bottom: 2px solid #0f0;
-        }
-        #loading-screen {
-            position: fixed;
-            inset: 0;
-            background: white;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
+        #loading-screen { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.5s; }
+        #error-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fee2e2; color: #b91c1c; padding: 15px; text-align: center; font-weight: bold; z-index: 10000; border-bottom: 2px solid #b91c1c; }
     </style>
 </head>
 <body>
 
-    <div id="debug-console">Iniciando sistema...<br></div>
-    
-    <div id="loading-screen">
-        <h2>Carregando sistema...</h2>
-        <p>Aguarde, conectando ao banco de dados.</p>
-    </div>
+    <div id="error-banner"></div>
+    <div id="loading-screen"><h2>Carregando sistema...</h2><p id="loading-text">Conectando ao banco de dados...</p></div>
 
     <header>
         <div class="header-left">
@@ -331,48 +330,50 @@
     </div>
 
     <script>
-        // --- FUNÇÃO DE LOG NA TELA (DEBUG) ---
-        function log(msg, type='info') {
-            const el = document.getElementById('debug-console');
-            const color = type === 'error' ? 'red' : '#0f0';
-            el.innerHTML += `<div style="color:${color}; margin-bottom:2px;">> ${msg}</div>`;
-            el.scrollTop = el.scrollHeight;
-            if(type === 'error') console.error(msg); else console.log(msg);
-        }
-
-        window.onerror = function(msg, url, line) {
-            log(`ERRO CRÍTICO: ${msg} (Linha ${line})`, 'error');
-            alert(`ERRO CRÍTICO:\n${msg}\n\nVerifique o console preto no topo.`);
-            return false;
-        };
-
+        // --- 1. SETUP INICIAL SEGURO ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
         let supabase;
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
-        document.addEventListener("DOMContentLoaded", async () => {
-            log("DOM Carregado.");
+        // Função para mostrar erros na tela
+        function showError(msg) {
+            const banner = document.getElementById('error-banner');
+            banner.style.display = 'block';
+            banner.innerText = "ERRO: " + msg;
+            console.error(msg);
+            document.getElementById('loading-screen').style.display = 'none';
+        }
+
+        // --- 2. INICIALIZAÇÃO BLINDADA ---
+        window.onload = async function() {
             try {
-                if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregou!");
+                if (typeof window.supabase === 'undefined') throw new Error("Supabase não carregou (Erro de Rede).");
+                
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                log("Cliente Supabase criado.");
-                await loadData();
-            } catch (e) {
-                log(e.message, 'error');
+                
+                // Timeout de segurança: Se o banco não responder em 5s, avisa erro
+                const timeoutPromise = new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error("Tempo limite excedido. Verifique sua internet.")), 8000)
+                );
+
+                await Promise.race([loadData(), timeoutPromise]);
+
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => document.getElementById('loading-screen').style.display = 'none', 500);
+
+            } catch (err) {
+                showError(err.message);
             }
-        });
+        };
 
         async function loadData() {
-            log("Iniciando loadData...");
             try {
-                // TENTA BUSCAR NOTAS COM ORDENAÇÃO
-                log("Buscando notas...");
+                // Tenta carregar notas (Primeiro com ordem, se falhar, sem ordem)
                 let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
                 
                 if (error) {
-                    log("Erro ao buscar notas com ordem: " + error.message, 'error');
-                    log("Tentando fallback (sem ordem)...");
+                    console.warn("Erro de ordenação, tentando fallback...");
                     const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
                     if (fallback.error) throw fallback.error;
                     nData = fallback.data;
@@ -381,27 +382,18 @@
                 if (nData) {
                     nfs = nData;
                     renderTable();
-                    log(`Notas carregadas: ${nfs.length}`);
                 }
 
-                // TENTA BUSCAR CHECKLIST
-                log("Buscando checklist...");
+                // Tenta carregar Checklist (independente das notas)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if(sData.data) {
-                    servicesData = sData.data;
-                    log(`Serviços carregados: ${servicesData.length}`);
-                }
+                if(sData.data) servicesData = sData.data;
 
-                // TENTA BUSCAR CONFIG
+                // Tenta carregar Config
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
 
-                // SE CHEGOU AQUI, SUCESSO
-                document.getElementById('loading-screen').style.display = 'none';
-                log("Sistema carregado com sucesso!");
-
             } catch (err) {
-                log("ERRO FATAL NO LOADDATA: " + err.message, 'error');
+                throw new Error("Falha no Banco de Dados: " + err.message);
             }
         }
 
@@ -426,6 +418,7 @@
         
         async function openServicesModal() { 
             document.getElementById('servicesModal').classList.add('active'); 
+            // Recarrega dados para garantir
             const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(data) servicesData = data;
             renderServicesTable(); 
@@ -533,18 +526,19 @@
             const el = document.getElementById('tableBody');
             if(el) {
                 if(el._sortable) el._sortable.destroy();
-                el._sortable = Sortable.create(el, {
-                    handle: '.drag-handle',
-                    animation: 150,
-                    ghostClass: 'sortable-ghost',
-                    onEnd: async function (evt) {
-                        const item = nfs.splice(evt.oldIndex, 1)[0];
-                        nfs.splice(evt.newIndex, 0, item);
-                        const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
-                        const { error } = await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                        if(error) log('Erro ao salvar ordem: ' + error.message, 'error');
-                    }
-                });
+                if(typeof Sortable !== 'undefined') {
+                    el._sortable = Sortable.create(el, {
+                        handle: '.drag-handle',
+                        animation: 150,
+                        ghostClass: 'sortable-ghost',
+                        onEnd: async function (evt) {
+                            const item = nfs.splice(evt.oldIndex, 1)[0];
+                            nfs.splice(evt.newIndex, 0, item);
+                            const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
+                            await supabase.from('notas').upsert(updates, { onConflict: 'id' });
+                        }
+                    });
+                }
             }
         }
 
@@ -552,6 +546,7 @@
         async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
         async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
         async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
+        
         async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
         function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
         async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
@@ -580,7 +575,20 @@
 
         function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
+        async function exportKPIPDF() { 
+            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
+            const element = document.getElementById('kpiContent');
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
+            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
+            const { jsPDF } = window.jspdf; 
+            const pdf = new jsPDF('l', 'mm', 'a4'); 
+            const imgProps = pdf.getImageProperties(imgData); 
+            const pdfWidth = pdf.internal.pageSize.getWidth(); 
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
+            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
+            pdf.save('KPI_Dashboard.pdf'); 
+        }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
     </script>
