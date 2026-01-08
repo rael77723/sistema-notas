@@ -16,7 +16,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
-        /* (Estilos mantidos idênticos para preservar seu layout) */
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --fiscal-color: #b45309; --fiscal-bg: #fffbeb; --compras-color: #b91c1c; --compras-bg: #fef2f2; --almox-color: #1d4ed8; --almox-bg: #eff6ff; --aprov-color: #047857; --aprov-bg: #ecfdf5; --kpi-header-bg: #b91c1c; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { background-color: var(--bg-body); color: var(--text-main); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
@@ -53,7 +52,7 @@
         .stat-compras { border-left: 5px solid var(--compras-color); background: var(--compras-bg); } .stat-compras .stat-count { color: var(--compras-color); }
         .stat-almoxarifado { border-left: 5px solid var(--almox-color); background: var(--almox-bg); } .stat-almoxarifado .stat-count { color: var(--almox-color); }
         .stat-aprovacao { border-left: 5px solid var(--aprov-color); background: var(--aprov-bg); } .stat-aprovacao .stat-count { color: var(--aprov-color); }
-        
+
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
         .bg-fiscal { background: var(--fiscal-bg); color: var(--fiscal-color); border: 1px solid #fcd34d; }
         .bg-compras { background: var(--compras-bg); color: var(--compras-color); border: 1px solid #fecaca; }
@@ -68,7 +67,7 @@
         .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
         .drag-handle:active { cursor: grabbing; color: var(--primary); }
         .sortable-ghost { opacity: 0.4; background-color: #f1f5f9; }
-        
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -76,6 +75,7 @@
         .close-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s; }
         .close-btn:hover { background-color: #f1f5f9; color: var(--text-main); }
         .close-btn span { font-size: 24px; }
+
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
@@ -83,7 +83,7 @@
         .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-        
+
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
@@ -98,7 +98,7 @@
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; height: 100%; box-sizing: border-box; padding: 5px 0; display: block; }
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
-        
+
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
         .services-table-wrapper { overflow: auto; border: 2px solid #b91c1c; max-height: 55vh; border-radius: 8px 8px 0 0; }
         .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; }
@@ -109,7 +109,7 @@
         .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
         .st-red { background: #fee2e2; color: #b91c1c; } .st-green { background: #dcfce7; color: #166534; } .st-blue { background: #eff6ff; color: #1d4ed8; } .st-yellow { background: #fffbeb; color: #b45309; }
-        
+
         .dash-checklist-container { display: flex; gap: 2rem; align-items: center; margin-top: 10px; background: #fff; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); }
         .checklist-stats-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
         .dash-card-check { height: 80px; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; }
@@ -119,6 +119,7 @@
         .dash-check-nop { border-left: 5px solid #1d4ed8; background: #eff6ff; } .dash-check-nop .cnt { color: #1d4ed8; }
         .cnt { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
         .lbl { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
+
         .add-row-btn-container { display: flex; justify-content: center; padding: 10px; }
         .btn-plus-row { background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-md); }
         .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
@@ -130,13 +131,9 @@
         .confirm-modal h3 { margin-top: 1rem; color: #1e293b; }
         .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
-
-        #error-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fee2e2; color: #b91c1c; padding: 15px; text-align: center; font-weight: bold; z-index: 10000; border-bottom: 2px solid #b91c1c; }
     </style>
 </head>
 <body>
-
-    <div id="error-banner"></div>
 
     <header>
         <div class="header-left">
@@ -310,78 +307,45 @@
     </div>
 
     <script>
-        // --- 1. SETUP DE ERROS ---
-        function showError(msg) {
-            const banner = document.getElementById('error-banner');
-            banner.style.display = 'block';
-            banner.innerText = "ALERTA: " + msg;
-            console.error(msg);
-        }
-
-        window.onerror = function(msg, url, line) {
-            showError(`Erro Interno JS: ${msg}`);
-            return false;
-        };
-
-        // --- 2. SUPABASE CONFIG ---
+        // --- SUPABASE KEYS ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        
-        let supabase;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
 
-        // --- 3. INICIALIZAÇÃO SEGURA ---
         window.onload = async function() {
-            try {
-                if (typeof window.supabase === 'undefined') throw new Error("A biblioteca do Supabase não foi carregada pelo navegador.");
-                
-                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-                await loadData();
-
-            } catch (err) {
-                showError(err.message);
+            if (typeof window.supabase === 'undefined') {
+                alert("Erro de rede: Supabase não carregou.");
+                return;
             }
+            await loadData();
         };
 
         async function loadData() {
-            try {
-                // Tenta carregar Notas com ordem
-                let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
-                
-                // Se falhar a ordem (coluna inexistente), tenta sem
-                if (error) {
-                    console.warn("Erro ao ordenar por 'ordem', tentando padrão...", error);
-                    const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
-                    if (fallback.error) throw fallback.error;
-                    nData = fallback.data;
-                }
-
-                if (nData) {
-                    nfs = nData;
-                    renderTable();
-                }
-
-                // Tenta carregar Checklist (com diagnóstico específico)
-                const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                
-                if (sData.error) {
-                    console.error("Erro Checklist:", sData.error);
-                    showError("Erro ao carregar Checklist: " + sData.error.message + " (Verifique RLS no Supabase)");
-                } else {
-                    servicesData = sData.data || [];
-                }
-
-                // Config
-                const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
-                if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
-
-            } catch (err) {
-                showError("Falha geral ao conectar: " + err.message);
+            // Notas (Ordenadas)
+            let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
+            if (error) { // Fallback se 'ordem' não existir
+                 const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
+                 nData = fallback.data;
             }
+            if(nData) { nfs = nData; renderTable(); }
+
+            // Checklist (Com tratamento de erro)
+            const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+            if (sData.error) {
+                console.error("Erro Checklist:", sData.error);
+                // Não mostra alerta intrusivo, mas loga o erro
+            } else {
+                servicesData = sData.data || [];
+            }
+            
+            // Config
+            const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
+            if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
         }
 
         function setupRealtime() {
-            if(!supabase) return;
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
@@ -401,15 +365,10 @@
         
         async function openServicesModal() { 
             document.getElementById('servicesModal').classList.add('active'); 
-            // Força recarregamento ao abrir
-            const { data, error } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-            if (error) {
-                showError("Erro ao atualizar Checklist: " + error.message);
-            } else {
-                servicesData = data || [];
-                renderServicesTable(); 
-                updateChecklistDashboard(); 
-            }
+            const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+            if(data) servicesData = data;
+            renderServicesTable(); 
+            updateChecklistDashboard(); 
         }
         function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
         
@@ -444,9 +403,7 @@
             checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
         }
 
-        // --- Renderização Segura do PDF ---
         async function exportServicesPDF() {
-            if(!window.jspdf) { alert("Erro: Biblioteca PDF não carregada."); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const dateTitle = document.getElementById('checklistDate').value || 'Geral';
@@ -455,7 +412,6 @@
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
             
-            // Pega dados visíveis (respeitando filtros)
             const trs = document.querySelectorAll('#svcTableBody tr');
             trs.forEach(tr => {
                 if (tr.style.display !== 'none') {
@@ -529,7 +485,7 @@
                                 nfs.splice(evt.newIndex, 0, item);
                                 const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
                                 await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                            } catch(e) { showError("Erro ao salvar ordem: " + e.message); }
+                            } catch(e) { console.error("Erro ao salvar ordem: " + e.message); }
                         }
                     });
                 }
@@ -540,9 +496,8 @@
             const tbody = document.getElementById('svcTableBody');
             tbody.innerHTML = '';
             
-            // FEEDBACK VISUAL SE ESTIVER VAZIO
             if(servicesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Nenhum item no checklist ou erro de carregamento (Verifique RLS no Supabase).</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Lista vazia ou acesso bloqueado (Verifique RLS no Supabase).</td></tr>';
                 return;
             }
 
