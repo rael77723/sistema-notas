@@ -498,12 +498,10 @@
                 }
                 if (nData) { nfs = nData; renderTable(); }
 
+                // Carrega Checklist (Força criação do array vazio se erro para não travar)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if (sData.error) {
-                    console.error("Checklist Error:", sData.error);
-                } else {
-                    servicesData = sData.data || [];
-                }
+                if (sData.error) console.error("Checklist Error:", sData.error);
+                servicesData = sData.data || [];
 
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
