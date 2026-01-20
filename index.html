@@ -52,7 +52,7 @@
         .stat-compras { border-left: 5px solid var(--compras-color); background: var(--compras-bg); } .stat-compras .stat-count { color: var(--compras-color); }
         .stat-almoxarifado { border-left: 5px solid var(--almox-color); background: var(--almox-bg); } .stat-almoxarifado .stat-count { color: var(--almox-color); }
         .stat-aprovacao { border-left: 5px solid var(--aprov-color); background: var(--aprov-bg); } .stat-aprovacao .stat-count { color: var(--aprov-color); }
-
+        
         .badge { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; display: inline-block; }
         .bg-fiscal { background: var(--fiscal-bg); color: var(--fiscal-color); border: 1px solid #fcd34d; }
         .bg-compras { background: var(--compras-bg); color: var(--compras-color); border: 1px solid #fecaca; }
@@ -67,7 +67,7 @@
         .drag-handle:hover { color: var(--text-main); background-color: #e2e8f0; border-radius: 6px; }
         .drag-handle:active { cursor: grabbing; color: var(--primary); }
         .sortable-ghost { opacity: 0.4; background-color: #f1f5f9; }
-
+        
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-overlay.active { display: flex; }
         .modal { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow-md); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; }
@@ -75,7 +75,6 @@
         .close-btn { background: transparent; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; transition: background 0.2s; }
         .close-btn:hover { background-color: #f1f5f9; color: var(--text-main); }
         .close-btn span { font-size: 24px; }
-
         #formModalBody { max-width: 900px; margin: 0 auto; }
         .modal-body { padding: 2rem; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
@@ -83,7 +82,7 @@
         .form-footer { margin-top: 2rem; display: flex; justify-content: flex-end; gap: 1rem; }
         .btn-primary { background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .btn-ghost { background: transparent; color: var(--text-muted); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px; cursor: pointer; }
-
+        
         .kpi-modal-container { width: 98%; max-width: none; margin: 1rem; }
         .kpi-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.5rem; padding: 1.5rem; background: #f1f5f9; }
         .kpi-column { display: flex; flex-direction: column; gap: 1rem; }
@@ -98,7 +97,7 @@
         .kpi-manual-input { width: 100%; border: none; background: transparent; text-align: center; font-weight: 600; outline: none; color: #b91c1c; height: 100%; box-sizing: border-box; padding: 5px 0; display: block; }
         .kpi-badge-input { background: white; color: var(--kpi-header-bg); border: none; border-radius: 4px; font-weight: 800; width: 40px; text-align: center; outline: none; font-size: 0.9rem; padding: 2px; }
         .red-text { color: #b91c1c; font-weight: 800; }
-
+        
         .services-modal-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
         .services-table-wrapper { overflow: auto; border: 2px solid #b91c1c; max-height: 55vh; border-radius: 8px 8px 0 0; }
         .services-table { width: 100%; border-collapse: separate; border-spacing: 0; min-width: 1600px; }
@@ -109,7 +108,7 @@
         .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 800; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
         .st-red { background: #fee2e2; color: #b91c1c; } .st-green { background: #dcfce7; color: #166534; } .st-blue { background: #eff6ff; color: #1d4ed8; } .st-yellow { background: #fffbeb; color: #b45309; }
-
+        
         .dash-checklist-container { display: flex; gap: 2rem; align-items: center; margin-top: 10px; background: #fff; padding: 1rem; border-radius: 12px; border: 1px solid var(--border); }
         .checklist-stats-grid { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
         .dash-card-check { height: 80px; padding: 0.8rem; border-radius: 8px; border: 1px solid #e2e8f0; display: flex; flex-direction: column; justify-content: center; }
@@ -119,7 +118,6 @@
         .dash-check-nop { border-left: 5px solid #1d4ed8; background: #eff6ff; } .dash-check-nop .cnt { color: #1d4ed8; }
         .cnt { font-size: 1.4rem; font-weight: 800; margin-top: 4px; }
         .lbl { font-size: 0.65rem; font-weight: 700; color: #64748b; text-transform: uppercase; }
-
         .add-row-btn-container { display: flex; justify-content: center; padding: 10px; }
         .btn-plus-row { background: var(--primary); color: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; box-shadow: var(--shadow-md); }
         .xml-textarea { width: 100%; height: 200px; padding: 1rem; border: 1px solid var(--border); border-radius: 8px; font-family: monospace; font-size: 0.85rem; resize: vertical; }
@@ -131,15 +129,64 @@
         .confirm-modal h3 { margin-top: 1rem; color: #1e293b; }
         .confirm-modal p { color: #64748b; margin-bottom: 2rem; }
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+        #error-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fee2e2; color: #b91c1c; padding: 15px; text-align: center; font-weight: bold; z-index: 10000; border-bottom: 2px solid #b91c1c; }
+
+        /* ESTILOS ESPECÍFICOS PARA O SAP HELPER */
+        .sap-header-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .sap-header-item {
+            background: #f1f5f9;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .sap-header-item:hover { border-color: var(--primary); background: #e0e7ff; }
+        .sap-header-item:active { background: #cbd5e1; }
+        .sap-label { font-size: 0.7rem; font-weight: 800; color: #64748b; display: block; margin-bottom: 4px; }
+        .sap-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; display: block; word-break: break-all; }
+        
+        .sap-item-row { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: white; }
+        .sap-item-header { background: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+        .sap-item-title { font-weight: 700; font-size: 0.85rem; color: #334155; }
+        .sap-item-body { display: none; padding: 15px; }
+        .sap-item-body.active { display: block; }
+        
+        .sap-tax-grid { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid #000; }
+        .sap-tax-col { display: flex; flex-direction: column; }
+        .sap-tax-header { background: #e2e8f0; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 6px; font-size: 0.7rem; font-weight: 800; text-align: center; }
+        .sap-tax-cell { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: center; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
+        .sap-tax-cell:hover { background: #e0e7ff; color: var(--primary); font-weight: 700; }
+        .sap-tax-cell:last-child { border-bottom: none; }
+        .sap-tax-col:last-child .sap-tax-header, .sap-tax-col:last-child .sap-tax-cell { border-right: none; }
+
+        .toggle-container { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; background: #fff7ed; padding: 10px; border-radius: 8px; border: 1px solid #ffedd5; }
+        .toggle-switch { position: relative; display: inline-block; width: 40px; height: 20px; }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #f97316; }
+        input:checked + .slider:before { transform: translateX(20px); }
     </style>
 </head>
 <body>
+
+    <div id="error-banner"></div>
 
     <header>
         <div class="header-left">
             <h1>Notas Fiscais para Correção</h1>
         </div>
         <div class="header-actions">
+            <button class="nav-btn" style="background-color: #2563eb; color: white;" onclick="openSapModal()">
+                <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> SAP XML
+            </button>
             <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
                 <span class="material-icons-round">description</span>
             </button>
@@ -189,6 +236,44 @@
             <div class="modal-header"><h2>Considerações Gerais</h2><button class="close-btn" onclick="closeNotesModal()"><span>&times;</span></button></div>
             <textarea id="notesArea" class="notes-textarea"></textarea>
             <div class="form-footer"><span id="notesStatus" style="color:green;margin-right:auto;"></span><button class="btn-primary" onclick="saveNotes()">Salvar</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="sapModal">
+        <div class="modal" style="width: 95%; max-width: 1200px; height: 90vh;">
+            <div class="modal-header">
+                <h2>SAP XML Helper</h2>
+                <button class="close-btn" onclick="closeSapModal()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; height: 100%;">
+                
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <textarea id="sapXmlInput" class="xml-textarea" style="height: 80px; flex: 1;" placeholder="Cole o XML da nota aqui..."></textarea>
+                    <button class="btn-primary" style="height: 80px;" onclick="processSapXml()">PROCESSAR XML</button>
+                </div>
+
+                <div id="sapResults" style="display: none; flex: 1; overflow-y: auto;">
+                    
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
+                    <div class="sap-header-grid" id="sapHeaderGrid"></div>
+
+                    <div class="toggle-container">
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="sapBaseToggle" onchange="recalcSapItems()">
+                            <span class="slider"></span>
+                        </label>
+                        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">
+                            Usar Valor Total do Item (vProd) como Base de Cálculo
+                        </span>
+                        <div style="flex:1;"></div>
+                        <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
+                    </div>
+
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos</h3>
+                    <div id="sapItemsContainer"></div>
+
+                </div>
+            </div>
         </div>
     </div>
 
@@ -307,45 +392,68 @@
     </div>
 
     <script>
-        // --- SUPABASE KEYS ---
+        // --- 1. SETUP DE ERROS ---
+        function showError(msg) {
+            const banner = document.getElementById('error-banner');
+            banner.style.display = 'block';
+            banner.innerText = "ALERTA: " + msg;
+            console.error(msg);
+        }
+
+        window.onerror = function(msg, url, line) {
+            // Ignora erro resize observer comum em algumas libs
+            if(msg.includes('ResizeObserver')) return false;
+            showError(`Erro Interno JS: ${msg}`);
+            return false;
+        };
+
+        // --- 2. SUPABASE CONFIG ---
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
+        
+        let supabase;
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
+        
+        // Variável global para armazenar dados brutos do XML
+        let rawSapItems = [];
 
+        // --- 3. INICIALIZAÇÃO ---
         window.onload = async function() {
-            if (typeof window.supabase === 'undefined') {
-                alert("Erro de rede: Supabase não carregou.");
-                return;
+            try {
+                if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+                await loadData();
+            } catch (err) {
+                showError(err.message);
             }
-            await loadData();
         };
 
         async function loadData() {
-            // Notas (Ordenadas)
-            let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
-            if (error) { // Fallback se 'ordem' não existir
-                 const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
-                 nData = fallback.data;
-            }
-            if(nData) { nfs = nData; renderTable(); }
+            try {
+                let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
+                if (error) {
+                    const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
+                    nData = fallback.data;
+                }
+                if (nData) { nfs = nData; renderTable(); }
 
-            // Checklist (Com tratamento de erro)
-            const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-            if (sData.error) {
-                console.error("Erro Checklist:", sData.error);
-                // Não mostra alerta intrusivo, mas loga o erro
-            } else {
-                servicesData = sData.data || [];
+                const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+                if (sData.error) {
+                    console.error("Checklist Error:", sData.error);
+                } else {
+                    servicesData = sData.data || [];
+                }
+
+                const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
+                if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
+
+            } catch (err) {
+                showError("Falha ao conectar: " + err.message);
             }
-            
-            // Config
-            const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
-            if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
         }
 
         function setupRealtime() {
+            if(!supabase) return;
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
@@ -359,7 +467,214 @@
         }
         setupRealtime();
 
-        // --- FUNÇÕES DE MODAL ---
+        // --- NOVO CÓDIGO SAP HELPER ---
+        function openSapModal() {
+            document.getElementById('sapModal').classList.add('active');
+            document.getElementById('sapXmlInput').value = '';
+            document.getElementById('sapResults').style.display = 'none';
+        }
+        
+        function closeSapModal() {
+            document.getElementById('sapModal').classList.remove('active');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                // Feedback visual sutil (piscar cor da borda do modal ou similar seria ideal, mas alerta simples resolve rápido)
+                // Vamos usar um feedback visual na caixa clicada se possível, mas como é genérico:
+                const el = document.activeElement;
+                if(el && el.classList.contains('sap-header-item') || el.classList.contains('sap-tax-cell')) {
+                    const originalBg = el.style.backgroundColor;
+                    el.style.backgroundColor = '#bbf7d0';
+                    setTimeout(() => el.style.backgroundColor = originalBg, 200);
+                }
+            });
+        }
+
+        function processSapXml() {
+            const xmlText = document.getElementById('sapXmlInput').value;
+            if (!xmlText) { alert("Cole o XML primeiro."); return; }
+
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            // --- 1. Header Info Extraction ---
+            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const shortName = emitNome.split(' ').slice(0, 2).join(' '); // 2 primeiras palavras
+            
+            const ide = xmlDoc.getElementsByTagName("ide")[0];
+            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
+            const nNF = ide.getElementsByTagName("nNF")[0]?.textContent || "";
+            const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
+            
+            const total = xmlDoc.getElementsByTagName("total")[0]?.getElementsByTagName("ICMSTot")[0];
+            const vNF = total?.getElementsByTagName("vNF")[0]?.textContent || "0.00";
+
+            const prot = xmlDoc.getElementsByTagName("infProt")[0];
+            const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
+            const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
+            
+            // Chave de Acesso
+            let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
+            // Penúltimos 8 dígitos: Pega do index 35 ao 43 (excluindo ultimo)
+            // Chave tem 44 chars. Indice 0 a 43. Ultimo é 43.
+            // Penultimos 8: indices 35 a 42 (8 caracteres antes do digito verificador)
+            // Exemplo: ...33664 1 01216756 8
+            // cNF é aleatório, mas geralmente é o que se usa.
+            // Se a lógica for "8 dígitos antes do DV": substring(35, 43)
+            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
+            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
+
+            // Parcelas
+            const dups = xmlDoc.getElementsByTagName("dup");
+            let parcelasText = "Sem parcelas";
+            if(dups.length > 0) {
+                let pList = [];
+                for(let i=0; i<dups.length; i++) {
+                    let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
+                    if(vDup) pList.push(formatCurrency(vDup));
+                }
+                parcelasText = "Parcelas: " + pList.join(" | ");
+            }
+
+            // Formatação
+            const fmtDate = (d) => d ? d.split('T')[0].split('-').reverse().join('/') : "";
+            const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            // Render Header Grid
+            const grid = document.getElementById('sapHeaderGrid');
+            grid.innerHTML = `
+                ${createSapBox("EMISSÃO", fmtDate(dhEmi))}
+                ${createSapBox("REF NF", nNF + "-" + serie)}
+                ${createSapBox("VALOR TOTAL", fmtMoney(vNF))}
+                ${createSapBox("FORNECEDOR", shortName)}
+                <div style="width:10px;"></div> ${createSapBox("PROTOCOLO", nProt)}
+                ${createSapBox("AUTORIZAÇÃO", fmtDate(dhRecbto))}
+                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
+                ${createSapBox("DÍGITO CHAVE", chaveDV, false)} `;
+            // Adiciona info de parcelas abaixo
+            grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #333;">${parcelasText}</div>`;
+
+            // --- 2. Items Extraction ---
+            rawSapItems = []; // Limpa cache
+            const dets = xmlDoc.getElementsByTagName("det");
+            
+            for(let i=0; i<dets.length; i++) {
+                const prod = dets[i].getElementsByTagName("prod")[0];
+                const imposto = dets[i].getElementsByTagName("imposto")[0];
+                
+                // Valores Brutos
+                const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
+                
+                // ICMS (Pode estar em ICMS00, ICMS10, etc. Vamos buscar genérico)
+                let vBC_ICMS = 0, vICMS = 0;
+                const icmsTag = imposto.getElementsByTagName("ICMS")[0];
+                if(icmsTag && icmsTag.children.length > 0) {
+                    const inner = icmsTag.children[0]; // Pega ICMS00, ICMS20, etc
+                    vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent || 0);
+                    vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
+                }
+
+                // IPI
+                let vIPI = 0;
+                const ipiTag = imposto.getElementsByTagName("IPI")[0];
+                if(ipiTag) {
+                    const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
+                    if(ipiTrib) vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
+                }
+
+                // PIS
+                let vPIS = 0;
+                const pisTag = imposto.getElementsByTagName("PIS")[0];
+                if(pisTag) {
+                    const pisAliq = pisTag.getElementsByTagName("PISAliq")[0] || pisTag.getElementsByTagName("PISOutr")[0];
+                    if(pisAliq) vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
+                }
+
+                // COFINS
+                let vCOFINS = 0;
+                const cofinsTag = imposto.getElementsByTagName("COFINS")[0];
+                if(cofinsTag) {
+                    const cofinsAliq = cofinsTag.getElementsByTagName("COFINSAliq")[0] || cofinsTag.getElementsByTagName("COFINSOutr")[0];
+                    if(cofinsAliq) vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
+                }
+
+                rawSapItems.push({
+                    name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
+                    index: i + 1,
+                    vProd: vProd,
+                    vBC_XML: vBC_ICMS, // Base Original do XML
+                    vICMS: vICMS,
+                    vIPI: vIPI,
+                    vPIS: vPIS,
+                    vCOFINS: vCOFINS
+                });
+            }
+
+            document.getElementById('sapResults').style.display = 'block';
+            recalcSapItems(); // Renderiza itens com base no toggle atual
+        }
+
+        function createSapBox(label, value, copy=true) {
+            const clickAttr = copy ? `onclick="copyText('${value}')"` : '';
+            return `<div class="sap-header-item" ${clickAttr}>
+                        <span class="sap-label">${label}</span>
+                        <span class="sap-value">${value}</span>
+                    </div>`;
+        }
+
+        function recalcSapItems() {
+            const useItemTotal = document.getElementById('sapBaseToggle').checked;
+            const container = document.getElementById('sapItemsContainer');
+            container.innerHTML = '';
+
+            rawSapItems.forEach(item => {
+                // Lógica de Base de Cálculo
+                const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
+
+                // Cálculos Solicitados
+                const baseICMS = baseInicial;
+                const baseIPI = baseInicial; // "O mesmo da base de cálculo do ICMS"
+                const basePisCofins = baseInicial - item.vICMS; // "Base ICMS reduzindo valor ICMS"
+                const baseCbsIbs = baseInicial - (item.vPIS + item.vCOFINS + item.vICMS); // "Base ICMS reduzindo PIS, COFINS e ICMS"
+
+                // Renderiza Linha do Item
+                const div = document.createElement('div');
+                div.className = 'sap-item-row';
+                div.innerHTML = `
+                    <div class="sap-item-header" onclick="this.nextElementSibling.classList.toggle('active')">
+                        <span class="sap-item-title">#${item.index} - ${item.name}</span>
+                        <span class="material-icons-round">expand_more</span>
+                    </div>
+                    <div class="sap-item-body active"> <div class="sap-tax-grid">
+                            ${createTaxCol("CBS", baseCbsIbs, 0)} ${createTaxCol("COFINS", basePisCofins, item.vCOFINS)}
+                            ${createTaxCol("IBSS", baseCbsIbs, 0)} ${createTaxCol("ICMS", baseICMS, item.vICMS)}
+                            ${createTaxCol("IPI", baseIPI, item.vIPI)}
+                            ${createTaxCol("PIS", basePisCofins, item.vPIS)}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function createTaxCol(name, base, valImposto) {
+            const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            // O usuario quer copiar as bases e mostrar o valor do imposto
+            return `
+                <div class="sap-tax-col">
+                    <div class="sap-tax-header">${name}</div>
+                    <div class="sap-tax-cell" title="Copiar Base" onclick="copyText('${fmt(base)}')">${fmt(base)}</div>
+                    <div class="sap-tax-cell" style="color:#64748b; font-size:0.75rem; cursor:default;" title="Valor Imposto (Apenas Visual)">${fmt(valImposto)}</div>
+                </div>
+            `;
+        }
+
+        function formatCurrency(val) {
+            return parseFloat(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        }
+
+        // --- FUNÇÕES DE MODAL PADRÃO ---
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         
@@ -404,6 +719,7 @@
         }
 
         async function exportServicesPDF() {
+            if(!window.jspdf) { alert("Biblioteca PDF não carregada."); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('l', 'mm', 'a4');
             const dateTitle = document.getElementById('checklistDate').value || 'Geral';
@@ -485,44 +801,11 @@
                                 nfs.splice(evt.newIndex, 0, item);
                                 const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
                                 await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                            } catch(e) { console.error("Erro ao salvar ordem: " + e.message); }
+                            } catch(e) { showError("Erro ao salvar ordem: " + e.message); }
                         }
                     });
                 }
             }
-        }
-
-        function renderServicesTable() {
-            const tbody = document.getElementById('svcTableBody');
-            tbody.innerHTML = '';
-            
-            if(servicesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Lista vazia ou acesso bloqueado (Verifique RLS no Supabase).</td></tr>';
-                return;
-            }
-
-            servicesData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
-                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => {
-                    let cssClass = 'svc-select ' + getStatusClass(val);
-                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
-                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
-                };
-                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
-                tbody.appendChild(tr);
-            });
-
-            // Re-apply filters automatically
-            const filters = document.querySelectorAll('.filter-input');
-            filters.forEach(input => {
-                if(input.value) {
-                    const th = input.parentElement;
-                    const colIndex = Array.prototype.indexOf.call(th.parentNode.children, th);
-                    filterServices(colIndex, input.value);
-                }
-            });
         }
 
         function filterServices(colIndex, val) { const table = document.getElementById("svcTable"); const tr = table.getElementsByTagName("tr"); const filter = val.toUpperCase(); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName("td")[colIndex]; if (td) { const input = td.querySelector('input, select'); const txtValue = input ? input.value : td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none"; } } }
@@ -558,20 +841,7 @@
 
         function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        async function exportKPIPDF() { 
-            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
-            const element = document.getElementById('kpiContent');
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
-            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
-            const { jsPDF } = window.jspdf; 
-            const pdf = new jsPDF('l', 'mm', 'a4'); 
-            const imgProps = pdf.getImageProperties(imgData); 
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
-            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
-            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
-            pdf.save('KPI_Dashboard.pdf'); 
-        }
+        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
     </script>
