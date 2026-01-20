@@ -175,6 +175,18 @@
         
         .parcela-btn { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 2px 6px; border-radius: 4px; cursor: pointer; margin-right: 5px; font-weight: 600; border: 1px solid transparent; }
         .parcela-btn:hover { border-color: var(--primary); }
+
+        .validator-box {
+            background: #8b5cf6; 
+            color: white; 
+            padding: 10px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            text-align: center; 
+            font-weight: 800; 
+            font-size: 1.1rem;
+            box-shadow: var(--shadow-md);
+        }
     </style>
 </head>
 <body>
@@ -190,7 +202,7 @@
                 <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> SAP XML
             </button>
             <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
-                <span class="material-icons-round">description</span>
+                <span class="material-icons-round" style="font-size:18px">description</span>
             </button>
             <button class="nav-btn excel-btn" onclick="exportMainExcel()">
                 <span class="material-icons-round" style="font-size: 18px;">table_view</span>
@@ -257,6 +269,10 @@
                 <div id="sapResults" style="display: none; flex: 1; overflow-y: auto;">
                     
                     <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+
+                    <div id="validationBox" class="validator-box">
+                        VALIDAR VALOR (Base IPI + IPI): R$ 0,00
+                    </div>
 
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                     <div class="sap-header-grid" id="sapHeaderGrid"></div>
@@ -499,7 +515,7 @@
 
             // --- 1. Header Info ---
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; // 2 palavras + MP
+            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
             
             const ide = xmlDoc.getElementsByTagName("ide")[0];
             const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
@@ -611,7 +627,7 @@
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
                     index: i + 1,
                     vProd: vProd,
-                    vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd, // Se nao tiver base ICMS, usa vProd
+                    vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
                     vICMS: vICMS, pICMS: pICMS,
                     vIPI: vIPI, pIPI: pIPI,
                     vPIS: vPIS, pPIS: pPIS,
@@ -635,28 +651,42 @@
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
             const container = document.getElementById('sapItemsContainer');
             container.innerHTML = '';
+            
+            let totalValidator = 0;
 
             rawSapItems.forEach(item => {
-                // Base Inicial (vBC ou vProd)
+                // Base Inicial
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
 
                 // Lógica de Cálculo Reversa Solicitada
                 const baseICMS = baseInicial;
                 const baseIPI = baseInicial; 
+                
+                // Validador: Base IPI + Valor IPI
+                totalValidator += (baseIPI + item.vIPI);
+
+                // Bases PIS/COFINS
                 const basePisCofins = baseInicial - item.vICMS; 
-                const baseCbsIbs = baseInicial - (item.vPIS + item.vCOFINS + item.vICMS); 
+                
+                // CÁLCULO FORÇADO DE PIS/COFINS PARA DEDUÇÃO DA BASE CBS
+                // A regra: Base CBS = Base PIS/COF - (PIS_calc + COFINS_calc)
+                // Usando as taxas fixas solicitadas: 1.65% e 7.60%
+                const valPisCalculado = basePisCofins * 0.0165;
+                const valCofinsCalculado = basePisCofins * 0.0760;
+                
+                const baseCbsIbs = basePisCofins - valPisCalculado - valCofinsCalculado;
 
                 // Prepara string de cópia (Tab separated)
                 // Ordem: CBS, COFINS, IBSS, ICMS, IPI, PIS
-                // Formato: Base \t Rate
+                // Taxas forçadas para PIS/COFINS na cópia: 1,65 e 7,60
                 const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 const copyString = 
                     `${fmtCopy(baseCbsIbs)}\t0,00\n` + 
-                    `${fmtCopy(basePisCofins)}\t${fmtCopy(item.pCOFINS)}\n` +
+                    `${fmtCopy(basePisCofins)}\t7,60\n` +  // Forçado 7,60
                     `${fmtCopy(baseCbsIbs)}\t0,00\n` +
                     `${fmtCopy(baseICMS)}\t${fmtCopy(item.pICMS)}\n` +
                     `${fmtCopy(baseIPI)}\t${fmtCopy(item.pIPI)}\n` +
-                    `${fmtCopy(basePisCofins)}\t${fmtCopy(item.pPIS)}`;
+                    `${fmtCopy(basePisCofins)}\t1,65`;     // Forçado 1,65
 
                 // Renderiza Linha do Item
                 const div = document.createElement('div');
@@ -682,6 +712,9 @@
                 `;
                 container.appendChild(div);
             });
+            
+            // Atualiza Validador
+            document.getElementById('validationBox').innerText = "VALIDAR VALOR (Base IPI + IPI): " + formatCurrency(totalValidator);
         }
 
         function createTaxCol(name, base, valImposto) {
