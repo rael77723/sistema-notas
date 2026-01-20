@@ -198,7 +198,7 @@
             margin-bottom: 15px; 
             text-align: center; 
             font-weight: 800; 
-            font-size: 1.1rem;
+            font-size: 1.1rem; 
             box-shadow: var(--shadow-md);
         }
 
@@ -498,10 +498,12 @@
                 }
                 if (nData) { nfs = nData; renderTable(); }
 
-                // Carrega Checklist (Força criação do array vazio se erro para não travar)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if (sData.error) console.error("Checklist Error:", sData.error);
-                servicesData = sData.data || [];
+                if (sData.error) {
+                    console.error("Checklist Error:", sData.error);
+                } else {
+                    servicesData = sData.data || [];
+                }
 
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
@@ -561,13 +563,10 @@
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
 
             rawSapItems.forEach(item => {
-                // Lógica de Preço NET = Base IPI (que é a base inicial) - ICMS - PIS_calc - COFINS_calc
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
-                
                 const basePisCofins = baseInicial - item.vICMS;
                 const valPisCalc = basePisCofins * 0.0165;
                 const valCofinsCalc = basePisCofins * 0.0760;
-
                 const netValue = basePisCofins - valPisCalc - valCofinsCalc;
                 
                 const netStr = netValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
@@ -588,27 +587,23 @@
             const textToCopy = currentNetList.join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast("Lista copiada!");
-                closeNetModal(); // Fecha modal automaticamente
+                closeNetModal(); 
             });
         }
 
         // --- FUNÇÃO PARA MUDAR A ORDEM (NUMERAÇÃO MANUAL) ---
         function changeItemOrder(oldIndex, newPosition) {
-            const newIndex = parseInt(newPosition) - 1; // Array é 0-based
+            const newIndex = parseInt(newPosition) - 1; 
             
-            // Validações básicas
             if (isNaN(newIndex) || newIndex < 0 || newIndex >= rawSapItems.length) {
                 alert("Posição inválida");
-                recalcSapItems(); // Redesenha para voltar ao número original
+                recalcSapItems(); 
                 return;
             }
 
-            // Remove do local antigo
             const itemMoved = rawSapItems.splice(oldIndex, 1)[0];
-            // Insere no novo local
             rawSapItems.splice(newIndex, 0, itemMoved);
 
-            // Re-renderiza tudo
             recalcSapItems();
         }
 
@@ -620,7 +615,7 @@
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-            // --- 1. Header Info ---
+            // HEADER INFO
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
             const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
             
@@ -641,7 +636,7 @@
             const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
             const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
 
-            // Parcelas
+            // PARCELAS
             const dups = xmlDoc.getElementsByTagName("dup");
             let parcelasHtml = "Sem parcelas";
             if(dups.length > 0) {
@@ -655,7 +650,6 @@
                 parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
             }
 
-            // Formatação Data (DD.MM.YYYY)
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
@@ -674,7 +668,7 @@
             `;
             grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; color: #333;">${parcelasHtml}</div>`;
 
-            // --- 2. Items Extraction ---
+            // ITEMS EXTRACTION
             rawSapItems = []; 
             const dets = xmlDoc.getElementsByTagName("det");
             
