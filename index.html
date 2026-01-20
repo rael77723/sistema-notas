@@ -468,6 +468,7 @@
                 if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
+                setupRealtime(); // Ativa Realtime DEPOIS de conectar
             } catch (err) {
                 showError(err.message);
             }
@@ -510,7 +511,6 @@
             })
             .subscribe();
         }
-        setupRealtime();
 
         // --- NOVO CÓDIGO SAP HELPER ---
         function openSapModal() {
@@ -975,4 +975,24 @@
             chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } });
         }
 
-        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors
+        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
+        function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
+        async function exportKPIPDF() { 
+            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
+            const element = document.getElementById('kpiContent');
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
+            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
+            const { jsPDF } = window.jspdf; 
+            const pdf = new jsPDF('l', 'mm', 'a4'); 
+            const imgProps = pdf.getImageProperties(imgData); 
+            const pdfWidth = pdf.internal.pageSize.getWidth(); 
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
+            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
+            pdf.save('KPI_Dashboard.pdf'); 
+        }
+        function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
+        function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
+    </script>
+</body>
+</html>
