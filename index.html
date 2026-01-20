@@ -132,6 +132,14 @@
 
         #error-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fee2e2; color: #b91c1c; padding: 15px; text-align: center; font-weight: bold; z-index: 10000; border-bottom: 2px solid #b91c1c; }
 
+        /* TOAST DE CÓPIA */
+        #toast-notification {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #22c55e; color: white; padding: 10px 20px;
+            border-radius: 30px; font-weight: 700; box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 10005; display: none;
+        }
+
         /* ESTILOS ESPECÍFICOS PARA O SAP HELPER */
         .sap-header-grid {
             display: grid;
@@ -153,7 +161,7 @@
         .sap-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; display: block; word-break: break-all; }
         
         .sap-item-row { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: white; }
-        .sap-item-header { background: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; border-bottom: 1px solid #e2e8f0; }
+        .sap-item-header { background: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: move; border-bottom: 1px solid #e2e8f0; }
         .sap-item-title { font-weight: 700; font-size: 0.85rem; color: #334155; }
         .sap-item-body { display: none; padding: 15px; }
         .sap-item-body.active { display: block; }
@@ -206,6 +214,7 @@
 <body>
 
     <div id="error-banner"></div>
+    <div id="toast-notification">Copiado com sucesso!</div>
 
     <header>
         <div class="header-left">
@@ -306,7 +315,7 @@
                         <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
                     </div>
 
-                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos</h3>
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Arraste para organizar)</h3>
                     <div id="sapItemsContainer"></div>
 
                 </div>
@@ -468,7 +477,7 @@
                 if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
-                setupRealtime(); // Ativa Realtime DEPOIS de conectar
+                setupRealtime(); // Ativa realtime após carga inicial
             } catch (err) {
                 showError(err.message);
             }
@@ -483,12 +492,10 @@
                 }
                 if (nData) { nfs = nData; renderTable(); }
 
+                // Carrega Checklist (Força criação do array vazio se erro para não travar)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if (sData.error) {
-                    console.error("Checklist Error:", sData.error);
-                } else {
-                    servicesData = sData.data || [];
-                }
+                if (sData.error) console.error("Checklist Error:", sData.error);
+                servicesData = sData.data || [];
 
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
@@ -505,6 +512,7 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
                 if(data) servicesData = data;
+                // Só renderiza se o modal estiver aberto para não pesar
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -523,14 +531,17 @@
             document.getElementById('sapModal').classList.remove('active');
         }
 
+        // VISUAL FEEDBACK (TOAST)
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notification');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
-                const el = document.activeElement;
-                if(el && (el.classList.contains('sap-header-item') || el.classList.contains('sap-tax-cell'))) {
-                    const originalBg = el.style.backgroundColor;
-                    el.style.backgroundColor = '#bbf7d0';
-                    setTimeout(() => el.style.backgroundColor = originalBg, 200);
-                }
+                showToast("Copiado!");
             });
         }
 
@@ -542,22 +553,18 @@
             listDiv.innerHTML = '';
             currentNetList = [];
 
-            // Calcula NETs baseados no estado atual (checkbox)
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
 
             rawSapItems.forEach(item => {
-                // Base Inicial
+                // Lógica de Preço NET = Base IPI (que é a base inicial) - ICMS - PIS_calc - COFINS_calc
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
-
-                // Lógica Reverso: NET = Base IPI (que é baseInicial) - ICMS - PIS_calc - COFINS_calc
-                // Taxas forçadas para o cálculo reverso: 1.65% e 7.60% sobre a base (Base - ICMS)
+                
                 const basePisCofins = baseInicial - item.vICMS;
                 const valPisCalc = basePisCofins * 0.0165;
                 const valCofinsCalc = basePisCofins * 0.0760;
 
                 const netValue = basePisCofins - valPisCalc - valCofinsCalc;
                 
-                // Formata
                 const netStr = netValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 currentNetList.push(netStr);
 
@@ -575,10 +582,10 @@
             if(currentNetList.length === 0) return;
             const textToCopy = currentNetList.join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
-                alert("Lista de Preços NET copiada!");
+                showToast("Lista copiada!");
+                closeNetModal(); // Fecha modal automaticamente
             });
         }
-
 
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
@@ -627,10 +634,8 @@
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
-            // Set Natureza Operation Title
             document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
 
-            // Render Header Grid
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
                 ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
@@ -642,7 +647,6 @@
                 ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
                 ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
             `;
-            // Add parcelas
             grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; color: #333;">${parcelasHtml}</div>`;
 
             // --- 2. Items Extraction ---
@@ -715,6 +719,17 @@
             
             // CLEAN INPUT
             xmlInput.value = '';
+
+            // INITIALIZE DRAG AND DROP
+            new Sortable(document.getElementById('sapItemsContainer'), {
+                handle: '.sap-item-header',
+                animation: 150,
+                onEnd: function (evt) {
+                    // Update rawSapItems array order
+                    const item = rawSapItems.splice(evt.oldIndex, 1)[0];
+                    rawSapItems.splice(evt.newIndex, 0, item);
+                }
+            });
         }
 
         function createSapBox(label, value, copy=true) {
@@ -733,45 +748,34 @@
             let totalValidator = 0;
 
             rawSapItems.forEach(item => {
-                // Base Inicial
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
 
-                // Lógica de Cálculo Reversa Solicitada
                 const baseICMS = baseInicial;
                 const baseIPI = baseInicial; 
                 
-                // Validador: Base IPI + Valor IPI
                 totalValidator += (baseIPI + item.vIPI);
 
-                // Bases PIS/COFINS
                 const basePisCofins = baseInicial - item.vICMS; 
                 
-                // CÁLCULO FORÇADO DE PIS/COFINS PARA DEDUÇÃO DA BASE CBS
-                // A regra: Base CBS = Base PIS/COF - (PIS_calc + COFINS_calc)
-                // Usando as taxas fixas solicitadas: 1.65% e 7.60%
                 const valPisCalculado = basePisCofins * 0.0165;
                 const valCofinsCalculado = basePisCofins * 0.0760;
-                
                 const baseCbsIbs = basePisCofins - valPisCalculado - valCofinsCalculado;
 
-                // Prepara string de cópia (Tab separated)
-                // Ordem: CBS, COFINS, IBSS, ICMS, IPI, PIS
-                // Taxas forçadas para PIS/COFINS na cópia: 1,65 e 7,60
                 const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 const copyString = 
                     `${fmtCopy(baseCbsIbs)}\t0,00\n` + 
-                    `${fmtCopy(basePisCofins)}\t7,60\n` +  // Forçado 7,60
+                    `${fmtCopy(basePisCofins)}\t7,60\n` + 
                     `${fmtCopy(baseCbsIbs)}\t0,00\n` +
                     `${fmtCopy(baseICMS)}\t${fmtCopy(item.pICMS)}\n` +
                     `${fmtCopy(baseIPI)}\t${fmtCopy(item.pIPI)}\n` +
-                    `${fmtCopy(basePisCofins)}\t1,65`;     // Forçado 1,65
+                    `${fmtCopy(basePisCofins)}\t1,65`;
 
-                // Renderiza Linha do Item
                 const div = document.createElement('div');
                 div.className = 'sap-item-row';
                 div.innerHTML = `
                     <div class="sap-item-header" onclick="this.nextElementSibling.classList.toggle('active')">
                         <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="material-icons-round" style="color:#94a3b8; cursor:move;">drag_handle</span>
                             <span class="sap-item-title">#${item.index} - ${item.name}</span>
                             <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                         </div>
@@ -791,7 +795,6 @@
                 container.appendChild(div);
             });
             
-            // Atualiza Validador
             document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO NF: " + formatCurrency(totalValidator);
         }
 
@@ -816,6 +819,7 @@
         
         async function openServicesModal() { 
             document.getElementById('servicesModal').classList.add('active'); 
+            // Força recarregamento
             const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(data) servicesData = data;
             renderServicesTable(); 
@@ -977,20 +981,7 @@
 
         function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const checklistPendingCount = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
         function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        async function exportKPIPDF() { 
-            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
-            const element = document.getElementById('kpiContent');
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
-            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
-            const { jsPDF } = window.jspdf; 
-            const pdf = new jsPDF('l', 'mm', 'a4'); 
-            const imgProps = pdf.getImageProperties(imgData); 
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
-            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
-            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
-            pdf.save('KPI_Dashboard.pdf'); 
-        }
+        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
     </script>
