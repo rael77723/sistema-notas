@@ -161,8 +161,7 @@
         .sap-tax-grid { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid #000; }
         .sap-tax-col { display: flex; flex-direction: column; }
         .sap-tax-header { background: #e2e8f0; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 6px; font-size: 0.7rem; font-weight: 800; text-align: center; }
-        .sap-tax-cell { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: center; font-size: 0.85rem; cursor: pointer; transition: background 0.2s; }
-        .sap-tax-cell:hover { background: #e0e7ff; color: var(--primary); font-weight: 700; }
+        .sap-tax-cell { border-right: 1px solid #000; border-bottom: 1px solid #000; padding: 8px; text-align: center; font-size: 0.85rem; cursor: default; }
         .sap-tax-cell:last-child { border-bottom: none; }
         .sap-tax-col:last-child .sap-tax-header, .sap-tax-col:last-child .sap-tax-cell { border-right: none; }
 
@@ -173,6 +172,9 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 2px; bottom: 2px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: #f97316; }
         input:checked + .slider:before { transform: translateX(20px); }
+        
+        .parcela-btn { display: inline-block; background: #e0e7ff; color: var(--primary); padding: 2px 6px; border-radius: 4px; cursor: pointer; margin-right: 5px; font-weight: 600; border: 1px solid transparent; }
+        .parcela-btn:hover { border-color: var(--primary); }
     </style>
 </head>
 <body>
@@ -254,6 +256,8 @@
 
                 <div id="sapResults" style="display: none; flex: 1; overflow-y: auto;">
                     
+                    <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                     <div class="sap-header-grid" id="sapHeaderGrid"></div>
 
@@ -401,7 +405,6 @@
         }
 
         window.onerror = function(msg, url, line) {
-            // Ignora erro resize observer comum em algumas libs
             if(msg.includes('ResizeObserver')) return false;
             showError(`Erro Interno JS: ${msg}`);
             return false;
@@ -413,8 +416,6 @@
         
         let supabase;
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
-        
-        // Variável global para armazenar dados brutos do XML
         let rawSapItems = [];
 
         // --- 3. INICIALIZAÇÃO ---
@@ -480,10 +481,8 @@
 
         function copyText(text) {
             navigator.clipboard.writeText(text).then(() => {
-                // Feedback visual sutil (piscar cor da borda do modal ou similar seria ideal, mas alerta simples resolve rápido)
-                // Vamos usar um feedback visual na caixa clicada se possível, mas como é genérico:
                 const el = document.activeElement;
-                if(el && el.classList.contains('sap-header-item') || el.classList.contains('sap-tax-cell')) {
+                if(el && (el.classList.contains('sap-header-item') || el.classList.contains('sap-tax-cell'))) {
                     const originalBg = el.style.backgroundColor;
                     el.style.backgroundColor = '#bbf7d0';
                     setTimeout(() => el.style.backgroundColor = originalBg, 200);
@@ -498,14 +497,15 @@
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
-            // --- 1. Header Info Extraction ---
+            // --- 1. Header Info ---
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const shortName = emitNome.split(' ').slice(0, 2).join(' '); // 2 primeiras palavras
+            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; // 2 palavras + MP
             
             const ide = xmlDoc.getElementsByTagName("ide")[0];
             const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
             const nNF = ide.getElementsByTagName("nNF")[0]?.textContent || "";
             const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
+            const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "VENDA";
             
             const total = xmlDoc.getElementsByTagName("total")[0]?.getElementsByTagName("ICMSTot")[0];
             const vNF = total?.getElementsByTagName("vNF")[0]?.textContent || "0.00";
@@ -514,105 +514,113 @@
             const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
             const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
             
-            // Chave de Acesso
             let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
-            // Penúltimos 8 dígitos: Pega do index 35 ao 43 (excluindo ultimo)
-            // Chave tem 44 chars. Indice 0 a 43. Ultimo é 43.
-            // Penultimos 8: indices 35 a 42 (8 caracteres antes do digito verificador)
-            // Exemplo: ...33664 1 01216756 8
-            // cNF é aleatório, mas geralmente é o que se usa.
-            // Se a lógica for "8 dígitos antes do DV": substring(35, 43)
             const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
             const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
 
             // Parcelas
             const dups = xmlDoc.getElementsByTagName("dup");
-            let parcelasText = "Sem parcelas";
+            let parcelasHtml = "Sem parcelas";
             if(dups.length > 0) {
-                let pList = [];
+                let pHtml = "";
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
-                    if(vDup) pList.push(formatCurrency(vDup));
+                    if(vDup) {
+                        pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
+                    }
                 }
-                parcelasText = "Parcelas: " + pList.join(" | ");
+                parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
             }
 
-            // Formatação
-            const fmtDate = (d) => d ? d.split('T')[0].split('-').reverse().join('/') : "";
+            // Formatação Data (DD.MM.YYYY)
+            const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+
+            // Set Natureza Operation Title
+            document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
 
             // Render Header Grid
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
-                ${createSapBox("EMISSÃO", fmtDate(dhEmi))}
+                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
                 ${createSapBox("REF NF", nNF + "-" + serie)}
                 ${createSapBox("VALOR TOTAL", fmtMoney(vNF))}
                 ${createSapBox("FORNECEDOR", shortName)}
-                <div style="width:10px;"></div> ${createSapBox("PROTOCOLO", nProt)}
-                ${createSapBox("AUTORIZAÇÃO", fmtDate(dhRecbto))}
+                ${createSapBox("PROTOCOLO", nProt)}
+                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
                 ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
-                ${createSapBox("DÍGITO CHAVE", chaveDV, false)} `;
-            // Adiciona info de parcelas abaixo
-            grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; font-weight: 600; color: #333;">${parcelasText}</div>`;
+                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
+            `;
+            // Add parcelas
+            grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; color: #333;">${parcelasHtml}</div>`;
 
             // --- 2. Items Extraction ---
-            rawSapItems = []; // Limpa cache
+            rawSapItems = []; 
             const dets = xmlDoc.getElementsByTagName("det");
             
             for(let i=0; i<dets.length; i++) {
                 const prod = dets[i].getElementsByTagName("prod")[0];
                 const imposto = dets[i].getElementsByTagName("imposto")[0];
                 
-                // Valores Brutos
                 const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
                 
-                // ICMS (Pode estar em ICMS00, ICMS10, etc. Vamos buscar genérico)
-                let vBC_ICMS = 0, vICMS = 0;
+                // ICMS
+                let vBC_ICMS = 0, vICMS = 0, pICMS = 0;
                 const icmsTag = imposto.getElementsByTagName("ICMS")[0];
                 if(icmsTag && icmsTag.children.length > 0) {
-                    const inner = icmsTag.children[0]; // Pega ICMS00, ICMS20, etc
+                    const inner = icmsTag.children[0]; 
                     vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent || 0);
                     vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
+                    pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent || 0);
                 }
 
                 // IPI
-                let vIPI = 0;
+                let vIPI = 0, pIPI = 0;
                 const ipiTag = imposto.getElementsByTagName("IPI")[0];
                 if(ipiTag) {
                     const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
-                    if(ipiTrib) vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
+                    if(ipiTrib) {
+                        vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
+                        pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent || 0);
+                    }
                 }
 
                 // PIS
-                let vPIS = 0;
+                let vPIS = 0, pPIS = 0;
                 const pisTag = imposto.getElementsByTagName("PIS")[0];
                 if(pisTag) {
                     const pisAliq = pisTag.getElementsByTagName("PISAliq")[0] || pisTag.getElementsByTagName("PISOutr")[0];
-                    if(pisAliq) vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
+                    if(pisAliq) {
+                        vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
+                        pPIS = parseFloat(pisAliq.getElementsByTagName("pPIS")[0]?.textContent || 0);
+                    }
                 }
 
                 // COFINS
-                let vCOFINS = 0;
+                let vCOFINS = 0, pCOFINS = 0;
                 const cofinsTag = imposto.getElementsByTagName("COFINS")[0];
                 if(cofinsTag) {
                     const cofinsAliq = cofinsTag.getElementsByTagName("COFINSAliq")[0] || cofinsTag.getElementsByTagName("COFINSOutr")[0];
-                    if(cofinsAliq) vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
+                    if(cofinsAliq) {
+                        vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
+                        pCOFINS = parseFloat(cofinsAliq.getElementsByTagName("pCOFINS")[0]?.textContent || 0);
+                    }
                 }
 
                 rawSapItems.push({
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
                     index: i + 1,
                     vProd: vProd,
-                    vBC_XML: vBC_ICMS, // Base Original do XML
-                    vICMS: vICMS,
-                    vIPI: vIPI,
-                    vPIS: vPIS,
-                    vCOFINS: vCOFINS
+                    vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd, // Se nao tiver base ICMS, usa vProd
+                    vICMS: vICMS, pICMS: pICMS,
+                    vIPI: vIPI, pIPI: pIPI,
+                    vPIS: vPIS, pPIS: pPIS,
+                    vCOFINS: vCOFINS, pCOFINS: pCOFINS
                 });
             }
 
             document.getElementById('sapResults').style.display = 'block';
-            recalcSapItems(); // Renderiza itens com base no toggle atual
+            recalcSapItems(); 
         }
 
         function createSapBox(label, value, copy=true) {
@@ -629,26 +637,44 @@
             container.innerHTML = '';
 
             rawSapItems.forEach(item => {
-                // Lógica de Base de Cálculo
+                // Base Inicial (vBC ou vProd)
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
 
-                // Cálculos Solicitados
+                // Lógica de Cálculo Reversa Solicitada
                 const baseICMS = baseInicial;
-                const baseIPI = baseInicial; // "O mesmo da base de cálculo do ICMS"
-                const basePisCofins = baseInicial - item.vICMS; // "Base ICMS reduzindo valor ICMS"
-                const baseCbsIbs = baseInicial - (item.vPIS + item.vCOFINS + item.vICMS); // "Base ICMS reduzindo PIS, COFINS e ICMS"
+                const baseIPI = baseInicial; 
+                const basePisCofins = baseInicial - item.vICMS; 
+                const baseCbsIbs = baseInicial - (item.vPIS + item.vCOFINS + item.vICMS); 
+
+                // Prepara string de cópia (Tab separated)
+                // Ordem: CBS, COFINS, IBSS, ICMS, IPI, PIS
+                // Formato: Base \t Rate
+                const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                const copyString = 
+                    `${fmtCopy(baseCbsIbs)}\t0,00\n` + 
+                    `${fmtCopy(basePisCofins)}\t${fmtCopy(item.pCOFINS)}\n` +
+                    `${fmtCopy(baseCbsIbs)}\t0,00\n` +
+                    `${fmtCopy(baseICMS)}\t${fmtCopy(item.pICMS)}\n` +
+                    `${fmtCopy(baseIPI)}\t${fmtCopy(item.pIPI)}\n` +
+                    `${fmtCopy(basePisCofins)}\t${fmtCopy(item.pPIS)}`;
 
                 // Renderiza Linha do Item
                 const div = document.createElement('div');
                 div.className = 'sap-item-row';
                 div.innerHTML = `
                     <div class="sap-item-header" onclick="this.nextElementSibling.classList.toggle('active')">
-                        <span class="sap-item-title">#${item.index} - ${item.name}</span>
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <span class="sap-item-title">#${item.index} - ${item.name}</span>
+                            <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
+                        </div>
                         <span class="material-icons-round">expand_more</span>
                     </div>
-                    <div class="sap-item-body active"> <div class="sap-tax-grid">
-                            ${createTaxCol("CBS", baseCbsIbs, 0)} ${createTaxCol("COFINS", basePisCofins, item.vCOFINS)}
-                            ${createTaxCol("IBSS", baseCbsIbs, 0)} ${createTaxCol("ICMS", baseICMS, item.vICMS)}
+                    <div class="sap-item-body active">
+                        <div class="sap-tax-grid">
+                            ${createTaxCol("CBS", baseCbsIbs, 0)}
+                            ${createTaxCol("COFINS", basePisCofins, item.vCOFINS)}
+                            ${createTaxCol("IBSS", baseCbsIbs, 0)}
+                            ${createTaxCol("ICMS", baseICMS, item.vICMS)}
                             ${createTaxCol("IPI", baseIPI, item.vIPI)}
                             ${createTaxCol("PIS", basePisCofins, item.vPIS)}
                         </div>
@@ -660,12 +686,11 @@
 
         function createTaxCol(name, base, valImposto) {
             const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            // O usuario quer copiar as bases e mostrar o valor do imposto
             return `
                 <div class="sap-tax-col">
                     <div class="sap-tax-header">${name}</div>
                     <div class="sap-tax-cell" title="Copiar Base" onclick="copyText('${fmt(base)}')">${fmt(base)}</div>
-                    <div class="sap-tax-cell" style="color:#64748b; font-size:0.75rem; cursor:default;" title="Valor Imposto (Apenas Visual)">${fmt(valImposto)}</div>
+                    <div class="sap-tax-cell" style="color:#64748b; font-size:0.75rem; cursor:default;" title="Valor Imposto">${fmt(valImposto)}</div>
                 </div>
             `;
         }
