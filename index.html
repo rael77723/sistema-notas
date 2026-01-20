@@ -13,8 +13,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
     <style>
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --fiscal-color: #b45309; --fiscal-bg: #fffbeb; --compras-color: #b91c1c; --compras-bg: #fef2f2; --almox-color: #1d4ed8; --almox-bg: #eff6ff; --aprov-color: #047857; --aprov-bg: #ecfdf5; --kpi-header-bg: #b91c1c; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -131,8 +129,6 @@
         .confirm-actions { display: flex; gap: 10px; justify-content: center; }
 
         #error-banner { display: none; position: fixed; top: 0; left: 0; width: 100%; background: #fee2e2; color: #b91c1c; padding: 15px; text-align: center; font-weight: bold; z-index: 10000; border-bottom: 2px solid #b91c1c; }
-
-        /* TOAST DE CÓPIA */
         #toast-notification {
             position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
             background: #22c55e; color: white; padding: 10px 20px;
@@ -161,11 +157,17 @@
         .sap-value { font-size: 0.9rem; font-weight: 600; color: #1e293b; display: block; word-break: break-all; }
         
         .sap-item-row { border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 10px; overflow: hidden; background: white; }
-        .sap-item-header { background: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: move; border-bottom: 1px solid #e2e8f0; }
-        .sap-item-title { font-weight: 700; font-size: 0.85rem; color: #334155; }
+        .sap-item-header { background: #f8fafc; padding: 10px 15px; display: flex; justify-content: space-between; align-items: center; cursor: default; border-bottom: 1px solid #e2e8f0; }
+        .sap-item-title { font-weight: 700; font-size: 0.85rem; color: #334155; display: flex; align-items: center; gap: 8px; }
         .sap-item-body { display: none; padding: 15px; }
         .sap-item-body.active { display: block; }
         
+        .order-input {
+            width: 40px; text-align: center; border: 1px solid #cbd5e1; border-radius: 4px;
+            font-weight: 700; color: var(--primary); font-size: 0.8rem; padding: 2px;
+        }
+        .order-input:focus { outline: 2px solid var(--primary); border-color: transparent; }
+
         .sap-tax-grid { display: grid; grid-template-columns: repeat(6, 1fr); border: 1px solid #000; }
         .sap-tax-col { display: flex; flex-direction: column; }
         .sap-tax-header { background: #e2e8f0; border-bottom: 1px solid #000; border-right: 1px solid #000; padding: 6px; font-size: 0.7rem; font-weight: 800; text-align: center; }
@@ -315,7 +317,7 @@
                         <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
                     </div>
 
-                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Arraste para organizar)</h3>
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
                     <div id="sapItemsContainer"></div>
 
                 </div>
@@ -477,7 +479,7 @@
                 if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
-                setupRealtime(); // Ativa realtime após carga inicial
+                setupRealtime();
             } catch (err) {
                 showError(err.message);
             }
@@ -492,10 +494,12 @@
                 }
                 if (nData) { nfs = nData; renderTable(); }
 
-                // Carrega Checklist (Força criação do array vazio se erro para não travar)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if (sData.error) console.error("Checklist Error:", sData.error);
-                servicesData = sData.data || [];
+                if (sData.error) {
+                    console.error("Checklist Error:", sData.error);
+                } else {
+                    servicesData = sData.data || [];
+                }
 
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
@@ -512,7 +516,6 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
                 if(data) servicesData = data;
-                // Só renderiza se o modal estiver aberto para não pesar
                 if(document.getElementById('servicesModal').classList.contains('active')) {
                     renderServicesTable(); updateChecklistDashboard();
                 }
@@ -556,7 +559,7 @@
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
 
             rawSapItems.forEach(item => {
-                // Lógica de Preço NET = Base IPI (que é a base inicial) - ICMS - PIS_calc - COFINS_calc
+                // Lógica NET = Base IPI - ICMS - PIS_calc - COFINS_calc
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
                 
                 const basePisCofins = baseInicial - item.vICMS;
@@ -583,8 +586,28 @@
             const textToCopy = currentNetList.join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast("Lista copiada!");
-                closeNetModal(); // Fecha modal automaticamente
+                closeNetModal(); // Fecha modal
             });
+        }
+
+        // --- FUNÇÃO PARA MUDAR A ORDEM (NUMERAÇÃO MANUAL) ---
+        function changeItemOrder(oldIndex, newPosition) {
+            const newIndex = parseInt(newPosition) - 1; // Array é 0-based
+            
+            // Validações básicas
+            if (isNaN(newIndex) || newIndex < 0 || newIndex >= rawSapItems.length) {
+                alert("Posição inválida");
+                recalcSapItems(); // Redesenha para voltar ao número original
+                return;
+            }
+
+            // Remove do local antigo
+            const itemMoved = rawSapItems.splice(oldIndex, 1)[0];
+            // Insere no novo local
+            rawSapItems.splice(newIndex, 0, itemMoved);
+
+            // Re-renderiza tudo
+            recalcSapItems();
         }
 
         function processSapXml() {
@@ -704,7 +727,7 @@
 
                 rawSapItems.push({
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
-                    index: i + 1,
+                    index: i + 1, // Index original do XML
                     vProd: vProd,
                     vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
                     vICMS: vICMS, pICMS: pICMS,
@@ -719,17 +742,6 @@
             
             // CLEAN INPUT
             xmlInput.value = '';
-
-            // INITIALIZE DRAG AND DROP
-            new Sortable(document.getElementById('sapItemsContainer'), {
-                handle: '.sap-item-header',
-                animation: 150,
-                onEnd: function (evt) {
-                    // Update rawSapItems array order
-                    const item = rawSapItems.splice(evt.oldIndex, 1)[0];
-                    rawSapItems.splice(evt.newIndex, 0, item);
-                }
-            });
         }
 
         function createSapBox(label, value, copy=true) {
@@ -747,20 +759,20 @@
             
             let totalValidator = 0;
 
-            rawSapItems.forEach(item => {
+            rawSapItems.forEach((item, currentIndex) => {
+                // Cálculo de Impostos
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
-
                 const baseICMS = baseInicial;
                 const baseIPI = baseInicial; 
                 
                 totalValidator += (baseIPI + item.vIPI);
 
                 const basePisCofins = baseInicial - item.vICMS; 
-                
                 const valPisCalculado = basePisCofins * 0.0165;
                 const valCofinsCalculado = basePisCofins * 0.0760;
                 const baseCbsIbs = basePisCofins - valPisCalculado - valCofinsCalculado;
 
+                // String para Copiar
                 const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 const copyString = 
                     `${fmtCopy(baseCbsIbs)}\t0,00\n` + 
@@ -770,13 +782,16 @@
                     `${fmtCopy(baseIPI)}\t${fmtCopy(item.pIPI)}\n` +
                     `${fmtCopy(basePisCofins)}\t1,65`;
 
+                // Renderiza Linha
                 const div = document.createElement('div');
                 div.className = 'sap-item-row';
                 div.innerHTML = `
-                    <div class="sap-item-header" onclick="this.nextElementSibling.classList.toggle('active')">
+                    <div class="sap-item-header" onclick="if(event.target.tagName !== 'INPUT' && event.target.tagName !== 'BUTTON') this.nextElementSibling.classList.toggle('active')">
                         <div style="display:flex; align-items:center; gap:10px;">
-                            <span class="material-icons-round" style="color:#94a3b8; cursor:move;">drag_handle</span>
-                            <span class="sap-item-title">#${item.index} - ${item.name}</span>
+                            <div style="display:flex; align-items:center; gap:4px; font-size:0.8rem; font-weight:700; color:#64748b;">
+                                #<input type="number" class="order-input" value="${currentIndex + 1}" onchange="changeItemOrder(${currentIndex}, this.value)" onclick="event.stopPropagation()">
+                            </div>
+                            <span class="sap-item-title">${item.name}</span>
                             <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                         </div>
                         <span class="material-icons-round">expand_more</span>
@@ -817,9 +832,9 @@
         function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
         function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
         
+        // CORREÇÃO: Abre o modal imediatamente, depois busca os dados
         async function openServicesModal() { 
             document.getElementById('servicesModal').classList.add('active'); 
-            // Força recarregamento
             const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
             if(data) servicesData = data;
             renderServicesTable(); 
