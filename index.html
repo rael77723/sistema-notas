@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notas Fiscais e Checklist</title>
+    <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/906/906334.png" type="image/png">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
     
@@ -13,6 +15,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
+
     <style>
         :root { --primary: #4f46e5; --bg-body: #f8fafc; --surface: #ffffff; --text-main: #1e293b; --text-muted: #64748b; --border: #e2e8f0; --fiscal-color: #b45309; --fiscal-bg: #fffbeb; --compras-color: #b91c1c; --compras-bg: #fef2f2; --almox-color: #1d4ed8; --almox-bg: #eff6ff; --aprov-color: #047857; --aprov-bg: #ecfdf5; --kpi-header-bg: #b91c1c; --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -559,7 +563,7 @@
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
 
             rawSapItems.forEach(item => {
-                // Lógica NET = Base IPI - ICMS - PIS_calc - COFINS_calc
+                // Lógica de Preço NET = Base IPI (que é a base inicial) - ICMS - PIS_calc - COFINS_calc
                 const baseInicial = useItemTotal ? item.vProd : item.vBC_XML;
                 
                 const basePisCofins = baseInicial - item.vICMS;
@@ -586,7 +590,7 @@
             const textToCopy = currentNetList.join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast("Lista copiada!");
-                closeNetModal(); // Fecha modal
+                closeNetModal(); // Fecha modal automaticamente
             });
         }
 
@@ -681,7 +685,9 @@
                 const imposto = dets[i].getElementsByTagName("imposto")[0];
                 
                 const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
-                
+                const qCom = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
+                const uCom = prod.getElementsByTagName("uCom")[0]?.textContent || "";
+
                 // ICMS
                 let vBC_ICMS = 0, vICMS = 0, pICMS = 0;
                 const icmsTag = imposto.getElementsByTagName("ICMS")[0];
@@ -729,6 +735,8 @@
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
                     index: i + 1, // Index original do XML
                     vProd: vProd,
+                    qCom: qCom, // Quantidade
+                    uCom: uCom, // Unidade
                     vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
                     vICMS: vICMS, pICMS: pICMS,
                     vIPI: vIPI, pIPI: pIPI,
@@ -791,7 +799,13 @@
                             <div style="display:flex; align-items:center; gap:4px; font-size:0.8rem; font-weight:700; color:#64748b;">
                                 #<input type="number" class="order-input" value="${currentIndex + 1}" onchange="changeItemOrder(${currentIndex}, this.value)" onclick="event.stopPropagation()">
                             </div>
-                            <span class="sap-item-title">${item.name}</span>
+                            <div style="display:flex; flex-direction:column;">
+                                <span class="sap-item-title">${item.name}</span>
+                                <div style="font-size: 0.75rem; color: #64748b; margin-top:2px;">
+                                   Qtd: <b>${parseFloat(item.qCom).toLocaleString('pt-BR')}</b> ${item.uCom}
+                                </div>
+                            </div>
+                            <div style="flex:1;"></div>
                             <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                         </div>
                         <span class="material-icons-round">expand_more</span>
@@ -854,123 +868,6 @@
         
         async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
-
-        function updateChecklistDashboard() {
-            const ctx = document.getElementById('checkChart').getContext('2d');
-            if(checklistChartInstance) checklistChartInstance.destroy();
-            
-            const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
-            const total = servicesData.length;
-            const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
-            const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
-            const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
-
-            document.getElementById('chkTotal').innerText = total;
-            document.getElementById('chkRec').innerText = received;
-            document.getElementById('chkPen').innerText = pending;
-            document.getElementById('chkNop').innerText = notDone;
-
-            checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
-        }
-
-        async function exportServicesPDF() {
-            if(!window.jspdf) { alert("Biblioteca PDF não carregada."); return; }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            const dateTitle = document.getElementById('checklistDate').value || 'Geral';
-            doc.setFontSize(14);
-            doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
-            const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
-            const tableRows = [];
-            
-            const trs = document.querySelectorAll('#svcTableBody tr');
-            trs.forEach(tr => {
-                if (tr.style.display !== 'none') {
-                    const inputs = tr.querySelectorAll('input, select');
-                    if (inputs.length > 0) {
-                        const rowData = [
-                            inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value,
-                            inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value,
-                            inputs[8].value, inputs[9].value, inputs[10].value
-                        ];
-                        tableRows.push(rowData);
-                    }
-                }
-            });
-
-            doc.autoTable({
-                head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
-                styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
-                headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
-                columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } },
-                didParseCell: function(data) {
-                    if (data.section === 'body') {
-                        if (data.column.index === 2 || data.column.index === 3) {
-                            const text = (data.cell.raw || '').toString().toUpperCase();
-                            if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) {
-                                data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28];
-                            } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) {
-                                data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52];
-                            } else if (text.includes('NÃO PRESTADO')) {
-                                data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216];
-                            } else if (text.includes('APROVAÇÃO')) {
-                                data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9];
-                            }
-                            data.cell.styles.fontStyle = 'bold';
-                        }
-                    }
-                }
-            });
-            doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
-        }
-
-        function renderTable() {
-            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
-            nfs.forEach((nf, index) => {
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-id', nf.id);
-                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
-                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
-                
-                const dragHandle = `<span class="material-icons-round drag-handle" title="Arrastar">drag_handle</span>`;
-                
-                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
-                tbody.appendChild(tr);
-            });
-            updateDashboard();
-            initSortable();
-        }
-
-        function initSortable() {
-            const el = document.getElementById('tableBody');
-            if(el) {
-                if(el._sortable) el._sortable.destroy();
-                if(typeof Sortable !== 'undefined') {
-                    el._sortable = Sortable.create(el, {
-                        handle: '.drag-handle',
-                        animation: 150,
-                        ghostClass: 'sortable-ghost',
-                        onEnd: async function (evt) {
-                            try {
-                                const item = nfs.splice(evt.oldIndex, 1)[0];
-                                nfs.splice(evt.newIndex, 0, item);
-                                const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
-                                await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                            } catch(e) { showError("Erro ao salvar ordem: " + e.message); }
-                        }
-                    });
-                }
-            }
-        }
-
-        function filterServices(colIndex, val) { const table = document.getElementById("svcTable"); const tr = table.getElementsByTagName("tr"); const filter = val.toUpperCase(); for (let i = 1; i < tr.length; i++) { const td = tr[i].getElementsByTagName("td")[colIndex]; if (td) { const input = td.querySelector('input, select'); const txtValue = input ? input.value : td.textContent || td.innerText; if (txtValue.toUpperCase().indexOf(filter) > -1) tr[i].style.display = ""; else tr[i].style.display = "none"; } } }
-        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
-        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
-        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
-        
-        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
-        function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
-        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
 
         function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
