@@ -296,10 +296,13 @@
                 </div>
 
                 <div id="sapResults" style="display: none; flex: 1; overflow-y: auto;">
+                    
                     <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
 
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
-                        <div id="validationBox" class="validator-box" style="flex:1; margin:0;">VALIDAÇÃO PREÇO NF: R$ 0,00</div>
+                        <div id="validationBox" class="validator-box" style="flex:1; margin:0;">
+                            VALIDAÇÃO PREÇO NF: R$ 0,00
+                        </div>
                         <button class="btn-primary" style="background:#f97316; height:45px;" onclick="openNetModal()">VER PREÇOS NET</button>
                     </div>
 
@@ -311,13 +314,16 @@
                             <input type="checkbox" id="sapBaseToggle" onchange="recalcSapItems()">
                             <span class="slider"></span>
                         </label>
-                        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">Usar Valor Total do Item (vProd) como Base de Cálculo</span>
+                        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">
+                            Usar Valor Total do Item (vProd) como Base de Cálculo
+                        </span>
                         <div style="flex:1;"></div>
                         <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
                     </div>
 
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
                     <div id="sapItemsContainer"></div>
+
                 </div>
             </div>
         </div>
@@ -364,18 +370,35 @@
                     <button class="close-btn" onclick="closeServicesModal()"><span>&times;</span></button>
                 </div>
             </div>
+            
             <div class="services-modal-body" id="checklistBody">
                 <div class="services-table-wrapper">
                     <table class="services-table" id="svcTable">
                         <thead>
-                            <tr><th style="width: 30px;"></th><th>FORN.<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(1, this.value)"></th><th>TIPO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(2, this.value)"></th><th style="width: 140px;">ENVIO NF<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(3, this.value)"></th><th style="width: 140px;">STATUS PO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(4, this.value)"></th><th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(5, this.value)"></th><th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(6, this.value)"></th><th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(7, this.value)"></th><th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(8, this.value)"></th><th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(9, this.value)"></th><th>OBS<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(10, this.value)"></th><th>SAP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(11, this.value)"></th></tr>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>FORN.<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(1, this.value)"></th>
+                                <th>TIPO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(2, this.value)"></th>
+                                <th style="width: 140px;">ENVIO NF<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(3, this.value)"></th>
+                                <th style="width: 140px;">STATUS PO<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(4, this.value)"></th>
+                                <th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(5, this.value)"></th>
+                                <th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(6, this.value)"></th>
+                                <th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(7, this.value)"></th>
+                                <th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(8, this.value)"></th>
+                                <th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(9, this.value)"></th>
+                                <th>OBS<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(10, this.value)"></th>
+                                <th>SAP<input class="filter-input" placeholder="Filtro..." onkeyup="filterServices(11, this.value)"></th>
+                            </tr>
                         </thead>
                         <tbody id="svcTableBody"></tbody>
                     </table>
                 </div>
                 <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addServiceRow()">+</button></div>
+
                 <div class="dash-checklist-container">
-                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;"><canvas id="checkChart"></canvas></div>
+                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;">
+                        <canvas id="checkChart"></canvas>
+                    </div>
                     <div class="checklist-stats-grid">
                         <div class="dash-card-check dash-check-total"><span class="lbl">TOTAL</span><span class="cnt" id="chkTotal">0</span></div>
                         <div class="dash-card-check dash-check-rec"><span class="lbl">RECEBIDAS</span><span class="cnt" id="chkRec">0</span></div>
@@ -388,7 +411,9 @@
     </div>
 
     <div class="modal-overlay" id="resetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Resetar Checklist?</h3><p style="color:#64748b;margin:10px 0;">Isso mudará todos os status para "PENDENTE".</p><input type="password" id="resetPassword" class="input-field" style="margin:1rem 0;text-align:center;" placeholder="Senha..."><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeResetModal()">Cancelar</button><button class="btn-primary" onclick="confirmReset()">Confirmar</button></div></div></div>
+
     <div class="modal-overlay" id="errorModal"><div class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;"><div class="error-icon"><span class="material-icons-round" style="font-size:30px">error_outline</span></div><h3 style="margin-top:1rem;color:#b91c1c;">Senha Incorreta</h3><p style="color:#64748b;margin-bottom:1.5rem;">A senha informada não confere.</p><button class="btn-primary" onclick="document.getElementById('errorModal').classList.remove('active')">Tentar Novamente</button></div></div>
+
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="formModalBody">
             <div class="modal-header"><h2 id="modalTitle">Nota</h2><button class="close-btn" onclick="closeModal()"><span>&times;</span></button></div>
@@ -416,48 +441,74 @@
             </form>
         </div>
     </div>
-    <div class="modal-overlay" id="deleteModal"><div class="modal confirm-modal"><div class="icon-circle"><span class="material-icons-round">delete_forever</span></div><h3 class="confirm-title">Excluir Linha?</h3><p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p><div class="confirm-actions"><button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button><button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button></div></div></div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal confirm-modal">
+            <div class="icon-circle"><span class="material-icons-round">delete_forever</span></div>
+            <h3 class="confirm-title">Excluir Linha?</h3>
+            <p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p>
+            <div class="confirm-actions">
+                <button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // CONFIG
-        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        let supabase, nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false, rawSapItems = [];
-
+        // --- 1. SETUP DE ERROS ---
         function showError(msg) {
             const banner = document.getElementById('error-banner');
-            banner.style.display = 'block'; banner.innerText = "ALERTA: " + msg; console.error(msg);
+            banner.style.display = 'block';
+            banner.innerText = "ALERTA: " + msg;
+            console.error(msg);
         }
-        window.onerror = function(msg, url, line) { if(msg.includes('ResizeObserver')) return false; showError(`Erro JS: ${msg}`); return false; };
 
-        // INIT
+        window.onerror = function(msg, url, line) {
+            if(msg.includes('ResizeObserver')) return false;
+            showError(`Erro Interno JS: ${msg}`);
+            return false;
+        };
+
+        // --- 2. SUPABASE CONFIG ---
+        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
+        
+        let supabase;
+        let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
+        let rawSapItems = [];
+
+        // --- 3. INICIALIZAÇÃO ---
         window.onload = async function() {
             try {
-                if (typeof window.supabase === 'undefined') throw new Error("Supabase não carregou.");
+                if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
                 setupRealtime();
-            } catch (err) { showError(err.message); }
+            } catch (err) {
+                showError(err.message);
+            }
         };
 
         async function loadData() {
             try {
-                // Notas
                 let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
-                if (error) { // Fallback
+                if (error) {
                     const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
                     nData = fallback.data;
                 }
-                if (nData) { nfs = nData; renderTable(); } // FUNÇÃO RENDER TABLE CHAMADA AQUI
+                if (nData) { nfs = nData; renderTable(); } // AQUI ESTÁ A CHAMADA DA FUNÇÃO
 
-                // Checklist (Sem travar se falhar)
+                // Carrega Checklist (Força criação do array vazio se erro para não travar)
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if (sData.data) servicesData = sData.data;
+                if (sData.error) console.error("Checklist Error:", sData.error);
+                servicesData = sData.data || [];
 
-                // Config
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
-            } catch (err) { showError("Conexão: " + err.message); }
+
+            } catch (err) {
+                showError("Falha ao conectar: " + err.message);
+            }
         }
 
         function setupRealtime() {
@@ -474,7 +525,7 @@
             .subscribe();
         }
 
-        // --- FUNÇÃO RENDER TABLE (IMPORTANTE) ---
+        // --- FUNÇÃO RENDER TABLE (PRINCIPAL) ---
         function renderTable() {
             const tbody = document.getElementById('tableBody'); 
             if(!tbody) return;
@@ -567,7 +618,6 @@
                     const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
                     if(ipiTrib) { vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent||0); pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent||0); }
                 }
-                // PIS/COFINS (simplificado para brevidade, segue logica anterior)
                 
                 rawSapItems.push({
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
