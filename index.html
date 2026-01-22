@@ -296,10 +296,13 @@
                 </div>
 
                 <div id="sapResults" style="display: none; flex: 1; overflow-y: auto;">
+                    
                     <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
 
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
-                        <div id="validationBox" class="validator-box" style="flex:1; margin:0;">VALIDAÇÃO PREÇO NF: R$ 0,00</div>
+                        <div id="validationBox" class="validator-box" style="flex:1; margin:0;">
+                            VALIDAÇÃO PREÇO NF: R$ 0,00
+                        </div>
                         <button class="btn-primary" style="background:#f97316; height:45px;" onclick="openNetModal()">VER PREÇOS NET</button>
                     </div>
 
@@ -311,13 +314,16 @@
                             <input type="checkbox" id="sapBaseToggle" onchange="recalcSapItems()">
                             <span class="slider"></span>
                         </label>
-                        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">Usar Valor Total do Item (vProd) como Base de Cálculo</span>
+                        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">
+                            Usar Valor Total do Item (vProd) como Base de Cálculo
+                        </span>
                         <div style="flex:1;"></div>
                         <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
                     </div>
 
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
                     <div id="sapItemsContainer"></div>
+
                 </div>
             </div>
         </div>
@@ -364,18 +370,35 @@
                     <button class="close-btn" onclick="closeServicesModal()"><span>&times;</span></button>
                 </div>
             </div>
+            
             <div class="services-modal-body" id="checklistBody">
                 <div class="services-table-wrapper">
                     <table class="services-table" id="svcTable">
                         <thead>
-                            <tr><th style="width: 30px;"></th><th>FORN.<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>TIPO<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th style="width: 140px;">ENVIO NF<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th style="width: 140px;">STATUS PO<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>OBS<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th><th>SAP<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th></tr>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>FORN.<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>TIPO<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th style="width: 140px;">ENVIO NF<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th style="width: 140px;">STATUS PO<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>OBS<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                                <th>SAP<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                            </tr>
                         </thead>
                         <tbody id="svcTableBody"></tbody>
                     </table>
                 </div>
                 <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addServiceRow()">+</button></div>
+
                 <div class="dash-checklist-container">
-                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;"><canvas id="checkChart"></canvas></div>
+                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;">
+                        <canvas id="checkChart"></canvas>
+                    </div>
                     <div class="checklist-stats-grid">
                         <div class="dash-card-check dash-check-total"><span class="lbl">TOTAL</span><span class="cnt" id="chkTotal">0</span></div>
                         <div class="dash-card-check dash-check-rec"><span class="lbl">RECEBIDAS</span><span class="cnt" id="chkRec">0</span></div>
@@ -388,7 +411,9 @@
     </div>
 
     <div class="modal-overlay" id="resetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Resetar Checklist?</h3><p style="color:#64748b;margin:10px 0;">Isso mudará todos os status para "PENDENTE".</p><input type="password" id="resetPassword" class="input-field" style="margin:1rem 0;text-align:center;" placeholder="Senha..."><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeResetModal()">Cancelar</button><button class="btn-primary" onclick="confirmReset()">Confirmar</button></div></div></div>
+
     <div class="modal-overlay" id="errorModal"><div class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;"><div class="error-icon"><span class="material-icons-round" style="font-size:30px">error_outline</span></div><h3 style="margin-top:1rem;color:#b91c1c;">Senha Incorreta</h3><p style="color:#64748b;margin-bottom:1.5rem;">A senha informada não confere.</p><button class="btn-primary" onclick="document.getElementById('errorModal').classList.remove('active')">Tentar Novamente</button></div></div>
+
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="formModalBody">
             <div class="modal-header"><h2 id="modalTitle">Nota</h2><button class="close-btn" onclick="closeModal()"><span>&times;</span></button></div>
@@ -402,9 +427,9 @@
                         <div class="form-group"><label>Pedido</label><input type="text" id="pedido" class="input-field"></div>
                         <div class="form-group"><label>Linha</label><input type="text" id="linhaPedido" class="input-field"></div>
                         <div class="form-group"><label>Valor (R$)</label><input type="text" id="valor" class="input-field" required></div>
-                        <div class="form-group"><label>Emissão</label><input type="text" id="dataEmissao" class="input-field" placeholder="DD/MM/AAAA" required></div>
-                        <div class="form-group"><label>Inclusão</label><input type="text" id="dataInclusao" class="input-field" placeholder="DD/MM/AAAA"></div>
-                        <div class="form-group"><label>Vencimento</label><input type="text" id="dataVencimento" class="input-field" placeholder="DD/MM/AAAA"></div>
+                        <div class="form-group"><label>Emissão</label><input type="date" id="dataEmissao" class="input-field" required></div>
+                        <div class="form-group"><label>Inclusão</label><input type="date" id="dataInclusao" class="input-field"></div>
+                        <div class="form-group"><label>Vencimento</label><input type="date" id="dataVencimento" class="input-field"></div>
                         <div class="form-group"><label>Ref.</label><input type="text" id="referencia" class="input-field"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Chave</label><input type="text" id="chave" class="input-field"></div>
                         <div class="form-group"><label>Resp.</label><input type="text" id="respCorrecao" class="input-field"></div>
@@ -416,49 +441,76 @@
             </form>
         </div>
     </div>
-    <div class="modal-overlay" id="deleteModal"><div class="modal confirm-modal"><div class="icon-circle"><span class="material-icons-round">delete_forever</span></div><h3 class="confirm-title">Excluir Linha?</h3><p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p><div class="confirm-actions"><button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button><button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button></div></div></div>
+
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal confirm-modal">
+            <div class="icon-circle"><span class="material-icons-round">delete_forever</span></div>
+            <h3 class="confirm-title">Excluir Linha?</h3>
+            <p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p>
+            <div class="confirm-actions">
+                <button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // CONFIG
-        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        let supabase, nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false, rawSapItems = [];
-
+        // --- 1. SETUP DE ERROS ---
         function showError(msg) {
             const banner = document.getElementById('error-banner');
-            banner.style.display = 'block'; banner.innerText = "ALERTA: " + msg; console.error(msg);
+            banner.style.display = 'block';
+            banner.innerText = "ALERTA: " + msg;
+            console.error(msg);
         }
-        window.onerror = function(msg, url, line) { if(msg.includes('ResizeObserver')) return false; showError(`Erro JS: ${msg}`); return false; };
 
-        // INIT
+        window.onerror = function(msg, url, line) {
+            if(msg.includes('ResizeObserver')) return false;
+            showError(`Erro Interno JS: ${msg}`);
+            return false;
+        };
+
+        // --- 2. SUPABASE CONFIG ---
+        const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
+        
+        let supabase;
+        let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
+        let rawSapItems = [];
+
+        // --- 3. INICIALIZAÇÃO ---
         window.onload = async function() {
             try {
-                if (typeof window.supabase === 'undefined') throw new Error("Supabase não carregou.");
+                if (typeof window.supabase === 'undefined') throw new Error("Biblioteca Supabase não carregada.");
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
                 setupRealtime();
-            } catch (err) { showError(err.message); }
+            } catch (err) {
+                showError(err.message);
+            }
         };
 
         async function loadData() {
             try {
-                // Notas
                 let { data: nData, error } = await supabase.from('notas').select('*').order('ordem', {ascending: true, nullsFirst: false}).order('created_at', {ascending: false});
-                if (error) { 
+                if (error) {
                     const fallback = await supabase.from('notas').select('*').order('created_at', {ascending: false});
                     nData = fallback.data;
                 }
-                nfs = nData || [];
-                renderTable();
+                if (nData) { nfs = nData; renderTable(); }
 
-                // Checklist
                 const sData = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                servicesData = sData.data || [];
+                if (sData.error) {
+                    console.error("Checklist Error:", sData.error);
+                } else {
+                    servicesData = sData.data || [];
+                }
 
-                // Config
                 const cData = await supabase.from('checklist_config').select('titulo_data').eq('id', 1).single();
                 if(cData.data) document.getElementById('checklistDate').value = cData.data.titulo_data;
-            } catch (err) { showError("Conexão: " + err.message); }
+
+            } catch (err) {
+                showError("Falha ao conectar: " + err.message);
+            }
         }
 
         function setupRealtime() {
@@ -475,130 +527,251 @@
             .subscribe();
         }
 
-        // --- FUNÇÃO RENDER TABLE (PRINCIPAL) ---
-        function renderTable() {
-            const tbody = document.getElementById('tableBody'); 
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            nfs.forEach((nf, index) => {
-                const tr = document.createElement('tr');
-                tr.setAttribute('data-id', nf.id);
-                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
-                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
-                
-                const dragHandle = `<span class="material-icons-round drag-handle" title="Arrastar">drag_handle</span>`;
-                
-                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${formatCurrency(nf.valor)}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
-                tbody.appendChild(tr);
-            });
-            updateDashboard();
-            initSortable();
+        // --- NOVO CÓDIGO SAP HELPER ---
+        function openSapModal() {
+            document.getElementById('sapModal').classList.add('active');
+            document.getElementById('sapXmlInput').value = '';
+            document.getElementById('sapResults').style.display = 'none';
+        }
+        
+        function closeSapModal() {
+            document.getElementById('sapModal').classList.remove('active');
         }
 
-        // --- SAP HELPER ---
-        function openSapModal() { document.getElementById('sapModal').classList.add('active'); document.getElementById('sapXmlInput').value = ''; document.getElementById('sapResults').style.display = 'none'; }
-        function closeSapModal() { document.getElementById('sapModal').classList.remove('active'); }
-        function showToast(msg) { const t=document.getElementById('toast-notification'); t.innerText=msg; t.style.display='block'; setTimeout(()=>t.style.display='none',2000); }
-        function copyText(text) { navigator.clipboard.writeText(text).then(()=>showToast("Copiado!")); }
-        
+        function showToast(msg) {
+            const toast = document.getElementById('toast-notification');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copiado!");
+            });
+        }
+
+        // --- NET PRICE LOGIC ---
+        let currentNetList = [];
+
+        function openNetModal() {
+            const listDiv = document.getElementById('netListContent');
+            listDiv.innerHTML = '';
+            currentNetList = [];
+
+            const useItemTotal = document.getElementById('sapBaseToggle').checked;
+
+            rawSapItems.forEach(item => {
+                const base = useItemTotal ? item.vProd : item.vBC_XML;
+                
+                // CÁLCULO ESTILO PLANILHA (ARREDONDAR IMPOSTO)
+                const valICMS = round2(base * (item.pICMS / 100));
+                
+                // Base para PIS/COFINS (Deduz ICMS calculado arredondado)
+                const basePisCofins = base - valICMS;
+                
+                // Calcula PIS e COFINS (Arredondados)
+                const valPis = round2(basePisCofins * 0.0165);
+                const valCofins = round2(basePisCofins * 0.0760);
+                
+                // NET Final
+                const netValue = basePisCofins - valPis - valCofins;
+                
+                const netStr = netValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                currentNetList.push(netStr);
+
+                listDiv.innerHTML += `<div>${netStr}</div>`;
+            });
+
+            document.getElementById('netModal').classList.add('active');
+        }
+
+        function closeNetModal() {
+            document.getElementById('netModal').classList.remove('active');
+        }
+
+        function copyNetList() {
+            if(currentNetList.length === 0) return;
+            const textToCopy = currentNetList.join('\n');
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast("Lista copiada!");
+                closeNetModal(); 
+            });
+        }
+
+        // --- FUNÇÃO PARA MUDAR A ORDEM (NUMERAÇÃO MANUAL) ---
+        function changeItemOrder(oldIndex, newPosition) {
+            const newIndex = parseInt(newPosition) - 1; 
+            
+            if (isNaN(newIndex) || newIndex < 0 || newIndex >= rawSapItems.length) {
+                alert("Posição inválida");
+                recalcSapItems(); 
+                return;
+            }
+
+            const itemMoved = rawSapItems.splice(oldIndex, 1)[0];
+            rawSapItems.splice(newIndex, 0, itemMoved);
+
+            recalcSapItems();
+        }
+
+        // Helper Arredondamento Excel
         const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
 
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
-            if (!xmlInput.value) { alert("Cole o XML."); return; }
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlInput.value, "text/xml");
+            const xmlText = xmlInput.value;
+            if (!xmlText) { alert("Cole o XML primeiro."); return; }
 
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            // --- 1. Header Info ---
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
+            
             const ide = xmlDoc.getElementsByTagName("ide")[0];
             const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
             const nNF = ide.getElementsByTagName("nNF")[0]?.textContent || "";
             const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
             const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "VENDA";
+            
             const total = xmlDoc.getElementsByTagName("total")[0]?.getElementsByTagName("ICMSTot")[0];
             const vNF = total?.getElementsByTagName("vNF")[0]?.textContent || "0.00";
+
             const prot = xmlDoc.getElementsByTagName("infProt")[0];
             const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
             const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
+            
             let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
+            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
+            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
 
+            // Parcelas
             const dups = xmlDoc.getElementsByTagName("dup");
             let parcelasHtml = "Sem parcelas";
             if(dups.length > 0) {
                 let pHtml = "";
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
-                    if(vDup) pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
+                    if(vDup) {
+                        pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
+                    }
                 }
-                parcelasHtml = "Parcelas: " + pHtml;
+                parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
             }
 
+            // Formatação Data (DD.MM.YYYY)
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
 
             document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
+
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
-                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))} ${createSapBox("REF NF", nNF + "-" + serie)}
-                ${createSapBox("VALOR TOTAL", fmtMoney(vNF))} ${createSapBox("FORNECEDOR", emitNome.split(' ').slice(0, 2).join(' ') + " - MP")}
-                ${createSapBox("PROTOCOLO", nProt)} ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
-                ${createSapBox("CHAVE (8 Dígitos)", chave.length===44?chave.substring(35,43):"ERRO")} ${createSapBox("DÍGITO", chave.length===44?chave.charAt(43):"", false)}
+                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
+                ${createSapBox("REF NF", nNF + "-" + serie)}
+                ${createSapBox("VALOR TOTAL", fmtMoney(vNF))}
+                ${createSapBox("FORNECEDOR", shortName)}
+                ${createSapBox("PROTOCOLO", nProt)}
+                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
+                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
+                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
             `;
             grid.innerHTML += `<div style="grid-column: span 4; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.85rem; color: #333;">${parcelasHtml}</div>`;
 
-            rawSapItems = [];
+            // --- 2. Items Extraction ---
+            rawSapItems = []; 
             const dets = xmlDoc.getElementsByTagName("det");
+            
             for(let i=0; i<dets.length; i++) {
                 const prod = dets[i].getElementsByTagName("prod")[0];
                 const imposto = dets[i].getElementsByTagName("imposto")[0];
+                
                 const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
                 const qCom = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
                 const uCom = prod.getElementsByTagName("uCom")[0]?.textContent || "";
 
-                let vBC_ICMS=0, vICMS=0, pICMS=0, vIPI=0, pIPI=0;
-                
+                // ICMS
+                let vBC_ICMS = 0, vICMS = 0, pICMS = 0;
                 const icmsTag = imposto.getElementsByTagName("ICMS")[0];
-                if(icmsTag && icmsTag.children.length>0) {
-                    const inner = icmsTag.children[0];
-                    vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent||0);
-                    vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent||0);
-                    pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent||0);
+                if(icmsTag && icmsTag.children.length > 0) {
+                    const inner = icmsTag.children[0]; 
+                    vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent || 0);
+                    vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
+                    pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent || 0);
                 }
+
+                // IPI
+                let vIPI = 0, pIPI = 0;
                 const ipiTag = imposto.getElementsByTagName("IPI")[0];
                 if(ipiTag) {
                     const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
-                    if(ipiTrib) { vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent||0); pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent||0); }
+                    if(ipiTrib) {
+                        vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
+                        pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent || 0);
+                    }
                 }
-                
+
+                // PIS
+                let vPIS = 0, pPIS = 0;
+                const pisTag = imposto.getElementsByTagName("PIS")[0];
+                if(pisTag) {
+                    const pisAliq = pisTag.getElementsByTagName("PISAliq")[0] || pisTag.getElementsByTagName("PISOutr")[0];
+                    if(pisAliq) {
+                        vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
+                        pPIS = parseFloat(pisAliq.getElementsByTagName("pPIS")[0]?.textContent || 0);
+                    }
+                }
+
+                // COFINS
+                let vCOFINS = 0, pCOFINS = 0;
+                const cofinsTag = imposto.getElementsByTagName("COFINS")[0];
+                if(cofinsTag) {
+                    const cofinsAliq = cofinsTag.getElementsByTagName("COFINSAliq")[0] || cofinsTag.getElementsByTagName("COFINSOutr")[0];
+                    if(cofinsAliq) {
+                        vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
+                        pCOFINS = parseFloat(cofinsAliq.getElementsByTagName("pCOFINS")[0]?.textContent || 0);
+                    }
+                }
+
                 rawSapItems.push({
                     name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
-                    index: i + 1, vProd: vProd, qCom: qCom, uCom: uCom,
+                    index: i + 1, // Index original do XML
+                    vProd: vProd,
+                    qCom: qCom, // Quantidade
+                    uCom: uCom, // Unidade
                     vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
-                    vICMS: vICMS, pICMS: pICMS, vIPI: vIPI, pIPI: pIPI
+                    vICMS: vICMS, pICMS: pICMS,
+                    vIPI: vIPI, pIPI: pIPI,
+                    vPIS: vPIS, pPIS: pPIS,
+                    vCOFINS: vCOFINS, pCOFINS: pCOFINS
                 });
             }
+
             document.getElementById('sapResults').style.display = 'block';
-            recalcSapItems();
+            recalcSapItems(); 
+            
+            // CLEAN INPUT
             xmlInput.value = '';
         }
-        function createSapBox(label, value, copy=true) { return `<div class="sap-header-item" ${copy ? `onclick="copyText('${value}')"`:''}><span class="sap-label">${label}</span><span class="sap-value">${value}</span></div>`; }
 
-        function changeItemOrder(oldIndex, newPos) {
-            const newIndex = parseInt(newPos) - 1;
-            if(isNaN(newIndex) || newIndex < 0 || newIndex >= rawSapItems.length) { alert("Posição inválida"); recalcSapItems(); return; }
-            const item = rawSapItems.splice(oldIndex, 1)[0];
-            rawSapItems.splice(newIndex, 0, item);
-            recalcSapItems();
+        function createSapBox(label, value, copy=true) {
+            const clickAttr = copy ? `onclick="copyText('${value}')"` : '';
+            return `<div class="sap-header-item" ${clickAttr}>
+                        <span class="sap-label">${label}</span>
+                        <span class="sap-value">${value}</span>
+                    </div>`;
         }
 
         function recalcSapItems() {
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
             const container = document.getElementById('sapItemsContainer');
             container.innerHTML = '';
-            let totalValidator = 0;
             
-            rawSapItems.forEach((item, idx) => {
+            let totalValidator = 0;
+
+            rawSapItems.forEach((item, currentIndex) => {
                 const base = useItemTotal ? item.vProd : item.vBC_XML;
                 
                 // CÁLCULO ESTILO PLANILHA (ARREDONDAR IMPOSTO)
@@ -614,212 +787,182 @@
                 const valPis = round2(basePisCofins * 0.0165);
                 const valCofins = round2(basePisCofins * 0.0760);
                 
-                // NET Final
+                // NET Final (BaseReduzida - PIS - COFINS)
                 const baseCbs = basePisCofins - valPis - valCofins;
-                
-                const copyString = `${fmt(baseCbs)}\t0,00\n${fmt(basePisCofins)}\t7,60\n${fmt(baseCbs)}\t0,00\n${fmt(base)}\t${fmt(item.pICMS)}\n${fmt(base)}\t${fmt(item.pIPI)}\n${fmt(basePisCofins)}\t1,65`;
-                
-                container.innerHTML += `<div class="sap-item-row">
-                    <div class="sap-item-header" onclick="if(event.target.tagName!=='INPUT'&&event.target.tagName!=='BUTTON')this.nextElementSibling.classList.toggle('active')">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            #<input type="number" class="order-input" value="${idx+1}" onchange="changeItemOrder(${idx},this.value)" onclick="event.stopPropagation()">
-                            <div style="display:flex;flex-direction:column;"><span class="sap-item-title">${item.name}</span><span style="font-size:0.75rem;color:#64748b">Qtd: <b>${parseFloat(item.qCom).toLocaleString('pt-BR')}</b> ${item.uCom}</span></div>
-                            <div style="flex:1"></div><button class="nav-btn" style="height:24px;font-size:0.7rem;background:#2563eb;color:white" onclick="event.stopPropagation();copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
+
+                // String para Copiar
+                const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                const copyString = 
+                    `${fmtCopy(baseCbs)}\t0,00\n` + 
+                    `${fmtCopy(basePisCofins)}\t7,60\n` + 
+                    `${fmtCopy(baseCbs)}\t0,00\n` +
+                    `${fmtCopy(baseICMS)}\t${fmtCopy(item.pICMS)}\n` +
+                    `${fmtCopy(baseIPI)}\t${fmtCopy(item.pIPI)}\n` +
+                    `${fmtCopy(basePisCofins)}\t1,65`;
+
+                // Renderiza Linha
+                const div = document.createElement('div');
+                div.className = 'sap-item-row';
+                div.innerHTML = `
+                    <div class="sap-item-header" onclick="if(event.target.tagName !== 'INPUT' && event.target.tagName !== 'BUTTON') this.nextElementSibling.classList.toggle('active')">
+                        <div style="display:flex; align-items:center; gap:10px;">
+                            <div style="display:flex; align-items:center; gap:4px; font-size:0.8rem; font-weight:700; color:#64748b;">
+                                #<input type="number" class="order-input" value="${currentIndex + 1}" onchange="changeItemOrder(${currentIndex}, this.value)" onclick="event.stopPropagation()">
+                            </div>
+                            <div style="display:flex; flex-direction:column;">
+                                <span class="sap-item-title">${item.name}</span>
+                                <div style="font-size: 0.75rem; color: #64748b; margin-top:2px;">
+                                   Qtd: <b>${parseFloat(item.qCom).toLocaleString('pt-BR')}</b> ${item.uCom}
+                                </div>
+                            </div>
+                            <div style="flex:1;"></div>
+                            <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                         </div>
                         <span class="material-icons-round">expand_more</span>
                     </div>
-                    <div class="sap-item-body active"><div class="sap-tax-grid">
-                        ${createTaxCol("CBS", baseCbs, 0)}${createTaxCol("COFINS", basePisCofins, valCofins)}${createTaxCol("IBSS", baseCbs, 0)}
-                        ${createTaxCol("ICMS", base, valICMS)}${createTaxCol("IPI", base, valIPI)}${createTaxCol("PIS", basePisCofins, valPis)}
-                    </div></div>
-                </div>`;
+                    <div class="sap-item-body active">
+                        <div class="sap-tax-grid">
+                            ${createTaxCol("CBS", baseCbs, 0)}
+                            ${createTaxCol("COFINS", basePisCofins, valCofins)}
+                            ${createTaxCol("IBSS", baseCbs, 0)}
+                            ${createTaxCol("ICMS", base, valICMS)}
+                            ${createTaxCol("IPI", base, valIPI)}
+                            ${createTaxCol("PIS", basePisCofins, valPis)}
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
             });
+            
             document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO NF: " + formatCurrency(totalValidator);
         }
-        function createTaxCol(n,b,v){ return `<div class="sap-tax-col"><div class="sap-tax-header">${n}</div><div class="sap-tax-cell" onclick="copyText('${fmt(b)}')">${fmt(b)}</div><div class="sap-tax-cell" style="cursor:default;color:#64748b">${fmt(v)}</div></div>`; }
-        const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
 
-        // NET PRICE
-        function openNetModal() {
-            const list = document.getElementById('netListContent'); list.innerHTML = '';
-            const useItemTotal = document.getElementById('sapBaseToggle').checked;
-            let copyStr = "";
-            rawSapItems.forEach(item => {
-                const base = useItemTotal ? item.vProd : item.vBC_XML;
-                // Recalcula NET com a lógica Excel
-                const valICMS = round2(base * (item.pICMS / 100));
-                const basePisCofins = base - valICMS;
-                const valPis = round2(basePisCofins * 0.0165);
-                const valCofins = round2(basePisCofins * 0.0760);
-                const net = basePisCofins - valPis - valCofins;
-                const s = fmt(net);
-                list.innerHTML += `<div>${s}</div>`;
-                copyStr += s + "\n";
-            });
-            document.getElementById('netModal').setAttribute('data-copy', copyStr);
-            document.getElementById('netModal').classList.add('active');
+        function createTaxCol(name, base, valImposto) {
+            const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            return `
+                <div class="sap-tax-col">
+                    <div class="sap-tax-header">${name}</div>
+                    <div class="sap-tax-cell" title="Copiar Base" onclick="copyText('${fmt(base)}')">${fmt(base)}</div>
+                    <div class="sap-tax-cell" style="color:#64748b; font-size:0.75rem; cursor:default;" title="Valor Imposto">${fmt(valImposto)}</div>
+                </div>
+            `;
         }
-        function closeNetModal() { document.getElementById('netModal').classList.remove('active'); }
-        function copyNetList() { const t = document.getElementById('netModal').getAttribute('data-copy'); if(t){ navigator.clipboard.writeText(t).then(()=>{ showToast("Lista copiada!"); closeNetModal(); }); } }
 
-        // CHECKLIST - CORREÇÃO DE ABERTURA
+        function formatCurrency(val) {
+            return parseFloat(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
+        }
+
+        // --- FUNÇÕES DE MODAL PADRÃO ---
+        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
+        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
+        
+        // CORREÇÃO: Abre o modal imediatamente
         async function openServicesModal() { 
-            // 1. Abre a janela IMEDIATAMENTE (sem await)
-            document.getElementById('servicesModal').classList.add('active');
-            
-            try {
-                // 2. Busca dados depois
-                const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if(data) servicesData = data;
-                renderServicesTable(); 
-                updateChecklistDashboard(); 
-            } catch(e) {
-                console.error("Erro ao carregar checklist:", e);
-                // Mesmo com erro, renderiza a tabela vazia para não travar
-                if(!servicesData) servicesData = [];
-                renderServicesTable();
-            }
+            document.getElementById('servicesModal').classList.add('active'); 
+            const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
+            if(data) servicesData = data;
+            renderServicesTable(); 
+            updateChecklistDashboard(); 
         }
         function closeServicesModal() { document.getElementById('servicesModal').classList.remove('active'); }
-
-        // FILTRO CHECKLIST (PERSISTÊNCIA)
-        function applyServiceFilters() {
-            const filters = Array.from(document.querySelectorAll('.filter-input'));
-            const rows = document.querySelectorAll('#svcTableBody tr');
-            
-            rows.forEach(row => {
-                let visible = true;
-                filters.forEach(input => {
-                    if (input.value) {
-                        const colIndex = Array.prototype.indexOf.call(input.parentElement.parentNode.children, input.parentElement);
-                        const cell = row.children[colIndex];
-                        // Pega valor do input/select ou texto direto
-                        let content = '';
-                        if (cell.querySelector('input')) content = cell.querySelector('input').value;
-                        else if (cell.querySelector('select')) content = cell.querySelector('select').value;
-                        else content = cell.textContent;
-                        
-                        if (!content.toUpperCase().includes(input.value.toUpperCase())) {
-                            visible = false;
-                        }
-                    }
-                });
-                row.style.display = visible ? '' : 'none';
-            });
-        }
         
-        // Chamada antiga agora redireciona para o filtro global
-        function filterServices(colIndex, val) { applyServiceFilters(); }
-
-        function renderServicesTable() {
-            const tbody = document.getElementById('svcTableBody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            if(!servicesData || servicesData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Lista vazia.</td></tr>';
-                return;
-            }
-
-            servicesData.forEach((row, index) => {
-                const tr = document.createElement('tr');
-                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
-                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => {
-                    let cssClass = 'svc-select ' + getStatusClass(val);
-                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
-                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
-                };
-                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
-                tbody.appendChild(tr);
-            });
-            // Re-aplica filtros após renderizar
-            applyServiceFilters();
-        }
-
-        // RESTANTE
         function openXMLModal() { document.getElementById('xmlModal').classList.add('active'); }
         function closeXMLModal() { document.getElementById('xmlModal').classList.remove('active'); document.getElementById('xmlInput').value = ''; }
         function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
         function closeDeleteModal() { document.getElementById('deleteModal').classList.remove('active'); }
+        
         function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
         function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
+        
         function openDeleteModal(index, svc) { if(svc) { itemToDeleteId = servicesData[index].id; isDeletingService = true; } else { itemToDeleteId = nfs[index].id; isDeletingService = false; } document.getElementById('deleteModal').classList.add('active'); }
+        
         async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
-        function updateChecklistDashboard() { const ctx = document.getElementById('checkChart').getContext('2d'); if(checklistChartInstance) checklistChartInstance.destroy(); const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : ""; const total = servicesData.length; const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length; const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length; const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length; document.getElementById('chkTotal').innerText = total; document.getElementById('chkRec').innerText = received; document.getElementById('chkPen').innerText = pending; document.getElementById('chkNop').innerText = notDone; checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } }); }
-        async function exportServicesPDF() { if(!window.jspdf) { alert("Erro PDF"); return; } const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4'); const dateTitle = document.getElementById('checklistDate').value || 'Geral'; doc.setFontSize(14); doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15); const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"]; const tableRows = []; const trs = document.querySelectorAll('#svcTableBody tr'); trs.forEach(tr => { if (tr.style.display !== 'none') { const inputs = tr.querySelectorAll('input, select'); if (inputs.length > 0) { const rowData = [ inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value ]; tableRows.push(rowData); } } }); doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }, columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } }, didParseCell: function(data) { if (data.section === 'body') { if (data.column.index === 2 || data.column.index === 3) { const text = (data.cell.raw || '').toString().toUpperCase(); if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28]; } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } else if (text.includes('NÃO PRESTADO')) { data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216]; } else if (text.includes('APROVAÇÃO')) { data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9]; } data.cell.styles.fontStyle = 'bold'; } } } }); doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`); }
-        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
-        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
-        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
-        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
-        function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
-        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
-        function formatCurrency(val) { return parseFloat(val).toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}); }
-        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
-        function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
-        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
-        async function editRow(index) { const nf = nfs[index]; if(!nf) return; 
-            document.getElementById('editId').value = nf.id; 
-            document.getElementById('modalTitle').innerText = "Editar Nota"; 
-            document.getElementById('setor').value = nf.setor || ''; 
-            document.getElementById('tipo').value = nf.tipo || ''; 
-            document.getElementById('fornecedor').value = nf.fornecedor || ''; 
-            // Formatar valor para BR
-            document.getElementById('valor').value = nf.valor ? parseFloat(nf.valor).toLocaleString('pt-BR', {minimumFractionDigits: 2}) : ''; 
-            // Formatar datas para BR
-            document.getElementById('dataEmissao').value = formatDate(nf.emissao); 
-            document.getElementById('dataInclusao').value = formatDate(nf.inclusao);
-            document.getElementById('dataVencimento').value = formatDate(nf.vencimento);
-            
-            document.getElementById('obsErro').value = nf.obs_erro || ''; 
-            document.getElementById('pedido').value = nf.pedido || ''; 
-            document.getElementById('linhaPedido').value = nf.linha_pedido || ''; 
-            document.getElementById('referencia').value = nf.referencia || ''; 
-            document.getElementById('chave').value = nf.chave || ''; 
-            document.getElementById('respCorrecao').value = nf.resp_correcao || ''; 
-            document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; 
-            document.getElementById('modalOverlay').classList.add('active'); 
-        }
-        
-        // Helper para limpar e salvar
-        const cleanMoney = (v) => v.replace(/\./g, '').replace(',', '.');
-        const cleanDate = (d) => d.split('/').reverse().join('-');
 
-        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ 
-            e.preventDefault(); 
-            const id = document.getElementById('editId').value; 
-            const data = { 
-                setor:document.getElementById('setor').value, 
-                tipo:document.getElementById('tipo').value, 
-                fornecedor:document.getElementById('fornecedor').value, 
-                // Salvar convertendo BR -> US
-                valor: cleanMoney(document.getElementById('valor').value), 
-                emissao: cleanDate(document.getElementById('dataEmissao').value), 
-                inclusao: document.getElementById('dataInclusao').value ? cleanDate(document.getElementById('dataInclusao').value) : null,
-                vencimento: document.getElementById('dataVencimento').value ? cleanDate(document.getElementById('dataVencimento').value) : null,
+        function updateChecklistDashboard() {
+            const ctx = document.getElementById('checkChart').getContext('2d');
+            if(checklistChartInstance) checklistChartInstance.destroy();
+            
+            const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+            const total = servicesData.length;
+            const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
+            const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
+            const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
+
+            document.getElementById('chkTotal').innerText = total;
+            document.getElementById('chkRec').innerText = received;
+            document.getElementById('chkPen').innerText = pending;
+            document.getElementById('chkNop').innerText = notDone;
+
+            checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
+        }
+
+        async function exportServicesPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            const dateTitle = document.getElementById('checklistDate').value || 'Geral';
+            doc.setFontSize(14);
+            doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
+            const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
+            const tableRows = [];
+            
+            const trs = document.querySelectorAll('#svcTableBody tr');
+            trs.forEach(tr => {
+                if (tr.style.display !== 'none') {
+                    const inputs = tr.querySelectorAll('input, select');
+                    if (inputs.length > 0) {
+                        const rowData = [
+                            inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value,
+                            inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value,
+                            inputs[8].value, inputs[9].value, inputs[10].value
+                        ];
+                        tableRows.push(rowData);
+                    }
+                }
+            });
+
+            doc.autoTable({
+                head: [tableColumn], body: tableRows, startY: 20, theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 2, valign: 'middle' },
+                headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' },
+                columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } },
+                didParseCell: function(data) {
+                    if (data.section === 'body') {
+                        if (data.column.index === 2 || data.column.index === 3) {
+                            const text = (data.cell.raw || '').toString().toUpperCase();
+                            if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) {
+                                data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28];
+                            } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) {
+                                data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52];
+                            } else if (text.includes('NÃO PRESTADO')) {
+                                data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216];
+                            } else if (text.includes('APROVAÇÃO')) {
+                                data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9];
+                            }
+                            data.cell.styles.fontStyle = 'bold';
+                        }
+                    }
+                }
+            });
+            doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody'); tbody.innerHTML = '';
+            nfs.forEach((nf, index) => {
+                const tr = document.createElement('tr');
+                tr.setAttribute('data-id', nf.id);
+                let badgeClass = 'bg-fiscal'; if(nf.setor) { const s = nf.setor.trim().toUpperCase(); if(s==='COMPRAS') badgeClass='bg-compras'; else if(s==='ALMOXARIFADO') badgeClass='bg-almox'; else if(s==='APROVAÇÃO') badgeClass='bg-aprov'; }
+                const stClass = nf.corrigido ? 'completed' : 'pending'; const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
                 
-                obs_erro:document.getElementById('obsErro').value, 
-                pedido:document.getElementById('pedido').value, 
-                linha_pedido:document.getElementById('linhaPedido').value, 
-                referencia:document.getElementById('referencia').value, 
-                chave:document.getElementById('chave').value, 
-                resp_correcao:document.getElementById('respCorrecao').value, 
-                obs_correcao:document.getElementById('obsCorrecao').value 
-            }; 
-            if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); 
-            closeModal(); loadData(); 
-        });
-        
-        document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
-        window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
-        
-        function updateDashboard() { const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} }; nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } }); document.getElementById('statsBox').innerHTML = Object.keys(map).map(key => { const css = 'stat-'+key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); return `<div class="stat-item ${css}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">R$ ${map[key].t.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span></div>` }).join(''); const ctx = document.getElementById('sectorChart').getContext('2d'); if (chartInstance) chartInstance.destroy(); chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } }); }
-        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const checklistPendingCount = servicesData.filter(s => s.envio_nf && s.envio_nf.toUpperCase().includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
-        function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
-        async function exportKPIPDF() { const element = document.getElementById('kpiContent'); const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); const imgData = canvas.toDataURL('image/jpeg', 0.8); const { jsPDF } = window.jspdf; const pdf = new jsPDF('l', 'mm', 'a4'); const imgProps = pdf.getImageProperties(imgData); const pdfWidth = pdf.internal.pageSize.getWidth(); const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } pdf.save('KPI_Dashboard.pdf'); }
-        function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
-        function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
+                const dragHandle = `<span class="material-icons-round drag-handle" title="Arrastar">drag_handle</span>`;
+                
+                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
+                tbody.appendChild(tr);
+            });
+            updateDashboard();
+            initSortable();
+        }
 
         function initSortable() {
             const el = document.getElementById('tableBody');
@@ -836,16 +979,117 @@
                                 nfs.splice(evt.newIndex, 0, item);
                                 const updates = nfs.map((nf, index) => ({ id: nf.id, ordem: index }));
                                 await supabase.from('notas').upsert(updates, { onConflict: 'id' });
-                            } catch(e) { showError("Erro ao salvar ordem: " + e.message); }
+                            } catch(e) { console.error("Erro ao salvar ordem: " + e.message); }
                         }
                     });
                 }
             }
         }
+
+        // --- FILTRO CHECKLIST CORRIGIDO (PERSISTÊNCIA) ---
+        function applyServiceFilters() {
+            const filters = Array.from(document.querySelectorAll('.filter-input'));
+            const rows = document.querySelectorAll('#svcTableBody tr');
+            
+            rows.forEach(row => {
+                let visible = true;
+                filters.forEach(input => {
+                    if (input.value) {
+                        // Acha a coluna correspondente
+                        const th = input.parentElement;
+                        const colIndex = Array.prototype.indexOf.call(th.parentElement.children, th);
+                        const cell = row.children[colIndex];
+                        
+                        let content = '';
+                        if (cell.querySelector('input')) content = cell.querySelector('input').value;
+                        else if (cell.querySelector('select')) content = cell.querySelector('select').value;
+                        else content = cell.textContent;
+                        
+                        if (!content.toUpperCase().includes(input.value.toUpperCase())) {
+                            visible = false;
+                        }
+                    }
+                });
+                row.style.display = visible ? '' : 'none';
+            });
+        }
         
-        // --- FUNÇÕES DE MODAL PADRÃO ---
-        function openKPIModal() { calculateKPIs(); document.getElementById('kpiModal').classList.add('active'); }
-        function closeKPIModal() { document.getElementById('kpiModal').classList.remove('active'); }
+        // Redireciona a chamada antiga para a nova lógica global
+        function filterServices(colIndex, val) { applyServiceFilters(); }
+
+        function renderServicesTable() {
+            const tbody = document.getElementById('svcTableBody');
+            tbody.innerHTML = '';
+            
+            if(servicesData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Lista vazia ou acesso bloqueado (Verifique RLS no Supabase).</td></tr>';
+                return;
+            }
+
+            servicesData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
+                const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
+                const createSelect = (field, val, options) => {
+                    let cssClass = 'svc-select ' + getStatusClass(val);
+                    let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join('');
+                    return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`;
+                };
+                tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
+                tbody.appendChild(tr);
+            });
+            // Re-aplica filtros ao renderizar
+            applyServiceFilters();
+        }
+
+        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
+        async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
+        async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
+        
+        async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
+        function closeNotesModal() { document.getElementById('notesModal').classList.remove('active'); }
+        async function saveNotes() { const txt=document.getElementById('notesArea').value; await supabase.from('consideracoes').upsert({id:1,texto:txt}); document.getElementById('notesStatus').innerText="Salvo!"; setTimeout(()=>document.getElementById('notesStatus').innerText="",2000); }
+
+        function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
+        function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
+        async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
+        async function editRow(index) { const nf = nfs[index]; if(!nf) return; document.getElementById('editId').value = nf.id; document.getElementById('modalTitle').innerText = "Editar Nota"; document.getElementById('setor').value = nf.setor || ''; document.getElementById('tipo').value = nf.tipo || ''; document.getElementById('fornecedor').value = nf.fornecedor || ''; document.getElementById('valor').value = nf.valor || ''; document.getElementById('dataEmissao').value = nf.emissao || ''; document.getElementById('obsErro').value = nf.obs_erro || ''; document.getElementById('pedido').value = nf.pedido || ''; document.getElementById('linhaPedido').value = nf.linha_pedido || ''; document.getElementById('dataInclusao').value = nf.inclusao || ''; document.getElementById('dataVencimento').value = nf.vencimento || ''; document.getElementById('referencia').value = nf.referencia || ''; document.getElementById('chave').value = nf.chave || ''; document.getElementById('respCorrecao').value = nf.resp_correcao || ''; document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; document.getElementById('modalOverlay').classList.add('active'); }
+        document.getElementById('nfForm').addEventListener('submit', async(e)=>{ e.preventDefault(); const id = document.getElementById('editId').value; const data = { setor:document.getElementById('setor').value, tipo:document.getElementById('tipo').value, fornecedor:document.getElementById('fornecedor').value, valor:document.getElementById('valor').value, emissao:document.getElementById('dataEmissao').value, obs_erro:document.getElementById('obsErro').value, pedido:document.getElementById('pedido').value, linha_pedido:document.getElementById('linhaPedido').value, inclusao:document.getElementById('dataInclusao').value||null, vencimento:document.getElementById('dataVencimento').value||null, referencia:document.getElementById('referencia').value, chave:document.getElementById('chave').value, resp_correcao:document.getElementById('respCorrecao').value, obs_correcao:document.getElementById('obsCorrecao').value }; if(id) await supabase.from('notas').update(data).eq('id', id); else await supabase.from('notas').insert([data]); closeModal(); loadData(); });
+        document.getElementById('btnNovo').onclick=()=>{ document.getElementById('editId').value=""; document.getElementById('nfForm').reset(); document.getElementById('modalOverlay').classList.add('active'); };
+        window.onclick=(e)=>{ if(e.target.classList.contains('modal-overlay')) e.target.classList.remove('active'); };
+        
+        function updateDashboard() {
+            const map = { 'FISCAL':{c:0,t:0}, 'COMPRAS':{c:0,t:0}, 'ALMOXARIFADO':{c:0,t:0}, 'APROVAÇÃO':{c:0,t:0} };
+            nfs.forEach(nf => { const s = nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if (map[s]) { map[s].c++; map[s].t += parseFloat(String(nf.valor).replace(/[^\d.,]/g,'').replace('.','').replace(',','.')) || 0; } });
+            
+            document.getElementById('statsBox').innerHTML = Object.keys(map).map(key => { 
+                const css = 'stat-'+key.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""); 
+                return `<div class="stat-item ${css}"><span class="stat-label">${key}</span><span class="stat-count">${map[key].c}</span><span class="stat-value">R$ ${map[key].t.toLocaleString('pt-BR',{minimumFractionDigits:2})}</span></div>` 
+            }).join('');
+            
+            const ctx = document.getElementById('sectorChart').getContext('2d');
+            if (chartInstance) chartInstance.destroy();
+            chartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(map), datasets: [{ data: Object.values(map).map(m=>m.c), backgroundColor: ['#b45309','#b91c1c','#1d4ed8','#047857'], borderWidth:0 }] }, options: { responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{ legend:{display:false} } } });
+        }
+
+        function calculateKPIs() { const today=new Date(); today.setHours(0,0,0,0); const next10=new Date(today); next10.setDate(today.getDate()+10); const stats={merc:{0:{title:"NOTAS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}},serv:{0:{title:"SERVIÇOS PENDENTES:",total:0,sectors:initSectors()},1:{title:"A VENCER (10 DIAS):",total:0,sectors:initSectors()},2:{title:"VENCIDAS:",total:0,sectors:initSectors()}}}; function initSectors(){return{'COMPRAS':{c:0,d:null,s:'-'},'FISCAL':{c:0,d:null,s:'-'},'APROVAÇÃO':{c:0,d:null,s:'-'},'ALMOXARIFADO':{c:0,d:null,s:'-'}};} nfs.forEach(nf=>{ const tk=nf.tipo==='MERCADORIA'?'merc':'serv'; const s=nf.setor ? nf.setor.trim().toUpperCase() : 'OUTROS'; if(!stats[tk][0].sectors[s]) return; const em=nf.emissao?new Date(nf.emissao+'T00:00:00'):null; const v=nf.vencimento?new Date(nf.vencimento+'T00:00:00'):null; updateStat(stats[tk][0],s,em,nf.fornecedor); if(v){ if(v>=today&&v<=next10) updateStat(stats[tk][1],s,em,nf.fornecedor); if(v<today) updateStat(stats[tk][2],s,em,nf.fornecedor); } }); function updateStat(o,sec,d,sup){ if(!o.sectors[sec])return; o.total++; o.sectors[sec].c++; if(d&&(!o.sectors[sec].d||d<o.sectors[sec].d)){o.sectors[sec].d=d; o.sectors[sec].s=sup;} } document.getElementById('colMercadoria').innerHTML=renderKPITables(stats.merc); document.getElementById('colServico').innerHTML=renderKPITables(stats.serv); const checklistPendingCount = servicesData.filter(s => s.envio_nf && s.envio_nf.toUpperCase().includes('PENDENTE')).length; document.getElementById('kpiChecklistCount').innerText = checklistPendingCount; }
+        function renderKPITables(d){ let h=''; [0,1,2].forEach(i=>{const g=d[i]; h+=`<div class="kpi-table-wrapper"><div class="kpi-header-row"><span>${g.title}</span><span class="kpi-count-badge">${g.total}</span></div><table class="kpi-table"><tr><th>SETOR</th><th>QTD</th><th>DATA</th><th>FORN.</th></tr>`; ['COMPRAS','FISCAL','APROVAÇÃO','ALMOXARIFADO'].forEach((s,idx)=>{const r=g.sectors[s]; const ds=(r.c>0&&r.d)?r.d.toLocaleDateString('pt-BR'):'-'; h+=`<tr class="${idx%2===0?'kpi-row-grey':'kpi-row-fiscal'}"><td>${s}</td><td class="${r.c>0?'red-text':''}">${r.c}</td><td>${ds}</td><td>${r.c>0?r.s:'-'}</td></tr>`;}); h+=`</table></div>`;}); return h; }
+        async function exportKPIPDF() { 
+            if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; }
+            const element = document.getElementById('kpiContent');
+            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f1f5f9' }); 
+            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
+            const { jsPDF } = window.jspdf; 
+            const pdf = new jsPDF('l', 'mm', 'a4'); 
+            const imgProps = pdf.getImageProperties(imgData); 
+            const pdfWidth = pdf.internal.pageSize.getWidth(); 
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
+            if (pdfHeight > pdf.internal.pageSize.getHeight()) { const ratio = pdf.internal.pageSize.getHeight() / pdfHeight; pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth * ratio, pdf.internal.pageSize.getHeight()); } 
+            else { pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); } 
+            pdf.save('KPI_Dashboard.pdf'); 
+        }
+        function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
+        function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
     </script>
 </body>
 </html>
