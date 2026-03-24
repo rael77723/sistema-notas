@@ -525,29 +525,44 @@ border: 1px solid #e2e8f0; padding: 10px;
             overflow: visible !important; 
             height: auto !important; 
         }
+
+        /* Esconde ABSOLUTAMENTE TUDO que não é o Modal do KPI */
         body.auto-print-mode header, 
         body.auto-print-mode .main-content, 
-        body.auto-print-mode .modal-header,
-        body.auto-print-mode .update-bubble-overlay { 
+        body.auto-print-mode .update-bubble-overlay,
+        body.auto-print-mode #toast-notification,
+        body.auto-print-mode .close-btn,
+        body.auto-print-mode .pdf-btn { 
             display: none !important; 
         }
+
+        /* Garante que o fundo do modal fique branco e sem transparência */
         body.auto-print-mode .modal-overlay { 
-            display: flex !important; 
-            position: relative !important; 
+            display: block !important; 
+            position: absolute !important; 
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
             background: white !important; 
             backdrop-filter: none !important;
-            padding: 0 !important;
+            z-index: 99999 !important;
         }
+
+        /* Faz o container do KPI ocupar a folha inteira */
         body.auto-print-mode .modal.kpi-modal-container { 
             box-shadow: none !important; 
             width: 100% !important; 
+            max-width: 100% !important;
             margin: 0 !important; 
+            height: auto !important;
             max-height: none !important;
             border: none !important;
+            background: white !important;
         }
+
         body.auto-print-mode .kpi-grid { 
             background: white !important; 
-            padding: 0 !important;
+            padding: 10px !important;
         }
     </style>
 </head>
