@@ -518,6 +518,37 @@ border: 2px solid #000; box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 border: 1px solid #e2e8f0; padding: 10px; 
             margin: 10px 0; max-height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.9rem;
 }
+
+        /* --- CSS DE IMPRESSÃO / AUTOMAÇÃO --- */
+        body.auto-print-mode { 
+            background: white !important; 
+            overflow: visible !important; 
+            height: auto !important; 
+        }
+        body.auto-print-mode header, 
+        body.auto-print-mode .main-content, 
+        body.auto-print-mode .modal-header,
+        body.auto-print-mode .update-bubble-overlay { 
+            display: none !important; 
+        }
+        body.auto-print-mode .modal-overlay { 
+            display: flex !important; 
+            position: relative !important; 
+            background: white !important; 
+            backdrop-filter: none !important;
+            padding: 0 !important;
+        }
+        body.auto-print-mode .modal.kpi-modal-container { 
+            box-shadow: none !important; 
+            width: 100% !important; 
+            margin: 0 !important; 
+            max-height: none !important;
+            border: none !important;
+        }
+        body.auto-print-mode .kpi-grid { 
+            background: white !important; 
+            padding: 0 !important;
+        }
     </style>
 </head>
 <body>
@@ -838,6 +869,15 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
                 setupRealtime();
+
+                /* --- LÓGICA DE AUTOMAÇÃO (MAPEADA NA CARGA) --- */
+                const urlParams = new URLSearchParams(window.location.search);
+                if(urlParams.get('auto') === 'kpi') {
+                    document.body.classList.add('auto-print-mode');
+                    document.body.classList.remove('dark-mode'); // PDF sempre branco
+                    setTimeout(() => { openKPIModal(); }, 1500); // Espera dados carregarem
+                }
+
             } catch (err) {
                 showError(err.message);
             }
@@ -974,7 +1014,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
                     if(vDup) {
-                        pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
+                        pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
                     }
                 }
                 parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
@@ -1322,9 +1362,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             <p>Confira o que mudou:</p>
             
             <ul>
-                <li><b>Tema escuro:</b> Agora o site conta com a opção de definir o tema claro ou escuro, ao lado do título do site.</li>
-                <li><b>Design:</b> Novo sistema de avisos de atualização (igual a este que você está vendo).</li>
-                <li><b>Performance:</b> Outros ajustes na estabilidade do banco de dados.</li>
+                <li><b>Envio de KPI Diário:</b> O sistema agora permite a captura do KPI e faz o envio diário automático via WhatsApp.</li>
+                <li><b>Parâmetros:</b> Adicionado novos parâmetros de URL para integração com futuras automatizações.</li>
             </ul>
 
             <button class="btn-update-close" onclick="closeUpdateBubble()">Entendido!</button>
@@ -1332,25 +1371,20 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
     </div>
 
     <script>
-        // CONFIGURAÇÃO DA VERSÃO - Mude este número para o aviso aparecer novamente
-        const AVISO_VERSAO = "1.2"; 
+        const AVISO_VERSAO = "1.7"; 
 
         function checkUpdateBubble() {
             const lastSeenVersion = localStorage.getItem('lastSeenUpdateVersion');
-            
-            // Se a versão atual for diferente da salva no navegador, mostra a bolha
             if (lastSeenVersion !== AVISO_VERSAO) {
                 document.getElementById('updateBubble').style.display = 'flex';
             }
         }
 
         function closeUpdateBubble() {
-            // Salva no navegador que o usuário já viu esta versão
             localStorage.setItem('lastSeenUpdateVersion', AVISO_VERSAO);
             document.getElementById('updateBubble').style.display = 'none';
         }
 
-        // Executa a verificação assim que o site carrega
         window.addEventListener('load', checkUpdateBubble);
     </script>
 
