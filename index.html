@@ -559,6 +559,10 @@ border: 1px solid #e2e8f0; padding: 10px;
         body.auto-print-mode #kpiModal .pdf-btn {
             display: none !important;
         }
+
+        /* AJUSTES SOLICITADOS NO SAP XML HELPER */
+        #sapResults { display: none; flex: 1; overflow-y: auto; margin-top: 15px; }
+        .sap-modal-content { height: auto !important; transition: height 0.3s ease; }
     </style>
 </head>
 <body>
@@ -682,40 +686,30 @@ class="notes-textarea"></textarea>
     </div>
 
     <div class="modal-overlay" id="sapModal">
-        <div class="modal" style="width: 95%;
-max-width: 1200px; height: 90vh;">
+        <div class="modal" style="width: 95%; max-width: 1200px; height: auto; max-height: 90vh;">
             <div class="modal-header">
                 <h2>SAP XML Helper</h2>
                 <button class="close-btn" onclick="closeSapModal()"><span>&times;</span></button>
             </div>
-            <div class="modal-body" style="padding: 1.5rem;
-display: flex; flex-direction: column; height: 100%;">
+            <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column;">
                 
-                <div style="display: flex;
-gap: 1rem; margin-bottom: 1rem;">
-                    <textarea id="sapXmlInput" class="xml-textarea" style="height: 80px;
-flex: 1;" placeholder="Cole o XML da nota aqui..."></textarea>
+                <div style="display: flex; gap: 1rem;">
+                    <textarea id="sapXmlInput" class="xml-textarea" style="height: 80px; flex: 1;" placeholder="Cole o XML da nota aqui..."></textarea>
                     <button class="btn-primary" style="height: 80px;" onclick="processSapXml()">PROCESSAR XML</button>
                 </div>
 
-                <div id="sapResults" style="display: none;
-flex: 1; overflow-y: auto;">
+                <div id="sapResults">
                     
-                    <h2 id="sapNatOp" style="color: #334155;
-margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+                    <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
 
-                    <div style="display:flex;
-gap:10px; align-items:center; margin-bottom:15px;">
-                        <div id="validationBox" class="validator-box" style="flex:1;
-margin:0;">
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
+                        <div id="validationBox" class="validator-box" style="flex:1; margin:0;">
                             VALIDAÇÃO PREÇO NF: R$ 0,00
                         </div>
-                        <button class="btn-primary" style="background:#f97316;
-height:45px;" onclick="openNetModal()">VER PREÇOS NET</button>
+                        <button class="btn-primary" style="background:#f97316; height:45px;" onclick="openNetModal()">VER PREÇOS NET</button>
                     </div>
 
-                    <h3 style="margin-bottom: 10px;
-color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                     <div class="sap-header-grid" id="sapHeaderGrid"></div>
 
                     <div class="toggle-container">
@@ -723,18 +717,14 @@ color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                             <input type="checkbox" id="sapBaseToggle" onchange="recalcSapItems()">
                             <span class="slider"></span>
                         </label>
-        <span style="font-weight: 600;
-                            font-size: 0.9rem;
-color: #ea580c;">
+        <span style="font-weight: 600; font-size: 0.9rem; color: #ea580c;">
                             Usar Valor Total do Item (vProd) como Base de Cálculo
                         </span>
                         <div style="flex:1;"></div>
-                      <span style="font-size: 0.8rem;
-color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
+                      <span style="font-size: 0.8rem; color: #64748b;">(Padrão: Usa a Base de Cálculo vBC do XML)</span>
                     </div>
 
-                    <h3 style="margin-bottom: 10px;
-color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
+                    <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
                     <div id="sapItemsContainer"></div>
 
                 </div>
@@ -744,12 +734,9 @@ color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
 
     <div class="net-modal-overlay" id="netModal">
         <div class="net-modal">
-            <div style="display:flex;
-justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h3 style="margin:0;
-font-size:1rem;">Preços NET (SAP)</h3>
-                <button class="close-btn" style="width:24px;
-height:24px;" onclick="closeNetModal()"><span>&times;</span></button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h3 style="margin:0; font-size:1rem;">Preços NET (SAP)</h3>
+                <button class="close-btn" style="width:24px; height:24px;" onclick="closeNetModal()"><span>&times;</span></button>
             </div>
             <div class="net-list" id="netListContent"></div>
             <button class="btn-primary" style="width:100%;" onclick="copyNetList()">COPIAR LISTA (SAP)</button>
@@ -783,10 +770,8 @@ style="text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" cl
     <div class="modal-overlay" id="servicesModal">
         <div class="modal kpi-modal-container">
             <div class="modal-header">
-                <div style="display: flex;
-gap: 1rem; align-items: center;"><h2>Checklist de serviços fixos</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
-                <div style="display: flex;
-gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 1rem; align-items: center;"><h2>Checklist de serviços fixos</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
+                <div style="display: flex; gap: 10px; align-items: center;">
                     <button class="reset-btn" onclick="openResetModal()"><span class="material-icons-round" style="font-size:16px">restart_alt</span> RESETAR</button>
                     <button class="pdf-btn" onclick="exportServicesPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
                     <button class="close-btn" onclick="closeServicesModal()"><span>&times;</span></button>
@@ -805,7 +790,7 @@ gap: 10px; align-items: center;">
                      <th style="width: 140px;">STATUS PO<input class="filter-input" 
                                 placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
                                 <th>RESP<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
-                          <th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
+                         <th>SETOR<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
                                 <th>COD<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
                          <th>CONTA<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
                                 <th>PED<input class="filter-input" placeholder="Filtro..." onkeyup="applyServiceFilters()"></th>
@@ -819,9 +804,7 @@ gap: 10px; align-items: center;">
                 <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addServiceRow()">+</button></div>
 
        <div class="dash-checklist-container">
-                    <div style="width: 120px;
-position: relative;
-                        height: 120px; flex-shrink:0;">
+                    <div style="width: 120px; position: relative; height: 120px; flex-shrink:0;">
                         <canvas id="checkChart"></canvas>
                     </div>
                     <div class="checklist-stats-grid">
@@ -878,12 +861,34 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             <p class="confirm-text">Tem certeza que deseja remover esta linha permanentemente?</p>
             <div class="confirm-actions">
    <button class="btn-ghost" onclick="closeDeleteModal()">Cancelar</button>
-                <button class="btn-danger" onclick="confirmDeleteRow()">Sim, Excluir</button>
+                <button class="btn-ghost" onclick="confirmDeleteRow()">Confirmar</button>
             </div>
         </div>
     </div>
 
     <script>
+        // FUNÇÃO PARA FECHAR MODAIS COM ESC (PONTO 1)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === "Escape") {
+                const activeOverlays = document.querySelectorAll('.modal-overlay.active, .net-modal-overlay.active');
+                activeOverlays.forEach(overlay => {
+                    // Mapeamento de IDs para funções de fechar
+                    if (overlay.id === 'notifyModal') closeNotifyModal();
+                    else if (overlay.id === 'xmlModal') closeXMLModal();
+                    else if (overlay.id === 'notesModal') closeNotesModal();
+                    else if (overlay.id === 'sapModal') closeSapModal();
+                    else if (overlay.id === 'netModal') closeNetModal();
+                    else if (overlay.id === 'kpiModal') closeKPIModal();
+                    else if (overlay.id === 'servicesModal') closeServicesModal();
+                    else if (overlay.id === 'resetModal') closeResetModal();
+                    else if (overlay.id === 'modalOverlay') closeModal();
+                    else if (overlay.id === 'deleteModal') closeDeleteModal();
+                    else if (overlay.id === 'errorModal') document.getElementById('errorModal').classList.remove('active');
+                    else overlay.classList.remove('active');
+                });
+            }
+        });
+
         function toggleDarkMode() {
             const body = document.body;
             const icon = document.getElementById('themeIcon');
@@ -976,8 +981,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 if(payload.eventType === 'INSERT') {
                     handleBrowserNotification(payload.new);
                 } else if (payload.eventType === 'UPDATE') {
-                    // BUG FIX: Agora só notifica se o SETOR antigo existia e ele for diferente do novo setor.
-                    // Isso evita notificações ao mover linhas (onde payload.old.setor não existe ou é igual)
                     if (payload.old && payload.old.setor && payload.new.setor && payload.old.setor !== payload.new.setor) {
                         handleBrowserNotification(payload.new);
                     }
@@ -1200,7 +1203,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
                     if(vDup) {
-                        // FIX: Formata apenas o número para área de transferência
                         let vDupClean = parseFloat(vDup).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
                     }
@@ -1473,10 +1475,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         async function exportKPIPDF() { 
             if(!window.html2canvas || !window.jspdf) { alert("Bibliotecas PDF não carregaram."); return; } 
             const element = document.getElementById('kpiContent');
-            // Adiciona classe de exportação para forçar visual branco em todo o container do KPI
             element.classList.add('export-mode-white');
             const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
-            // Remove a classe após a captura para voltar ao visual normal do site
             element.classList.remove('export-mode-white');
             
             const imgData = canvas.toDataURL('image/jpeg', 0.8); 
@@ -1497,7 +1497,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
 
-        /* --- SETUP REALTIME ATUALIZADO (MONITORA UPDATE TAMBÉM) --- */
         function setupRealtime() {
             if(!supabase) return;
             supabase.channel('custom-all-channel')
@@ -1505,8 +1504,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 if(payload.eventType === 'INSERT') {
                     handleBrowserNotification(payload.new);
                 } else if (payload.eventType === 'UPDATE') {
-                    // BUG FIX: Agora só notifica se o SETOR antigo existia e ele for diferente do novo setor.
-                    // Isso ignora mudanças de posição (coluna ordem) feitas pelo Sortable.
                     if (payload.old && payload.old.setor && payload.new.setor && payload.old.setor !== payload.new.setor) {
                         handleBrowserNotification(payload.new);
                     }
@@ -1523,7 +1520,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             .subscribe();
         }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
@@ -1616,7 +1612,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const noteSector = (noteData.setor || "").trim().toUpperCase();
             const mySectorUpper = mySector.toUpperCase();
 
-            // Regra: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
             const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
 
             if (shouldNotify) {
@@ -1631,7 +1626,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             }
         }
 
-        /* --- BUG FIX SAP XML COPY PARCELA --- */
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
             const xmlText = xmlInput.value;
@@ -1660,7 +1654,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
                     if(vDup) {
-                        // FIX: Formata apenas o número para cópia limpa
                         let vDupClean = parseFloat(vDup).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                         pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
                     }
