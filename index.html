@@ -49,7 +49,7 @@
             gap: 1.5rem;
         }
 
-        .theme-btn {
+        .theme-btn, .notify-btn {
             background: var(--surface);
 border: 1px solid var(--border);
             color: var(--text-main);
@@ -64,9 +64,14 @@ transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             box-shadow: var(--shadow-md);
         }
 
-        .theme-btn:hover {
+        .theme-btn:hover, .notify-btn:hover {
             transform: scale(1.05);
 background-color: var(--bg-body);
+        }
+
+        .notify-btn.active {
+            color: var(--primary);
+            border-color: var(--primary);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box;
@@ -569,6 +574,9 @@ border: 1px solid #e2e8f0; padding: 10px;
             <button class="theme-btn" onclick="toggleDarkMode()" title="Alternar Modo Noturno">
                 <span class="material-icons-round" id="themeIcon">dark_mode</span>
             </button>
+            <button class="notify-btn" id="notifyBell" onclick="openNotifyModal()" title="Configurações de Notificação">
+                <span class="material-icons-round">notifications</span>
+            </button>
         </div>
 
         <div class="header-actions">
@@ -586,7 +594,7 @@ onclick="openSapModal()">
             <button class="nav-btn" onclick="openConsideracoes()">CONSIDERAÇÕES</button>
             <button class="nav-btn" onclick="openServicesModal()">CHECKLIST</button>
             <button class="nav-btn" onclick="openKPIModal()">KPI</button>
-         
+          
             <button id="btnNovo" class="add-btn" 
                 title="Adicionar Nova Nota">
                 <span class="material-icons-round">add</span>
@@ -611,6 +619,34 @@ onclick="openSapModal()">
         <div class="card-bubble dashboard-container">
             <div class="chart-box"><canvas id="sectorChart"></canvas></div>
             <div class="stats-box" id="statsBox"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="notifyModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <h2>Notificações do Sistema</h2>
+                <button class="close-btn" onclick="closeNotifyModal()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-muted);">Receba alertas do navegador quando uma nova nota for adicionada para o seu setor.</p>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.8rem;">SEU SETOR</label>
+                    <select id="userSectorNotify" class="input-field">
+                        <option value="FISCAL">FISCAL</option>
+                        <option value="COMPRAS">COMPRAS</option>
+                        <option value="ALMOXARIFADO">ALMOXARIFADO</option>
+                        <option value="APROVAÇÃO">APROVAÇÃO</option>
+                    </select>
+                </div>
+                <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 0.8rem; color: #1d4ed8;">
+                    <strong>Nota:</strong> Se você selecionar COMPRAS, também será notificado sobre notas do setor APROVAÇÃO.
+                </div>
+            </div>
+            <div class="form-footer">
+                <button class="btn-ghost" onclick="closeNotifyModal()">CANCELAR</button>
+                <button class="btn-primary" onclick="saveNotificationSettings()">ATIVAR E SALVAR</button>
+            </div>
         </div>
     </div>
 
@@ -883,6 +919,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 await loadData();
                 setupRealtime();
+                checkNotificationStatus();
 
                 /* --- LÓGICA DE AUTOMAÇÃO (MAPEADA NA CARGA) --- */
                 const urlParams = new URLSearchParams(window.location.search);
@@ -921,7 +958,12 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         function setupRealtime() {
             if(!supabase) return;
             supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, () => loadData())
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
+                if(payload.eventType === 'INSERT') {
+                    handleBrowserNotification(payload.new);
+                }
+                loadData();
+            })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
                 if(data) servicesData = data;
@@ -930,6 +972,57 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 }
             })
             .subscribe();
+        }
+
+        /* --- LÓGICA DE NOTIFICAÇÃO --- */
+        function checkNotificationStatus() {
+            const savedSector = localStorage.getItem('notifySector');
+            const bell = document.getElementById('notifyBell');
+            if (Notification.permission === "granted" && savedSector) {
+                bell.classList.add('active');
+            }
+        }
+
+        function openNotifyModal() {
+            const savedSector = localStorage.getItem('notifySector');
+            if(savedSector) document.getElementById('userSectorNotify').value = savedSector;
+            document.getElementById('notifyModal').classList.add('active');
+        }
+
+        function closeNotifyModal() {
+            document.getElementById('notifyModal').classList.remove('active');
+        }
+
+        async function saveNotificationSettings() {
+            const sector = document.getElementById('userSectorNotify').value;
+            const permission = await Notification.requestPermission();
+            
+            if (permission === "granted") {
+                localStorage.setItem('notifySector', sector);
+                document.getElementById('notifyBell').classList.add('active');
+                showToast("Notificações ativadas para: " + sector);
+                closeNotifyModal();
+            } else {
+                alert("Você precisa permitir notificações no seu navegador.");
+            }
+        }
+
+        function handleBrowserNotification(newNote) {
+            const mySector = localStorage.getItem('notifySector');
+            if (!mySector || Notification.permission !== "granted") return;
+
+            const noteSector = newNote.setor ? newNote.setor.trim().toUpperCase() : "";
+            
+            // Regra: Setor exato OU (Aprovação notifica Compras)
+            const shouldNotify = (noteSector === mySector) || (noteSector === 'APROVAÇÃO' && mySector === 'COMPRAS');
+
+            if (shouldNotify) {
+                const n = new Notification("Nova Nota Fiscal", {
+                    body: `Setor: ${noteSector} | Fornecedor: ${newNote.fornecedor}\nValor: ${newNote.valor}`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
+                });
+                n.onclick = () => { window.focus(); };
+            }
         }
 
         function openSapModal() {
