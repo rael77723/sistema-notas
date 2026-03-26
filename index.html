@@ -968,14 +968,18 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             }
         }
 
-        /* --- SETUP REALTIME ATUALIZADO (MONITORA UPDATE TAMBÉM) --- */
+        /* --- SETUP REALTIME ATUALIZADO (EVITA FALSOS POSITIVOS DE ORDEM) --- */
         function setupRealtime() {
             if(!supabase) return;
             supabase.channel('custom-all-channel')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
-                // Notifica em caso de inserção (nova nota) ou atualização (mudança manual de setor)
-                if(payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                if(payload.eventType === 'INSERT') {
                     handleBrowserNotification(payload.new);
+                } else if (payload.eventType === 'UPDATE') {
+                    // BUG FIX: Só notifica se o SETOR mudou. Ignora mudanças de ordem ou status.
+                    if (payload.old && payload.new && payload.old.setor !== payload.new.setor) {
+                        handleBrowserNotification(payload.new);
+                    }
                 }
                 loadData();
             })
@@ -989,7 +993,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             .subscribe();
         }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA (MÉTODO AGRESSIVO) --- */
+        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA (BROWSER) --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
@@ -1018,7 +1022,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 statusText.style.color = "#dc2626";
                 warning.style.display = 'block';
             } else if (perm === 'granted') {
-                statusText.innerText = savedSector ? "STATUS: ATIVADO (" + savedSector + ")" : "STATUS: PERMISSÃO CONCEDIDA";
+                statusText.innerText = savedSector ? "STATUS: ATIVADO (" + savedSector + ")" : "STATUS: PRONTO PARA ATIVAR";
                 statusText.style.color = "#10b981";
                 warning.style.display = 'none';
             } else {
@@ -1041,10 +1045,10 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             if (permission === "granted") {
                 localStorage.setItem('notifySector', sector);
                 checkNotificationStatus();
-                showToast("Configurações salvas para o setor " + sector);
+                showToast("Notificações ativadas para " + sector);
                 
-                new Notification("Notificações Ativas", {
-                    body: "Você será alertado quando uma nota for atribuída ao setor: " + sector,
+                new Notification("Tudo Pronto!", {
+                    body: "Alertas ativados para o setor " + sector + " (Novas e Devolvidas)",
                     icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
                 });
                 
@@ -1062,8 +1066,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 return;
             }
             const sector = document.getElementById('userSectorNotify').value;
-            new Notification("Teste de Alerta", {
-                body: "O sistema está pronto para notificar o setor " + sector,
+            new Notification("Teste do Sistema", {
+                body: "Se você recebeu isso, os alertas para o setor " + sector + " estão configurados!",
                 icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
             });
         }
@@ -1075,27 +1079,25 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             closeNotifyModal();
         }
 
-        function handleBrowserNotification(newNote) {
+        /* --- GESTOR DE ALERTA --- */
+        function handleBrowserNotification(noteData) {
             const mySector = localStorage.getItem('notifySector');
-            // Só notifica se tiver permissão E o usuário tiver escolhido um setor
             if (!mySector || Notification.permission !== "granted") return;
 
-            const noteSector = (newNote.setor || "").trim().toUpperCase();
+            const noteSector = (noteData.setor || "").trim().toUpperCase();
             const mySectorUpper = mySector.toUpperCase();
 
-            // Lógica: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
             const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
 
             if (shouldNotify) {
                 try {
-                    // O "tag" com o ID da nota evita que o navegador fique repetindo o alerta se a página recarregar
                     new Notification("Responsabilidade: " + noteSector, {
-                        body: `Forn: ${newNote.fornecedor}\nValor: R$ ${newNote.valor}\nRef: ${newNote.referencia || '-'}`,
+                        body: `Forn: ${noteData.fornecedor}\nValor: R$ ${noteData.valor}\nErro: ${noteData.obs_erro || 'Não informado'}`,
                         icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
-                        tag: 'note-update-' + newNote.id,
-                        renotify: true // Força o alerta mesmo se já existir um anterior dessa nota
+                        tag: 'note-event-' + noteData.id,
+                        renotify: true
                     });
-                } catch(e) { console.error("Falha ao emitir notificação browser:", e); }
+                } catch(e) { console.error("Erro ao emitir alerta browser:", e); }
             }
         }
 
@@ -1167,6 +1169,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         }
 
         const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
+        
+        /* --- BUG FIX SAP XML COPY PARCELA --- */
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
             const xmlText = xmlInput.value;
@@ -1195,7 +1199,9 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 for(let i=0; i<dups.length; i++) {
                     let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
                     if(vDup) {
-                        pHtml += `<span class="parcela-btn" onclick="copyText('${formatCurrency(vDup).replace('R$ ','').trim()}')">${formatCurrency(vDup)}</span>`;
+                        // FIX: Formata apenas o número para cópia limpa
+                        let vDupClean = parseFloat(vDup).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
                     }
                 }
                 parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
@@ -1403,7 +1409,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 const stClass = nf.corrigido ? 'completed' : 'pending'; 
                 const stText = nf.corrigido ? 'CORRIGIDO' : 'PENDENTE'; const stIcon = nf.corrigido ? 'check_circle' : 'lock';
                 const dragHandle = `<span class="material-icons-round drag-handle" title="Arrastar">drag_handle</span>`;
-                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
+                tr.innerHTML = `<td><div class="actions-cell" style="display:flex;align-items:center;gap:4px;">${dragHandle}<button class="icon-btn" onclick="editRow(${index})"><span class="material-icons-round">edit</span></button><button class="icon-btn delete" onclick="openDeleteModal(${index}, false)"><span class="material-icons-round">delete_outline</span></button></div></td><td><div class="status-pill ${stClass}" onclick="toggleStatus('${nf.id}', ${nf.corrigido})"><span class="material-icons-round" style="font-size:14px;">${stIcon}</span>${stText}</div></td><td><span class="badge ${badgeClass}">${nf.setor}</span></td><td>${nf.tipo}</td><td>${nf.fornecedor}</td><td>${nf.pedido||'-'}</td><td>${nf.linha_pedido||'-'}</td><td style="font-weight:600;">${nf.valor}</td><td>${formatDate(nf.emissao)}</td><td>${formatDate(nf.inclusao)}</td><td>${formatDate(nf.vencimento)}</td><td>${nf.referencia||'-'}</td><td>${nf.chave||'-'}</td><td>${nf.resp_correcao||'-'}</td><td class="text-long-col">${nf.obs_erro||''}</td><td class="text-long-col">${nf.obs_correcao||''}</td>`;
                 tbody.appendChild(tr);
             });
             updateDashboard(); initSortable();
@@ -1490,7 +1496,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA (BROWSER) --- */
+        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
@@ -1589,7 +1595,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
             if (shouldNotify) {
                 try {
-                    // O "tag" permite que o alerta seja atualizado caso a mesma nota sofra múltiplos updates
                     new Notification("Responsabilidade: " + noteSector, {
                         body: `Forn: ${noteData.fornecedor}\nValor: R$ ${noteData.valor}\nErro: ${noteData.obs_erro || 'Não informado'}`,
                         icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
