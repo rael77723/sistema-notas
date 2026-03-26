@@ -628,6 +628,7 @@ onclick="openSapModal()">
             </div>
             <div class="modal-body">
                 <p id="notifyStatusText" style="font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600;"></p>
+                
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.8rem;">SEU SETOR</label>
                     <select id="userSectorNotify" class="input-field">
@@ -637,18 +638,26 @@ onclick="openSapModal()">
                         <option value="APROVAÇÃO">APROVAÇÃO</option>
                     </select>
                 </div>
+
                 <div id="incognitoWarning" style="display:none; background: #fee2e2; padding: 0.8rem; border-radius: 8px; border: 1px solid #fecaca; font-size: 0.75rem; color: #b91c1c; margin-bottom: 1rem;">
-                    <strong>Atenção:</strong> Você está em modo anônimo ou as notificações estão bloqueadas. Clique no cadeado na barra de endereços para permitir.
+                    <strong>ERRO CRÍTICO:</strong> O navegador bloqueou as notificações. <br>
+                    1. Clique no <strong>CADEADO</strong> ao lado da URL. <br>
+                    2. Mude a permissão de <strong>Notificações</strong> para <strong>Permitir</strong>.
                 </div>
+
+                <button class="btn-ghost" style="width: 100%; margin-bottom: 1rem; border-color: var(--primary); color: var(--primary);" onclick="testNotification()">
+                    <span class="material-icons-round" style="font-size: 18px; vertical-align: middle;">send</span> TESTAR NOTIFICAÇÃO AGORA
+                </button>
+
                 <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 0.8rem; color: #1d4ed8;">
-                    <strong>Regra:</strong> Setor COMPRAS também recebe alertas de APROVAÇÃO.
+                    <strong>Dica:</strong> Para ver a janela de permissão do navegador, escolha o setor e clique em "Ativar e Salvar".
                 </div>
             </div>
             <div class="form-footer" style="justify-content: space-between;">
                 <button class="btn-ghost" style="color: #dc2626; border-color: #fecaca;" onclick="disableNotifications()">DESATIVAR</button>
                 <div style="display:flex; gap:8px;">
-                    <button class="btn-ghost" onclick="closeNotifyModal()">CANCELAR</button>
-                    <button class="btn-primary" onclick="saveNotificationSettings()">ATIVAR/SALVAR</button>
+                    <button class="btn-ghost" onclick="closeNotifyModal()">FECHAR</button>
+                    <button class="btn-primary" onclick="saveNotificationSettings()">ATIVAR E SALVAR</button>
                 </div>
             </div>
         </div>
@@ -979,7 +988,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             .subscribe();
         }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO MELHORADA --- */
+        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA (ATUALIZADA) --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
@@ -988,10 +997,10 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             bell.className = 'notify-btn';
             if (perm === 'denied') {
                 bell.classList.add('blocked');
-                bell.title = "Notificações Bloqueadas no Navegador";
+                bell.title = "Notificações BLOQUEADAS (Clique para ver como liberar)";
             } else if (savedSector && perm === 'granted') {
                 bell.classList.add('active');
-                bell.title = "Notificações Ativas: " + savedSector;
+                bell.title = "Notificações ATIVAS: " + savedSector;
             }
         }
 
@@ -1007,12 +1016,12 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 statusText.innerText = "STATUS: BLOQUEADO PELO NAVEGADOR";
                 statusText.style.color = "#dc2626";
                 warning.style.display = 'block';
-            } else if (perm === 'granted' && savedSector) {
-                statusText.innerText = "STATUS: ATIVADO (" + savedSector + ")";
+            } else if (perm === 'granted') {
+                statusText.innerText = savedSector ? "STATUS: ATIVADO (" + savedSector + ")" : "STATUS: PRONTO PARA ATIVAR";
                 statusText.style.color = "#10b981";
                 warning.style.display = 'none';
             } else {
-                statusText.innerText = "STATUS: DESATIVADO";
+                statusText.innerText = "STATUS: AGUARDANDO PERMISSÃO";
                 statusText.style.color = "#64748b";
                 warning.style.display = 'none';
             }
@@ -1026,17 +1035,39 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         async function saveNotificationSettings() {
             const sector = document.getElementById('userSectorNotify').value;
+            
+            // Força o pedido de permissão do navegador
             const permission = await Notification.requestPermission();
             
             if (permission === "granted") {
                 localStorage.setItem('notifySector', sector);
                 checkNotificationStatus();
-                showToast("Notificações configuradas!");
+                showToast("Configurações salvas!");
+                
+                // Dispara confirmação visual imediata
+                new Notification("Sistema Vert", {
+                    body: "Notificações ativadas para: " + sector,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
+                });
+                
                 closeNotifyModal();
             } else {
-                alert("O navegador não permitiu abrir a janela de autorização. Se você estiver em modo anônimo, as notificações são bloqueadas automaticamente. Se não, clique no cadeado ao lado da URL e altere 'Notificações' para 'Permitir'.");
                 checkNotificationStatus();
+                document.getElementById('incognitoWarning').style.display = 'block';
+                document.getElementById('notifyStatusText').innerText = "STATUS: BLOQUEADO";
             }
+        }
+
+        function testNotification() {
+            if (Notification.permission !== "granted") {
+                saveNotificationSettings();
+                return;
+            }
+            const sector = document.getElementById('userSectorNotify').value;
+            new Notification("Teste do Sistema", {
+                body: "ALERTA: Se você recebeu isso, as notificações para o setor " + sector + " estão OK!",
+                icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
+            });
         }
 
         function disableNotifications() {
@@ -1050,18 +1081,18 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const mySector = localStorage.getItem('notifySector');
             if (!mySector || Notification.permission !== "granted") return;
 
-            const noteSector = newNote.setor ? newNote.setor.trim().toUpperCase() : "";
-            const shouldNotify = (noteSector === mySector) || (noteSector === 'APROVAÇÃO' && mySector === 'COMPRAS');
+            const noteSector = (newNote.setor || "").trim().toUpperCase();
+            const mySectorUpper = mySector.toUpperCase();
+
+            // Lógica: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
+            const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
 
             if (shouldNotify) {
-                try {
-                    const n = new Notification("Nova Nota Fiscal", {
-                        body: `Setor: ${noteSector}\nFornecedor: ${newNote.fornecedor}\nValor: ${newNote.valor}`,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
-                        tag: 'new-note-' + newNote.id
-                    });
-                    n.onclick = () => { window.focus(); n.close(); };
-                } catch(e) { console.error("Erro ao disparar notificação:", e); }
+                new Notification("Nova Nota Fiscal: " + noteSector, {
+                    body: `Forn: ${newNote.fornecedor}\nValor: ${newNote.valor}\nErro: ${newNote.obs_erro || 'N/A'}`,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
+                    tag: 'note-' + newNote.id
+                });
             }
         }
 
@@ -1455,6 +1486,113 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
+
+        /* --- LÓGICA DE NOTIFICAÇÃO MELHORADA (AGRESSIVA) --- */
+        function checkNotificationStatus() {
+            const savedSector = localStorage.getItem('notifySector');
+            const bell = document.getElementById('notifyBell');
+            const perm = Notification.permission;
+            
+            bell.className = 'notify-btn';
+            if (perm === 'denied') {
+                bell.classList.add('blocked');
+                bell.title = "Notificações BLOQUEADAS no Navegador";
+            } else if (savedSector && perm === 'granted') {
+                bell.classList.add('active');
+                bell.title = "Notificações ATIVAS: " + savedSector;
+            }
+        }
+
+        function openNotifyModal() {
+            const savedSector = localStorage.getItem('notifySector');
+            const statusText = document.getElementById('notifyStatusText');
+            const warning = document.getElementById('incognitoWarning');
+            const perm = Notification.permission;
+
+            if(savedSector) document.getElementById('userSectorNotify').value = savedSector;
+            
+            if (perm === 'denied') {
+                statusText.innerText = "STATUS: BLOQUEADO PELO NAVEGADOR";
+                statusText.style.color = "#dc2626";
+                warning.style.display = 'block';
+            } else if (perm === 'granted') {
+                statusText.innerText = savedSector ? "STATUS: ATIVADO (" + savedSector + ")" : "STATUS: PRONTO PARA ATIVAR";
+                statusText.style.color = "#10b981";
+                warning.style.display = 'none';
+            } else {
+                statusText.innerText = "STATUS: AGUARDANDO PERMISSÃO";
+                statusText.style.color = "#64748b";
+                warning.style.display = 'none';
+            }
+
+            document.getElementById('notifyModal').classList.add('active');
+        }
+
+        async function saveNotificationSettings() {
+            const sector = document.getElementById('userSectorNotify').value;
+            
+            // Solicita permissão explicitamente (Gera o "Allow/Deny" do navegador)
+            const permission = await Notification.requestPermission();
+            
+            if (permission === "granted") {
+                localStorage.setItem('notifySector', sector);
+                checkNotificationStatus();
+                showToast("Notificações configuradas com sucesso!");
+                
+                // Dispara confirmação visual imediata
+                new Notification("Sistema Vert", {
+                    body: "Notificações ativadas para o setor " + sector,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
+                });
+                
+                closeNotifyModal();
+            } else if (permission === "denied") {
+                document.getElementById('incognitoWarning').style.display = 'block';
+                document.getElementById('notifyStatusText').innerText = "STATUS: BLOQUEADO";
+                alert("O navegador negou o pedido. Se você estiver em aba anônima, não funcionará. Caso contrário, clique no CADEADO na barra de endereços e mude para 'Permitir'.");
+            }
+        }
+
+        function testNotification() {
+            if (Notification.permission !== "granted") {
+                saveNotificationSettings();
+                return;
+            }
+            const sector = document.getElementById('userSectorNotify').value;
+            new Notification("Teste de Alerta", {
+                body: "Se você está vendo isso, as notificações para o setor " + sector + " estão funcionando!",
+                icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
+            });
+        }
+
+        function disableNotifications() {
+            localStorage.removeItem('notifySector');
+            checkNotificationStatus();
+            showToast("Notificações desativadas.");
+            closeNotifyModal();
+        }
+
+        function handleBrowserNotification(newNote) {
+            const mySector = localStorage.getItem('notifySector');
+            if (!mySector || Notification.permission !== "granted") return;
+
+            const noteSector = (newNote.setor || "").trim().toUpperCase();
+            const mySectorUpper = mySector.toUpperCase();
+
+            // Regra: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
+            const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
+
+            if (shouldNotify) {
+                try {
+                    const n = new Notification("Nova Nota Fiscal: " + noteSector, {
+                        body: `Forn: ${newNote.fornecedor}\nValor: ${newNote.valor}\nErro: ${newNote.obs_erro || 'Não informado'}`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
+                        tag: 'note-' + newNote.id // Evita notificações repetidas
+                    });
+                    n.onclick = () => { window.focus(); n.close(); };
+                } catch(e) { console.error("Erro ao disparar notificação:", e); }
+            }
+        }
     </script>
 
 <style>
