@@ -801,6 +801,7 @@ style="text-align:left;padding-left:10px;">Fornecedor(es): <input type="text" cl
                 <div style="display: flex; gap: 1rem; align-items: center;"><h2>Checklist de serviços fixos</h2><input type="text" id="checklistDate" class="checklist-date-input" placeholder="Mês/Ano" onchange="saveChecklistDate(this.value)"></div>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <button class="reset-btn" onclick="openResetModal()"><span class="material-icons-round" style="font-size:16px">restart_alt</span> RESETAR</button>
+                    <button class="excel-btn" style="background-color: #107c41;" onclick="exportServicesExcel()"><span class="material-icons-round" style="font-size:16px">table_view</span> EXPORTAR EXCEL</button>
                     <button class="pdf-btn" onclick="exportServicesPDF()"><span class="material-icons-round" style="font-size:16px">picture_as_pdf</span> EXPORTAR PDF</button>
                     <button class="close-btn" onclick="closeServicesModal()"><span>&times;</span></button>
                 </div>
@@ -1336,113 +1337,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             xmlInput.value = '';
         }
 
-        // --- NOVA FUNÇÃO PROCESSAR CTE (DINÂMICA TOTAL) ---
-        function processCteXml() {
-            const xmlInput = document.getElementById('cteXmlInput');
-            const xmlText = xmlInput.value;
-            if (!xmlText) { alert("Cole o XML do CT-e."); return; }
-            
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            
-            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const shortNameCte = emitNome.split(' ').slice(0, 2).join(' ') + " - FRETE";
-            
-            const ide = xmlDoc.getElementsByTagName("ide")[0];
-            const nCT = ide.getElementsByTagName("nCT")[0]?.textContent || "";
-            const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
-            const referenciaFormatada = nCT + "-" + serie;
-
-            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
-            const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "";
-            const nProt = xmlDoc.getElementsByTagName("nProt")[0]?.textContent || "";
-            const dhRecbto = xmlDoc.getElementsByTagName("dhRecbto")[0]?.textContent || "";
-            
-            let chave = xmlDoc.getElementsByTagName("infCte")[0]?.getAttribute("Id")?.replace("CTe","") || "";
-            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
-            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
-
-            const vTPrest = parseFloat(xmlDoc.getElementsByTagName("vTPrest")[0]?.textContent || 0);
-            
-            const icmsTag = xmlDoc.getElementsByTagName("ICMS00")[0] || xmlDoc.getElementsByTagName("ICMS20")[0] || xmlDoc.getElementsByTagName("ICMS90")[0] || xmlDoc.getElementsByTagName("ICMSOutraUF")[0] || xmlDoc.getElementsByTagName("ICMSSN")[0];
-            const vBC_ICMS = parseFloat(icmsTag?.getElementsByTagName("vBC")[0]?.textContent || 0);
-            const vICMS = parseFloat(icmsTag?.getElementsByTagName("vICMS")[0]?.textContent || 0);
-            const pICMS = parseFloat(icmsTag?.getElementsByTagName("pICMS")[0]?.textContent || 0);
-
-            // CÁLCULO DINÂMICO CONFORME PLANILHA DO USUÁRIO
-            // PIS (1,65% fixo do valor total)
-            const vPisCalculado = round2(vTPrest * 0.0165); 
-            // COFINS (7,60% fixo do valor total)
-            const vCofinsCalculado = round2(vTPrest * 0.0760); 
-
-            // CÁLCULO NET DEFINITIVO: VALOR TOTAL - PIS - COFINS - ICMS
-            const valorFinalNetDinamico = round2(vTPrest - vPisCalculado - vCofinsCalculado - vICMS);
-            
-            // Base PIS / COFINS (Base ICMS - Valor ICMS)
-            const basePisCofins = round2(vBC_ICMS - vICMS);
-
-            // CBS / IBS Dinâmicos (conforme XML se houver, ou base NET)
-            const pIBS = parseFloat(xmlDoc.getElementsByTagName("pIBSUF")[0]?.textContent || 0);
-            const pCBS = parseFloat(xmlDoc.getElementsByTagName("pCBS")[0]?.textContent || 0);
-
-            rawCteData = {
-                net: valorFinalNetDinamico,
-                basePisCofins: basePisCofins,
-                vBC_ICMS: vBC_ICMS,
-                pICMS: pICMS,
-                vICMS: vICMS,
-                pCBS: pCBS,
-                pIBS: pIBS,
-                vTPrest: vTPrest,
-                vPis: vPisCalculado,
-                vCofins: vCofinsCalculado
-            };
-
-            const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
-            const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-
-            document.getElementById('cteNatOp').innerText = "Natureza: " + natOp;
-            const grid = document.getElementById('cteHeaderGrid');
-            grid.innerHTML = `
-                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
-                ${createSapBox("REF NF", referenciaFormatada)}
-                ${createSapBox("VALOR TOTAL", fmtMoney(vTPrest))}
-                ${createSapBox("FORNECEDOR", shortNameCte)}
-                ${createSapBox("PROTOCOLO", nProt)}
-                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
-                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
-                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
-            `;
-
-            document.getElementById('cteValidationBox').innerText = "VALIDAÇÃO PREÇO NF: " + fmtMoney(vTPrest);
-
-            const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-            // TABELA SAP CTE: CBS, COFINS, IBS, ICMS, IPI, PIS
-            const copyString = `${fmtCopy(valorFinalNetDinamico)}\t${fmtCopy(pCBS)}\n${fmtCopy(basePisCofins)}\t7,60\n${fmtCopy(valorFinalNetDinamico)}\t${fmtCopy(pIBS)}\n${fmtCopy(vBC_ICMS)}\t${fmtCopy(pICMS)}\n0,01\t0,01\n${fmtCopy(basePisCofins)}\t1,65`;
-
-            const container = document.getElementById('cteItemsContainer');
-            container.innerHTML = `
-                <div class="sap-item-row">
-                    <div class="sap-item-header">
-                        <span class="sap-item-title">IMPOSTOS CALCULADOS DO FRETE (NET: ${fmtCopy(valorFinalNetDinamico)})</span>
-                        <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
-                    </div>
-                    <div class="sap-item-body active">
-                        <div class="sap-tax-grid">
-                            ${createTaxCol("CBS", valorFinalNetDinamico, 0)}
-                            ${createTaxCol("COFINS", basePisCofins, vCofinsCalculado)}
-                            ${createTaxCol("IBSS", valorFinalNetDinamico, 0)}
-                            ${createTaxCol("ICMS", vBC_ICMS, vICMS)}
-                            ${createTaxCol("IPI", 0.01, 0)}
-                            ${createTaxCol("PIS", basePisCofins, vPisCalculado)}
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('cteResults').style.display = 'block';
-            xmlInput.value = '';
-        }
-
         function createSapBox(label, value, copy=true) {
             const clickAttr = copy ? `onclick="copyText('${value}')"` : '';
             return `<div class="sap-header-item" ${clickAttr}>
@@ -1558,6 +1452,43 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             trs.forEach(tr => { if (tr.style.display !== 'none') { const inputs = tr.querySelectorAll('input, select'); if (inputs.length > 0) { const rowData = [inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value]; tableRows.push(rowData); } } });
             doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }, columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } }, didParseCell: function(data) { if (data.section === 'body') { if (data.column.index === 2 || data.column.index === 3) { const text = (data.cell.raw || '').toString().toUpperCase(); if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28]; } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } else if (text.includes('NÃO PRESTADO')) { data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216]; } else if (text.includes('APROVAÇÃO')) { data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9]; } data.cell.styles.fontStyle = 'bold'; } } } });
             doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
+        }
+
+        // --- NOVA FUNÇÃO: EXPORTAR CHECKLIST PARA EXCEL ---
+        function exportServicesExcel() {
+            const dateTitle = document.getElementById('checklistDate').value || 'Geral';
+            const tableRows = [];
+            
+            // Cabeçalho personalizado baseado no site
+            tableRows.push(["FORNECEDOR", "TIPO", "ENVIO NF", "STATUS PO", "RESPONSAVEL", "SETOR", "COD", "CONTA", "PEDIDO", "OBSERVACAO", "TEXTO SAP"]);
+            
+            const trs = document.querySelectorAll('#svcTableBody tr');
+            trs.forEach(tr => {
+                if (tr.style.display !== 'none') {
+                    const inputs = tr.querySelectorAll('input, select');
+                    if (inputs.length > 0) {
+                        const rowData = [
+                            inputs[0].value, // Fornecedor
+                            inputs[1].value, // Tipo
+                            inputs[2].value, // Envio NF
+                            inputs[3].value, // Status PO
+                            inputs[4].value, // Resp
+                            inputs[5].value, // Setor
+                            inputs[6].value, // Cod
+                            inputs[7].value, // Conta
+                            inputs[8].value, // Ped
+                            inputs[9].value, // Obs
+                            inputs[10].value // Sap
+                        ];
+                        tableRows.push(rowData);
+                    }
+                }
+            });
+
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(tableRows);
+            XLSX.utils.book_append_sheet(wb, ws, "Checklist");
+            XLSX.writeFile(wb, `checklist_${dateTitle.replace('/', '-')}.xlsx`);
         }
 
         function renderTable() {
