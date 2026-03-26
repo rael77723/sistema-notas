@@ -582,6 +582,9 @@ border: 1px solid #e2e8f0; padding: 10px;
         </div>
 
         <div class="header-actions">
+            <button class="nav-btn" style="background-color: #0f172a; color: white;" onclick="openCteModal()">
+                <span class="material-icons-round" style="margin-right:5px; font-size:18px;">local_shipping</span> XML CTE
+            </button>
             <button class="nav-btn" style="background-color: #2563eb; color: white;"
 onclick="openSapModal()">
                 <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> SAP XML
@@ -621,6 +624,26 @@ onclick="openSapModal()">
         <div class="card-bubble dashboard-container">
             <div class="chart-box"><canvas id="sectorChart"></canvas></div>
             <div class="stats-box" id="statsBox"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cteModal">
+        <div class="modal" style="width: 95%; max-width: 1200px;">
+            <div class="modal-header">
+                <h2>Gerador XML CT-e</h2>
+                <button class="close-btn" onclick="closeCteModal()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 1rem; margin-bottom: 20px;">
+                    <textarea id="cteXmlInput" class="xml-textarea" style="height: 80px; flex: 1;" placeholder="Cole o XML do CT-e aqui..."></textarea>
+                    <button class="btn-primary" style="height: 80px;" onclick="processCteXml()">PROCESSAR CT-E</button>
+                </div>
+                <div id="cteResults" style="display: none;">
+                    <div id="cteValidator" class="validator-box" style="margin-bottom: 15px;">NET TOTAL: R$ 0,00</div>
+                    <div class="sap-header-grid" id="cteHeaderGrid"></div>
+                    <div id="cteTaxTableContainer"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -877,6 +900,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                     else if (overlay.id === 'xmlModal') closeXMLModal();
                     else if (overlay.id === 'notesModal') closeNotesModal();
                     else if (overlay.id === 'sapModal') closeSapModal();
+                    else if (overlay.id === 'cteModal') closeCteModal();
                     else if (overlay.id === 'netModal') closeNetModal();
                     else if (overlay.id === 'kpiModal') closeKPIModal();
                     else if (overlay.id === 'servicesModal') closeServicesModal();
@@ -1115,6 +1139,16 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             document.getElementById('sapModal').classList.remove('active');
         }
 
+        function openCteModal() {
+            document.getElementById('cteModal').classList.add('active');
+            document.getElementById('cteXmlInput').value = '';
+            document.getElementById('cteResults').style.display = 'none';
+        }
+
+        function closeCteModal() {
+            document.getElementById('cteModal').classList.remove('active');
+        }
+
         function showToast(msg) {
             const toast = document.getElementById('toast-notification');
             toast.innerText = msg;
@@ -1136,10 +1170,10 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             rawSapItems.forEach(item => {
                 const base = useItemTotal ? item.vProd : item.vBC_XML;
                 const valICMS = round2(base * (item.pICMS / 100));
-                const basePisCofins = base - valICMS;
-                const valPis = round2(basePisCofins * 0.0165);
-                const valCofins = round2(basePisCofins * 0.0760);
-                const netValue = basePisCofins - valPis - valCofins;
+                const valIPI = round2(base * (item.pIPI / 100));
+                const valPIS = round2(base * (item.pPIS / 100));
+                const valCOFINS = round2(base * (item.pCOFINS / 100));
+                const netValue = base - valICMS - valIPI - valPIS - valCOFINS;
                 const netStr = netValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 currentNetList.push(netStr);
                 listDiv.innerHTML += `<div>${netStr}</div>`;
@@ -1174,7 +1208,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
         
-        /* --- BUG FIX SAP XML COPY PARCELA --- */
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
             const xmlText = xmlInput.value;
@@ -1194,8 +1227,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
             const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
             let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
-            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
-            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
+            const chaveParcial = chave.substring(35, 43);
+            const chaveDV = chave.charAt(43);
             const dups = xmlDoc.getElementsByTagName("dup");
             let parcelasHtml = "Sem parcelas";
             if(dups.length > 0) {
@@ -1207,11 +1240,11 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                         pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
                     }
                 }
-                parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
+                parcelasHtml = "Parcelas: " + pHtml;
             }
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
+            document.getElementById('sapNatOp').innerText = "Natureza: " + natOp;
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
                 ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
@@ -1285,6 +1318,62 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             xmlInput.value = '';
         }
 
+        function processCteXml() {
+            const xmlText = document.getElementById('cteXmlInput').value;
+            if (!xmlText) { alert("Cole o XML do CT-e."); return; }
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            
+            const emit = xmlDoc.getElementsByTagName("emit")[0];
+            const fornecedor = emit?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const vPrest = xmlDoc.getElementsByTagName("vPrest")[0];
+            const vTotal = parseFloat(vPrest?.getElementsByTagName("vTPrest")[0]?.textContent || 0);
+            
+            const icmsTag = xmlDoc.getElementsByTagName("ICMS")[0];
+            let vICMS = 0, pICMS = 0;
+            if(icmsTag && icmsTag.children.length > 0) {
+                const inner = icmsTag.children[0];
+                vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
+                pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent || 0);
+            }
+
+            const basePisCofins = round2(vTotal - vICMS);
+            const valPis = round2(basePisCofins * 0.0165);
+            const valCofins = round2(basePisCofins * 0.0760);
+            const baseCbs = round2(basePisCofins - valPis - valCofins);
+            const valNet = round2(vTotal - vICMS - valPis - valCofins);
+
+            document.getElementById('cteValidator').innerText = "NET TOTAL: " + formatCurrency(valNet);
+            const grid = document.getElementById('cteHeaderGrid');
+            const nCT = xmlDoc.getElementsByTagName("nCT")[0]?.textContent || "";
+            grid.innerHTML = `
+                ${createSapBox("CONHECIMENTO", nCT)}
+                ${createSapBox("VALOR CT-E", formatCurrency(vTotal))}
+                ${createSapBox("FORNECEDOR", fornecedor)}
+                ${createSapBox("ALQ ICMS", pICMS + "%")}
+            `;
+
+            const tableHtml = `
+                <div class="sap-tax-grid">
+                    ${createTaxCol("CBS", baseCbs, 0)}
+                    ${createTaxCol("COFINS", basePisCofins, valCofins)}
+                    ${createTaxCol("IBSS", baseCbs, 0)}
+                    ${createTaxCol("ICMS", vTotal, vICMS)}
+                    ${createTaxCol("IPI", 0.01, 0.01)}
+                    ${createTaxCol("PIS", basePisCofins, valPis)}
+                </div>
+                <button class="btn-primary" style="margin-top: 15px; width: 100%; background: #2563eb;" onclick="copyCteTable(\`${baseCbs}\`, \`${basePisCofins}\`, \`${vTotal}\`, \`${pICMS}\`)">COPIAR TABELA SAP (CTE)</button>
+            `;
+            document.getElementById('cteTaxTableContainer').innerHTML = tableHtml;
+            document.getElementById('cteResults').style.display = 'block';
+        }
+
+        function copyCteTable(baseCbs, basePisCofins, total, alqIcms) {
+            const fmt = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const text = `${fmt(baseCbs)}\t0,00\n${fmt(basePisCofins)}\t7,60\n${fmt(baseCbs)}\t0,00\n${fmt(total)}\t${fmt(alqIcms)}\n0,01\t0,01\n${fmt(basePisCofins)}\t1,65`;
+            copyText(text);
+        }
+
         function createSapBox(label, value, copy=true) {
             const clickAttr = copy ? `onclick="copyText('${value}')"` : '';
             return `<div class="sap-header-item" ${clickAttr}>
@@ -1300,29 +1389,11 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             let totalValidator = 0;
             rawSapItems.forEach((item, currentIndex) => {
                 const base = useItemTotal ? item.vProd : item.vBC_XML;
-                
-                // LÓGICA DE IMPOSTOS CONFORME SOLICITAÇÃO (IMAGENS ANEXADAS)
                 const valICMS = round2(base * (item.pICMS / 100));
-                
-                // Base PIS/COFINS = Base - ICMS (Imagem 4 e 7)
-                const basePisCofins = base - valICMS;
-                const valPis = round2(basePisCofins * 0.0165);
-                const valCofins = round2(basePisCofins * 0.0760);
-                
-                // Base CBS/IBSS = BasePisCofins - PIS - COFINS (Imagem 3 e 5)
-                const baseCbs = basePisCofins - valPis - valCofins;
-                
-                // IPI FIXO 0.01 (Conforme solicitado)
-                const valIPI = 0.01;
-                const alqIPI = 0.01;
-
+                const valIPI = round2(base * (item.pIPI / 100));
                 totalValidator += (base + valIPI);
-                
                 const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                
-                // TABELA SAP: CBS, COFINS, IBSS, ICMS, IPI, PIS
-                const copyString = `${fmtCopy(baseCbs)}\t0,00\n${fmtCopy(basePisCofins)}\t7,60\n${fmtCopy(baseCbs)}\t0,00\n${fmtCopy(base)}\t${fmtCopy(item.pICMS)}\n0,01\t0,01\n${fmtCopy(basePisCofins)}\t1,65`;
-                
+                const copyString = `${fmtCopy(base)}\t0,00\n${fmtCopy(base)}\t7,60\n${fmtCopy(base)}\t0,00\n${fmtCopy(base)}\t${fmtCopy(item.pICMS)}\n${fmtCopy(base)}\t${fmtCopy(item.pIPI)}\n${fmtCopy(base)}\t1,65`;
                 const div = document.createElement('div');
                 div.className = 'sap-item-row';
                 div.innerHTML = `
@@ -1331,23 +1402,20 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                             <div style="display:flex; align-items:center; gap:4px; font-size:0.8rem; font-weight:700; color:#64748b;">
                                 #<input type="number" class="order-input" value="${currentIndex + 1}" onchange="changeItemOrder(${currentIndex}, this.value)" onclick="event.stopPropagation()">
                             </div>
-                            <div style="display:flex; flex-direction:column;">
-                                <span class="sap-item-title">${item.name}</span>
-                                <div style="font-size: 0.75rem; color: #64748b; margin-top:2px;">Qtd: <b>${parseFloat(item.qCom).toLocaleString('pt-BR')}</b> ${item.uCom}</div>
-                            </div>
+                            <span class="sap-item-title">${item.name}</span>
                             <div style="flex:1;"></div>
                             <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="event.stopPropagation(); copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                         </div>
                         <span class="material-icons-round">expand_more</span>
                     </div>
-                    <div class="sap-item-body active">
+                    <div class="sap-item-body">
                         <div class="sap-tax-grid">
-                            ${createTaxCol("CBS", baseCbs, 0)}
-                            ${createTaxCol("COFINS", basePisCofins, valCofins)}
-                            ${createTaxCol("IBSS", baseCbs, 0)}
+                            ${createTaxCol("CBS", base, 0)}
+                            ${createTaxCol("COFINS", base, round2(base * 0.076))}
+                            ${createTaxCol("IBSS", base, 0)}
                             ${createTaxCol("ICMS", base, valICMS)}
-                            ${createTaxCol("IPI", 0.01, 0.01)}
-                            ${createTaxCol("PIS", basePisCofins, valPis)}
+                            ${createTaxCol("IPI", base, valIPI)}
+                            ${createTaxCol("PIS", base, round2(base * 0.0165))}
                         </div>
                     </div>`;
                 container.appendChild(div);
