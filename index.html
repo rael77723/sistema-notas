@@ -69,10 +69,8 @@ transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 background-color: var(--bg-body);
         }
 
-        .notify-btn.active {
-            color: var(--primary);
-            border-color: var(--primary);
-        }
+        .notify-btn.active { color: #10b981; border-color: #10b981; }
+        .notify-btn.blocked { color: #ef4444; border-color: #ef4444; }
 
         * { margin: 0; padding: 0; box-sizing: border-box;
 font-family: 'Inter', sans-serif;
@@ -629,7 +627,7 @@ onclick="openSapModal()">
                 <button class="close-btn" onclick="closeNotifyModal()"><span>&times;</span></button>
             </div>
             <div class="modal-body">
-                <p style="font-size: 0.9rem; margin-bottom: 1rem; color: var(--text-muted);">Receba alertas do navegador quando uma nova nota for adicionada para o seu setor.</p>
+                <p id="notifyStatusText" style="font-size: 0.85rem; margin-bottom: 1rem; font-weight: 600;"></p>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label style="display: block; margin-bottom: 8px; font-weight: 700; font-size: 0.8rem;">SEU SETOR</label>
                     <select id="userSectorNotify" class="input-field">
@@ -639,13 +637,19 @@ onclick="openSapModal()">
                         <option value="APROVAÇÃO">APROVAÇÃO</option>
                     </select>
                 </div>
+                <div id="incognitoWarning" style="display:none; background: #fee2e2; padding: 0.8rem; border-radius: 8px; border: 1px solid #fecaca; font-size: 0.75rem; color: #b91c1c; margin-bottom: 1rem;">
+                    <strong>Atenção:</strong> Você está em modo anônimo ou as notificações estão bloqueadas. Clique no cadeado na barra de endereços para permitir.
+                </div>
                 <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 0.8rem; color: #1d4ed8;">
-                    <strong>Nota:</strong> Se você selecionar COMPRAS, também será notificado sobre notas do setor APROVAÇÃO.
+                    <strong>Regra:</strong> Setor COMPRAS também recebe alertas de APROVAÇÃO.
                 </div>
             </div>
-            <div class="form-footer">
-                <button class="btn-ghost" onclick="closeNotifyModal()">CANCELAR</button>
-                <button class="btn-primary" onclick="saveNotificationSettings()">ATIVAR E SALVAR</button>
+            <div class="form-footer" style="justify-content: space-between;">
+                <button class="btn-ghost" style="color: #dc2626; border-color: #fecaca;" onclick="disableNotifications()">DESATIVAR</button>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn-ghost" onclick="closeNotifyModal()">CANCELAR</button>
+                    <button class="btn-primary" onclick="saveNotificationSettings()">ATIVAR/SALVAR</button>
+                </div>
             </div>
         </div>
     </div>
@@ -958,11 +962,12 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         function setupRealtime() {
             if(!supabase) return;
             supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
-                if(payload.eventType === 'INSERT') {
-                    handleBrowserNotification(payload.new);
-                }
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notas' }, (payload) => {
+                handleBrowserNotification(payload.new);
                 loadData();
+            })
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
+                if(payload.eventType !== 'INSERT') loadData();
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
@@ -974,18 +979,44 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             .subscribe();
         }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO --- */
+        /* --- LÓGICA DE NOTIFICAÇÃO MELHORADA --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
-            if (Notification.permission === "granted" && savedSector) {
+            const perm = Notification.permission;
+            
+            bell.className = 'notify-btn';
+            if (perm === 'denied') {
+                bell.classList.add('blocked');
+                bell.title = "Notificações Bloqueadas no Navegador";
+            } else if (savedSector && perm === 'granted') {
                 bell.classList.add('active');
+                bell.title = "Notificações Ativas: " + savedSector;
             }
         }
 
         function openNotifyModal() {
             const savedSector = localStorage.getItem('notifySector');
+            const statusText = document.getElementById('notifyStatusText');
+            const warning = document.getElementById('incognitoWarning');
+            const perm = Notification.permission;
+
             if(savedSector) document.getElementById('userSectorNotify').value = savedSector;
+            
+            if (perm === 'denied') {
+                statusText.innerText = "STATUS: BLOQUEADO PELO NAVEGADOR";
+                statusText.style.color = "#dc2626";
+                warning.style.display = 'block';
+            } else if (perm === 'granted' && savedSector) {
+                statusText.innerText = "STATUS: ATIVADO (" + savedSector + ")";
+                statusText.style.color = "#10b981";
+                warning.style.display = 'none';
+            } else {
+                statusText.innerText = "STATUS: DESATIVADO";
+                statusText.style.color = "#64748b";
+                warning.style.display = 'none';
+            }
+
             document.getElementById('notifyModal').classList.add('active');
         }
 
@@ -999,12 +1030,20 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             
             if (permission === "granted") {
                 localStorage.setItem('notifySector', sector);
-                document.getElementById('notifyBell').classList.add('active');
-                showToast("Notificações ativadas para: " + sector);
+                checkNotificationStatus();
+                showToast("Notificações configuradas!");
                 closeNotifyModal();
             } else {
-                alert("Você precisa permitir notificações no seu navegador.");
+                alert("O navegador não permitiu abrir a janela de autorização. Se você estiver em modo anônimo, as notificações são bloqueadas automaticamente. Se não, clique no cadeado ao lado da URL e altere 'Notificações' para 'Permitir'.");
+                checkNotificationStatus();
             }
+        }
+
+        function disableNotifications() {
+            localStorage.removeItem('notifySector');
+            checkNotificationStatus();
+            showToast("Notificações desativadas.");
+            closeNotifyModal();
         }
 
         function handleBrowserNotification(newNote) {
@@ -1012,16 +1051,17 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             if (!mySector || Notification.permission !== "granted") return;
 
             const noteSector = newNote.setor ? newNote.setor.trim().toUpperCase() : "";
-            
-            // Regra: Setor exato OU (Aprovação notifica Compras)
             const shouldNotify = (noteSector === mySector) || (noteSector === 'APROVAÇÃO' && mySector === 'COMPRAS');
 
             if (shouldNotify) {
-                const n = new Notification("Nova Nota Fiscal", {
-                    body: `Setor: ${noteSector} | Fornecedor: ${newNote.fornecedor}\nValor: ${newNote.valor}`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
-                });
-                n.onclick = () => { window.focus(); };
+                try {
+                    const n = new Notification("Nova Nota Fiscal", {
+                        body: `Setor: ${noteSector}\nFornecedor: ${newNote.fornecedor}\nValor: ${newNote.valor}`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
+                        tag: 'new-note-' + newNote.id
+                    });
+                    n.onclick = () => { window.focus(); n.close(); };
+                } catch(e) { console.error("Erro ao disparar notificação:", e); }
             }
         }
 
