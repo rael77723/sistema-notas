@@ -90,7 +90,7 @@ z-index: 10; flex-shrink: 0;
         .header-left h1 { font-size: 1.5rem; font-weight: 800;
 color: var(--text-main);
 }
-        .header-actions { display: flex; gap: 0.8rem; align-items: center;
+        .header-actions { display: flex; gap: 1rem; align-items: center;
 }
         .add-btn, .nav-btn, .excel-btn, .pdf-btn, .reset-btn, .btn-xml { border: none; height: 40px;
 border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; box-shadow: var(--shadow-md); font-weight: 700; padding: 0 16px;
@@ -582,7 +582,8 @@ border: 1px solid #e2e8f0; padding: 10px;
         </div>
 
         <div class="header-actions">
-            <button class="nav-btn" style="background-color: #2563eb; color: white;" onclick="openSapModal()">
+            <button class="nav-btn" style="background-color: #2563eb; color: white;"
+onclick="openSapModal()">
                 <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> XML MP
             </button>
             <button class="nav-btn" style="background-color: #2563eb; color: white;" onclick="openCteModal()">
@@ -869,7 +870,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
     </div>
 
     <script>
-        // Mapeamento global de modo para o Helper
         let helperMode = 'MP'; 
 
         // FUNÇÃO PARA FECHAR MODAIS COM ESC
@@ -1042,15 +1042,16 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             if (permission === "granted") {
                 localStorage.setItem('notifySector', sector);
                 checkNotificationStatus();
-                showToast("Notificações ativadas!");
-                new Notification("Sincronização OK", {
-                    body: "Alertas configurados para o setor " + sector,
+                showToast("Configurações salvas!");
+                new Notification("Sincronização Ativa", {
+                    body: "Alertas ativados para o setor " + sector,
                     icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
                 });
                 closeNotifyModal();
             } else {
                 checkNotificationStatus();
                 document.getElementById('incognitoWarning').style.display = 'block';
+                document.getElementById('notifyStatusText').innerText = "STATUS: BLOQUEADO";
             }
         }
 
@@ -1060,8 +1061,8 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 return;
             }
             const sector = document.getElementById('userSectorNotify').value;
-            new Notification("Alerta de Teste", {
-                body: "Conectado ao setor " + sector,
+            new Notification("Teste do Sistema", {
+                body: "Alertas para o setor " + sector + " estão OK!",
                 icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
             });
         }
@@ -1087,11 +1088,10 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                         tag: 'note-event-' + noteData.id,
                         renotify: true
                     });
-                } catch(e) { console.error("Erro alerta:", e); }
+                } catch(e) { console.error("Erro alerta browser:", e); }
             }
         }
 
-        // --- FUNÇÕES DOS MODAIS DE HELPER XML ---
         function openSapModal() {
             helperMode = 'MP';
             document.getElementById('sapModalTitle').innerText = "XML MP (Materiais)";
@@ -1106,7 +1106,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             helperMode = 'CTE';
             document.getElementById('sapModalTitle').innerText = "XML CTE (Fretes)";
             document.getElementById('btnProcessarXml').onclick = processCteXml;
-            document.getElementById('sapToggleContainer').style.display = 'none'; // CTe não usa toggle de base item
+            document.getElementById('sapToggleContainer').style.display = 'none';
             document.getElementById('itemsTitle').innerText = "Dados do Frete";
             document.getElementById('sapModal').classList.add('active');
             limparHelper();
@@ -1153,8 +1153,15 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                     listDiv.innerHTML += `<div>${netStr}</div>`;
                 });
             } else {
-                // Modo CTE: Net é fixo em 98,71 conforme solicitado
-                const netStr = "98,71";
+                // Modo CTE dinâmico
+                const vTPrest = parseFloat(document.getElementById('validationBox').innerText.replace(/[^\d,.]/g,'').replace('.','').replace(',','.'));
+                const icmsText = document.querySelector('.sap-tax-col:nth-child(4) .sap-tax-cell').innerText.replace(/[^\d,.]/g,'').replace('.','').replace(',','.');
+                const vICMS = parseFloat(icmsText);
+                const basePisCofins = round2(vTPrest - vICMS);
+                const vPIS = round2(basePisCofins * 0.0165);
+                const vCOFINS = round2(basePisCofins * 0.0760);
+                const precoNet = round2(vTPrest - vPIS - vCOFINS - vICMS);
+                const netStr = precoNet.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
                 currentNetList.push(netStr);
                 listDiv.innerHTML += `<div>${netStr}</div>`;
             }
@@ -1188,7 +1195,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         const round2 = (num) => Math.round((num + Number.EPSILON) * 100) / 100;
         
-        // --- PROCESSAMENTO XML MP (MATERIAIS) ---
         function processSapXml() {
             const xmlInput = document.getElementById('sapXmlInput');
             const xmlText = xmlInput.value;
@@ -1299,7 +1305,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             xmlInput.value = '';
         }
 
-        // --- PROCESSAMENTO XML CTE (FRETES) ---
         function processCteXml() {
             const xmlInput = document.getElementById('sapXmlInput');
             const xmlText = xmlInput.value;
@@ -1308,78 +1313,61 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
 
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - FRETE";
             const ide = xmlDoc.getElementsByTagName("ide")[0];
-            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
             const nCT = ide.getElementsByTagName("nCT")[0]?.textContent || "";
-            const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
-            const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "FRETE";
-            
-            const vPrest = xmlDoc.getElementsByTagName("vPrest")[0];
-            const vTPrest = vPrest?.getElementsByTagName("vTPrest")[0]?.textContent || "0.00";
-            
-            const prot = xmlDoc.getElementsByTagName("infProt")[0];
-            const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
-            const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
-            let chave = xmlDoc.getElementsByTagName("infCte")[0]?.getAttribute("Id")?.replace("CTe","") || "";
-            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
-            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
+            const vTPrest = parseFloat(xmlDoc.getElementsByTagName("vTPrest")[0]?.textContent || 0);
 
+            const icms00 = xmlDoc.getElementsByTagName("ICMS00")[0];
+            const vBC_ICMS = parseFloat(icms00?.getElementsByTagName("vBC")[0]?.textContent || 0);
+            const pICMS = parseFloat(icms00?.getElementsByTagName("pICMS")[0]?.textContent || 0);
+            const vICMS = parseFloat(icms00?.getElementsByTagName("vICMS")[0]?.textContent || 0);
+
+            const basePisCofins = round2(vTPrest - vICMS); 
+            const vPIS = round2(basePisCofins * 0.0165);
+            const vCOFINS = round2(basePisCofins * 0.0760);
+            const precoNet = round2(vTPrest - vPIS - vCOFINS - vICMS);
+
+            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
-            const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-
-            document.getElementById('sapNatOp').innerText = "Natureza: " + natOp;
+            
+            document.getElementById('sapNatOp').innerText = "Natureza: " + (ide.getElementsByTagName("natOp")[0]?.textContent || "");
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
                 ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
-                ${createSapBox("REF CTE", nCT + "-" + serie)}
-                ${createSapBox("VALOR TOTAL", fmtMoney(vTPrest))}
-                ${createSapBox("TRANSPORTADORA", shortName)}
-                ${createSapBox("PROTOCOLO", nProt)}
-                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
-                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
-                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
+                ${createSapBox("REF CTE", nCT)}
+                ${createSapBox("VALOR TOTAL", vTPrest.toLocaleString('pt-BR', {minimumFractionDigits: 2}))}
+                ${createSapBox("TRANSPORTADORA", emitNome.split(' ').slice(0, 2).join(' '))}
             `;
 
-            // Lógica de Impostos do Frete (CTE) Baseado no XML de teste enviado
             const container = document.getElementById('sapItemsContainer');
             container.innerHTML = '';
             
-            const baseICMS = parseFloat(vTPrest);
-            const valICMS = 14.83; // Conforme anexo 2
-            const basePisCofins = 108.77; // Conforme anexo 2
-            const valPis = 1.79;
-            const valCofins = 8.27;
-            const baseNet = 98.71;
-
-            const fmtCopy = (v) => typeof v === 'number' ? v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}) : v;
-            
-            // Tabela SAP para o CTE (Ordem igual ao Material, mas com valores do Frete)
-            const copyString = `${fmtCopy(baseNet)}\t0,00\n${fmtCopy(basePisCofins)}\t7,60\n${fmtCopy(baseNet)}\t0,00\n${fmtCopy(baseICMS)}\t12,00\n0,01\t0,01\n${fmtCopy(basePisCofins)}\t1,65`;
+            const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const copyString = `${fmt(precoNet)}\t0,00\n${fmt(basePisCofins)}\t7,60\n${fmt(precoNet)}\t0,00\n${fmt(vBC_ICMS)}\t${fmt(pICMS)}\n0,01\t0,01\n${fmt(basePisCofins)}\t1,65`;
 
             const div = document.createElement('div');
             div.className = 'sap-item-row';
             div.innerHTML = `
                 <div class="sap-item-header">
-                    <div style="display:flex; align-items:center; gap:10px; width:100%;">
-                        <span class="sap-item-title">FRETE: ${shortName}</span>
+                    <div style="display:flex; align-items:center; width:100%;">
+                        <span class="sap-item-title">CÁLCULO FRETE (NET: ${fmt(precoNet)})</span>
                         <div style="flex:1;"></div>
                         <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
                     </div>
                 </div>
                 <div class="sap-item-body active">
                     <div class="sap-tax-grid">
-                        ${createTaxCol("CBS", baseNet, 0)}
-                        ${createTaxCol("COFINS", basePisCofins, valCofins)}
-                        ${createTaxCol("IBSS", baseNet, 0)}
-                        ${createTaxCol("ICMS", baseICMS, valICMS)}
+                        ${createTaxCol("CBS", precoNet, 0)}
+                        ${createTaxCol("COFINS", basePisCofins, vCOFINS)}
+                        ${createTaxCol("IBSS", precoNet, 0)}
+                        ${createTaxCol("ICMS", vBC_ICMS, vICMS)}
                         ${createTaxCol("IPI", 0.01, 0.01)} 
-                        ${createTaxCol("PIS", basePisCofins, valPis)}
+                        ${createTaxCol("PIS", basePisCofins, vPIS)}
                     </div>
                 </div>`;
             container.appendChild(div);
 
-            document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO CTE: " + formatCurrency(vTPrest);
+            document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO CTE: R$ " + fmt(vTPrest);
             document.getElementById('sapResults').style.display = 'block';
             xmlInput.value = '';
         }
@@ -1393,7 +1381,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         }
 
         function recalcSapItems() {
-            if(helperMode === 'CTE') return; // CTe não usa o toggle
+            if(helperMode === 'CTE') return; 
 
             const useItemTotal = document.getElementById('sapBaseToggle').checked;
             const container = document.getElementById('sapItemsContainer');
@@ -1439,7 +1427,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                     </div>`;
                 container.appendChild(div);
             });
-            document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO NF: " + formatCurrency(totalValidator);
+            document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO NF: R$ " + totalValidator.toLocaleString('pt-BR', {minimumFractionDigits: 2});
         }
 
         function createTaxCol(name, base, valImposto) {
@@ -1494,12 +1482,12 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const doc = new jsPDF('l', 'mm', 'a4');
             const dateTitle = document.getElementById('checklistDate').value || 'Geral';
             doc.setFontSize(14);
-            doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15);
+            doc.text(`Checklist - ${dateTitle}`, 14, 15);
             const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"];
             const tableRows = [];
             const trs = document.querySelectorAll('#svcTableBody tr');
             trs.forEach(tr => { if (tr.style.display !== 'none') { const inputs = tr.querySelectorAll('input, select'); if (inputs.length > 0) { const rowData = [inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value]; tableRows.push(rowData); } } });
-            doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }, columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } } });
+            doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, theme: 'grid', styles: { fontSize: 7 } });
             doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`);
         }
 
@@ -1532,7 +1520,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         
         function renderServicesTable() {
             const tbody = document.getElementById('svcTableBody'); tbody.innerHTML = '';
-            if(servicesData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Lista vazia.</td></tr>'; return; }
+            if(servicesData.length === 0) { tbody.innerHTML = '<tr><td colspan="12" style="text-align:center; padding: 20px; color: #999;">Vazio.</td></tr>'; return; }
             servicesData.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
@@ -1575,23 +1563,196 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         }
 
         async function exportKPIPDF() { 
-            if(!window.html2canvas || !window.jspdf) { alert("PDF Error."); return; } 
+            if(!window.html2canvas || !window.jspdf) return;
             const element = document.getElementById('kpiContent');
             element.classList.add('export-mode-white');
-            const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#ffffff' });
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL('image/jpeg', 0.8);
+            const pdf = new jspdf.jsPDF('l', 'mm', 'a4');
+            pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+            pdf.save('KPI.pdf');
             element.classList.remove('export-mode-white');
-            const imgData = canvas.toDataURL('image/jpeg', 0.8); 
-            const { jsPDF } = window.jspdf; 
-            const pdf = new jsPDF('l', 'mm', 'a4'); 
-            const imgProps = pdf.getImageProperties(imgData); 
-            const pdfWidth = pdf.internal.pageSize.getWidth(); 
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width; 
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight); 
-            pdf.save('KPI_Dashboard.pdf'); 
         }
 
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
+
+        function processSapXml() {
+            const xmlInput = document.getElementById('sapXmlInput');
+            const xmlText = xmlInput.value;
+            if (!xmlText) { alert("Cole o XML primeiro."); return; }
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
+            const ide = xmlDoc.getElementsByTagName("ide")[0];
+            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
+            const nNF = ide.getElementsByTagName("nNF")[0]?.textContent || "";
+            const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
+            const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "VENDA";
+            const total = xmlDoc.getElementsByTagName("total")[0]?.getElementsByTagName("ICMSTot")[0];
+            const vNF = total?.getElementsByTagName("vNF")[0]?.textContent || "0.00";
+            const prot = xmlDoc.getElementsByTagName("infProt")[0];
+            const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
+            const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
+            let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
+            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
+            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
+            const dups = xmlDoc.getElementsByTagName("dup");
+            let parcelasHtml = "Sem parcelas";
+            if(dups.length > 0) {
+                let pHtml = "";
+                for(let i=0; i<dups.length; i++) {
+                    let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
+                    if(vDup) {
+                        let vDupClean = parseFloat(vDup).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
+                    }
+                }
+                parcelasHtml = "Parcelas: " + pHtml;
+            }
+            const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
+            const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('sapNatOp').innerText = "Natureza: " + natOp;
+            const grid = document.getElementById('sapHeaderGrid');
+            grid.innerHTML = `
+                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
+                ${createSapBox("REF NF", nNF + "-" + serie)}
+                ${createSapBox("VALOR TOTAL", fmtMoney(vNF))}
+                ${createSapBox("FORNECEDOR", shortName)}
+                ${createSapBox("PROTOCOLO", nProt)}
+                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
+                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
+                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
+            `;
+            grid.innerHTML += `<div style="grid-column: span 4; background: var(--surface); color: var(--text-main); padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem;">${parcelasHtml}</div>`;
+            rawSapItems = [];
+            const dets = xmlDoc.getElementsByTagName("det");
+            for(let i=0; i<dets.length; i++) {
+                const prod = dets[i].getElementsByTagName("prod")[0];
+                const imposto = dets[i].getElementsByTagName("imposto")[0];
+                const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
+                const qCom = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
+                const uCom = prod.getElementsByTagName("uCom")[0]?.textContent || "";
+                let vBC_ICMS = 0, vICMS = 0, pICMS = 0;
+                const icmsTag = imposto.getElementsByTagName("ICMS")[0];
+                if(icmsTag && icmsTag.children.length > 0) {
+                    const inner = icmsTag.children[0];
+                    vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent || 0);
+                    vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
+                    pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent || 0);
+                }
+                let vIPI = 0, pIPI = 0;
+                const ipiTag = imposto.getElementsByTagName("IPI")[0];
+                if(ipiTag) {
+                    const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
+                    if(ipiTrib) {
+                        vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
+                        pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent || 0);
+                    }
+                }
+                let vPIS = 0, pPIS = 0;
+                const pisTag = imposto.getElementsByTagName("PIS")[0];
+                if(pisTag) {
+                    const pisAliq = pisTag.getElementsByTagName("PISAliq")[0] || pisTag.getElementsByTagName("PISOutr")[0];
+                    if(pisAliq) {
+                        vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
+                        pPIS = parseFloat(pisAliq.getElementsByTagName("pPIS")[0]?.textContent || 0);
+                    }
+                }
+                let vCOFINS = 0, pCOFINS = 0;
+                const cofinsTag = imposto.getElementsByTagName("COFINS")[0];
+                if(cofinsTag) {
+                    const cofinsAliq = cofinsTag.getElementsByTagName("COFINSAliq")[0] || cofinsTag.getElementsByTagName("COFINSOutr")[0];
+                    if(cofinsAliq) {
+                        vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
+                        pCOFINS = parseFloat(cofinsAliq.getElementsByTagName("pCOFINS")[0]?.textContent || 0);
+                    }
+                }
+                rawSapItems.push({
+                    name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
+                    index: i + 1,
+                    vProd: vProd,
+                    qCom: qCom,
+                    uCom: uCom,
+                    vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
+                    vICMS: vICMS, pICMS: pICMS,
+                    vIPI: vIPI, pIPI: pIPI,
+                    vPIS: vPIS, pPIS: pPIS,
+                    vCOFINS: vCOFINS, pCOFINS: pCOFINS
+                });
+            }
+            document.getElementById('sapResults').style.display = 'block';
+            recalcSapItems();
+            xmlInput.value = '';
+        }
+
+        function processCteXml() {
+            const xmlInput = document.getElementById('sapXmlInput');
+            const xmlText = xmlInput.value;
+            if (!xmlText) { alert("Cole o XML primeiro."); return; }
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+
+            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const ide = xmlDoc.getElementsByTagName("ide")[0];
+            const nCT = ide.getElementsByTagName("nCT")[0]?.textContent || "";
+            const vTPrest = parseFloat(xmlDoc.getElementsByTagName("vTPrest")[0]?.textContent || 0);
+
+            const icms00 = xmlDoc.getElementsByTagName("ICMS00")[0];
+            const vBC_ICMS = parseFloat(icms00?.getElementsByTagName("vBC")[0]?.textContent || 0);
+            const pICMS = parseFloat(icms00?.getElementsByTagName("pICMS")[0]?.textContent || 0);
+            const vICMS = parseFloat(icms00?.getElementsByTagName("vICMS")[0]?.textContent || 0);
+
+            const basePisCofins = round2(vTPrest - vICMS); 
+            const vPIS = round2(basePisCofins * 0.0165);
+            const vCOFINS = round2(basePisCofins * 0.0760);
+            const precoNet = round2(vTPrest - vPIS - vCOFINS - vICMS);
+
+            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
+            const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
+            
+            document.getElementById('sapNatOp').innerText = "Natureza: " + (ide.getElementsByTagName("natOp")[0]?.textContent || "");
+            const grid = document.getElementById('sapHeaderGrid');
+            grid.innerHTML = `
+                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
+                ${createSapBox("REF CTE", nCT)}
+                ${createSapBox("VALOR TOTAL", vTPrest.toLocaleString('pt-BR', {minimumFractionDigits: 2}))}
+                ${createSapBox("TRANSPORTADORA", emitNome.split(' ').slice(0, 2).join(' '))}
+            `;
+
+            const container = document.getElementById('sapItemsContainer');
+            container.innerHTML = '';
+            
+            const fmt = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            const copyString = `${fmt(precoNet)}\t0,00\n${fmt(basePisCofins)}\t7,60\n${fmt(precoNet)}\t0,00\n${fmt(vBC_ICMS)}\t${fmt(pICMS)}\n0,01\t0,01\n${fmt(basePisCofins)}\t1,65`;
+
+            const div = document.createElement('div');
+            div.className = 'sap-item-row';
+            div.innerHTML = `
+                <div class="sap-item-header">
+                    <div style="display:flex; align-items:center; width:100%;">
+                        <span class="sap-item-title">CÁLCULO FRETE (NET: ${fmt(precoNet)})</span>
+                        <div style="flex:1;"></div>
+                        <button class="nav-btn" style="height:24px; padding:0 8px; background:#2563eb; color:white; font-size:0.7rem;" onclick="copyText(\`${copyString}\`)">COPIAR TABELA SAP</button>
+                    </div>
+                </div>
+                <div class="sap-item-body active">
+                    <div class="sap-tax-grid">
+                        ${createTaxCol("CBS", precoNet, 0)}
+                        ${createTaxCol("COFINS", basePisCofins, vCOFINS)}
+                        ${createTaxCol("IBSS", precoNet, 0)}
+                        ${createTaxCol("ICMS", vBC_ICMS, vICMS)}
+                        ${createTaxCol("IPI", 0.01, 0.01)} 
+                        ${createTaxCol("PIS", basePisCofins, vPIS)}
+                    </div>
+                </div>`;
+            container.appendChild(div);
+
+            document.getElementById('validationBox').innerText = "VALIDAÇÃO PREÇO CTE: R$ " + fmt(vTPrest);
+            document.getElementById('sapResults').style.display = 'block';
+            xmlInput.value = '';
+        }
     </script>
 
 <style>
@@ -1645,8 +1806,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             <h2>Nova Atualização!</h2>
             <p>Confira o que mudou:</p>
             <ul>
-                <li><b>XML MP & CTE:</b> Agora o sistema separa a lógica de materiais e fretes, aplicando regras fiscais específicas para cada um de forma automática.</li>
-                <li><b>Notificações:</b> Sistema de alertas para novos lançamentos.</li>
+                <li><b>Cálculo de Frete (XML CTE):</b> Agora o sistema lê automaticamente a alíquota de ICMS do CTe e calcula o NET subtraindo ICMS, PIS e COFINS conforme suas fórmulas manuais.</li>
             </ul>
             <button class="btn-update-close" onclick="closeUpdateBubble()">Entendido!</button>
         </div>
