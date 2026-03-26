@@ -971,12 +971,12 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
         function setupRealtime() {
             if(!supabase) return;
             supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notas' }, (payload) => {
-                handleBrowserNotification(payload.new);
-                loadData();
-            })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
-                if(payload.eventType !== 'INSERT') loadData();
+                // Notifica em caso de inserção (nova nota) ou atualização (mudança de setor)
+                if(payload.eventType === 'INSERT' || payload.eventType === 'UPDATE') {
+                    handleBrowserNotification(payload.new);
+                }
+                loadData();
             })
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
@@ -988,7 +988,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             .subscribe();
         }
 
-        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA (ATUALIZADA) --- */
+        /* --- LÓGICA DE NOTIFICAÇÃO COMPLETA --- */
         function checkNotificationStatus() {
             const savedSector = localStorage.getItem('notifySector');
             const bell = document.getElementById('notifyBell');
@@ -997,7 +997,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             bell.className = 'notify-btn';
             if (perm === 'denied') {
                 bell.classList.add('blocked');
-                bell.title = "Notificações BLOQUEADAS (Clique para ver como liberar)";
+                bell.title = "Notificações BLOQUEADAS no Navegador";
             } else if (savedSector && perm === 'granted') {
                 bell.classList.add('active');
                 bell.title = "Notificações ATIVAS: " + savedSector;
@@ -1035,8 +1035,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         async function saveNotificationSettings() {
             const sector = document.getElementById('userSectorNotify').value;
-            
-            // Força o pedido de permissão do navegador
             const permission = await Notification.requestPermission();
             
             if (permission === "granted") {
@@ -1044,7 +1042,6 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                 checkNotificationStatus();
                 showToast("Configurações salvas!");
                 
-                // Dispara confirmação visual imediata
                 new Notification("Sistema Vert", {
                     body: "Notificações ativadas para: " + sector,
                     icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
@@ -1084,15 +1081,17 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             const noteSector = (newNote.setor || "").trim().toUpperCase();
             const mySectorUpper = mySector.toUpperCase();
 
-            // Lógica: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
+            // Regra: Notifica se setor for igual OU se nota for Aprovação e usuário for Compras
             const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
 
             if (shouldNotify) {
-                new Notification("Nova Nota Fiscal: " + noteSector, {
-                    body: `Forn: ${newNote.fornecedor}\nValor: ${newNote.valor}\nErro: ${newNote.obs_erro || 'N/A'}`,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
-                    tag: 'note-' + newNote.id
-                });
+                try {
+                    new Notification("Responsabilidade do Setor: " + noteSector, {
+                        body: `Forn: ${newNote.fornecedor}\nValor: R$ ${newNote.valor}\nErro: ${newNote.obs_erro || 'N/A'}`,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
+                        tag: 'note-' + newNote.id // Evita duplicidade
+                    });
+                } catch(e) { console.error("Erro ao disparar notificação:", e); }
             }
         }
 
@@ -1537,7 +1536,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
             if (permission === "granted") {
                 localStorage.setItem('notifySector', sector);
                 checkNotificationStatus();
-                showToast("Notificações configuradas com sucesso!");
+                showToast("Configurações salvas!");
                 
                 // Dispara confirmação visual imediata
                 new Notification("Sistema Vert", {
@@ -1584,12 +1583,11 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
             if (shouldNotify) {
                 try {
-                    const n = new Notification("Nova Nota Fiscal: " + noteSector, {
-                        body: `Forn: ${newNote.fornecedor}\nValor: ${newNote.valor}\nErro: ${newNote.obs_erro || 'Não informado'}`,
+                    new Notification("Responsabilidade: " + noteSector, {
+                        body: `Forn: ${newNote.fornecedor}\nValor: R$ ${newNote.valor}\nErro: ${newNote.obs_erro || 'Não informado'}`,
                         icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
                         tag: 'note-' + newNote.id // Evita notificações repetidas
                     });
-                    n.onclick = () => { window.focus(); n.close(); };
                 } catch(e) { console.error("Erro ao disparar notificação:", e); }
             }
         }
