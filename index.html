@@ -582,10 +582,13 @@ border: 1px solid #e2e8f0; padding: 10px;
         </div>
 
         <div class="header-actions">
-            <button class="nav-btn" style="background-color: #2563eb; color: white;"
-onclick="openSapModal()">
-                <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> SAP XML
+            <button class="nav-btn" style="background-color: #2563eb; color: white;" onclick="openSapModal()">
+                <span class="material-icons-round" style="margin-right:5px; font-size:18px;">dataset</span> XML MP
             </button>
+            <button class="nav-btn" style="background-color: #2563eb; color: white;" onclick="openXMLCteModal()">
+                <span class="material-icons-round" style="margin-right:5px; font-size:18px;">local_shipping</span> XML CTE
+            </button>
+
             <button class="nav-btn btn-xml" title="Importar XML" onclick="openXMLModal()">
                 <span class="material-icons-round" style="font-size:18px">description</span>
             </button>
@@ -621,6 +624,14 @@ onclick="openSapModal()">
         <div class="card-bubble dashboard-container">
             <div class="chart-box"><canvas id="sectorChart"></canvas></div>
             <div class="stats-box" id="statsBox"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="xmlCteModal">
+        <div class="modal" style="max-width: 600px;">
+            <div class="modal-header"><h2>Importar XML CTE (Frete)</h2><button class="close-btn" onclick="closeXMLCteModal()"><span>&times;</span></button></div>
+            <div class="modal-body"><textarea id="xmlCteInput" class="xml-textarea" placeholder="Cole o XML da CTE aqui..."></textarea></div>
+            <div class="form-footer"><button class="btn-primary" onclick="processCteXML()">Processar Frete</button></div>
         </div>
     </div>
 
@@ -867,6 +878,53 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
     </div>
 
     <script>
+        // FUNÇÕES DE ABERTURA DOS NOVOS MODAIS
+        function openXMLCteModal() { document.getElementById('xmlCteModal').classList.add('active'); }
+        function closeXMLCteModal() { document.getElementById('xmlCteModal').classList.remove('active'); document.getElementById('xmlCteInput').value = ''; }
+
+        // NOVA LÓGICA DE PROCESSAMENTO DE CTE (FRETE)
+        function processCteXML() {
+            const xmlText = document.getElementById('xmlCteInput').value;
+            if (!xmlText) return;
+            
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+            
+            // Dados Básicos
+            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const vPrest = parseFloat(xmlDoc.getElementsByTagName("vTPrest")[0]?.textContent || 0);
+            const dhEmi = xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent || "";
+            const nCT = xmlDoc.getElementsByTagName("nCT")[0]?.textContent || "";
+            const chave = xmlDoc.getElementsByTagName("infCte")[0]?.getAttribute("Id")?.replace("CTe", "") || "";
+            
+            // Impostos
+            const pIcmsXml = parseFloat(xmlDoc.getElementsByTagName("pICMS")[0]?.textContent || 0);
+            const vIcmsXml = parseFloat(xmlDoc.getElementsByTagName("vICMS")[0]?.textContent || 0);
+            
+            // Cálculos Conforme Regra Solicitada
+            const pis = Math.round((vPrest * 0.0165) * 100) / 100;
+            const cofins = Math.round((vPrest * 0.076) * 100) / 100;
+            const ipiFixo = 0.01;
+            const net = Math.round((vPrest - pis - cofins - vIcmsXml) * 100) / 100;
+
+            // Preenchimento do Formulário Principal
+            document.getElementById('editId').value = "";
+            document.getElementById('modalTitle').innerText = "Revisar Frete (CT-e)";
+            document.getElementById('tipo').value = "CTE";
+            document.getElementById('fornecedor').value = emitNome;
+            document.getElementById('valor').value = vPrest.toFixed(2);
+            document.getElementById('chave').value = chave;
+            document.getElementById('referencia').value = nCT;
+            if(dhEmi) document.getElementById('dataEmissao').value = dhEmi.split('T')[0];
+            
+            // Observação com Detalhamento do Cálculo
+            const obsTexto = `CÁLCULO FRETE:\nNET: R$ ${net.toFixed(2)}\nPIS (1,65%): R$ ${pis.toFixed(2)}\nCOFINS (7,6%): R$ ${cofins.toFixed(2)}\nICMS (${pIcmsXml}%): R$ ${vIcmsXml.toFixed(2)}\nIPI (Fixo): R$ ${ipiFixo.toFixed(2)}`;
+            document.getElementById('obsCorrecao').value = obsTexto;
+
+            closeXMLCteModal();
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
         // FUNÇÃO PARA FECHAR MODAIS COM ESC (PONTO 1)
         document.addEventListener('keydown', function(event) {
             if (event.key === "Escape") {
@@ -875,6 +933,7 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
                     // Mapeamento de IDs para funções de fechar
                     if (overlay.id === 'notifyModal') closeNotifyModal();
                     else if (overlay.id === 'xmlModal') closeXMLModal();
+                    else if (overlay.id === 'xmlCteModal') closeXMLCteModal();
                     else if (overlay.id === 'notesModal') closeNotesModal();
                     else if (overlay.id === 'sapModal') closeSapModal();
                     else if (overlay.id === 'netModal') closeNetModal();
@@ -1496,323 +1555,33 @@ class="modal error-modal" style="max-width:350px;text-align:center;padding:2rem;
 
         function exportMainExcel() { const wb=XLSX.utils.book_new(); const ws=XLSX.utils.json_to_sheet(nfs); XLSX.utils.book_append_sheet(wb,ws,"Notas"); XLSX.writeFile(wb,"notas.xlsx"); }
         function processXML() { const xmlText=document.getElementById('xmlInput').value; const parser=new DOMParser(); const xmlDoc=parser.parseFromString(xmlText,"text/xml"); const emitNome=xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent||""; const vNF=xmlDoc.getElementsByTagName("vNF")[0]?.textContent||""; const dhEmi=xmlDoc.getElementsByTagName("dhEmi")[0]?.textContent||""; let chave=xmlDoc.getElementsByTagName("chNFe")[0]?.textContent||""; if(!chave){const infNFe=xmlDoc.getElementsByTagName("infNFe")[0]; if(infNFe)chave=infNFe.getAttribute("Id")?.replace("NFe","")||"";} const dup=xmlDoc.getElementsByTagName("dup")[0]; const dVenc=dup?dup.getElementsByTagName("dVenc")[0]?.textContent:""; document.getElementById('editId').value=""; document.getElementById('modalTitle').innerText="Revisar XML"; document.getElementById('fornecedor').value=emitNome; document.getElementById('valor').value=vNF; document.getElementById('chave').value=chave; document.getElementById('referencia').value=xmlDoc.getElementsByTagName("nNF")[0]?.textContent||""; if(dhEmi)document.getElementById('dataEmissao').value=dhEmi.split('T')[0]; if(dVenc)document.getElementById('dataVencimento').value=dVenc; else alert("Vencimento não encontrado."); document.getElementById('pedido').value=""; document.getElementById('linhaPedido').value=""; document.getElementById('obsErro').value=""; closeXMLModal(); document.getElementById('modalOverlay').classList.add('active'); }
-
-        function setupRealtime() {
-            if(!supabase) return;
-            supabase.channel('custom-all-channel')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'notas' }, (payload) => {
-                if(payload.eventType === 'INSERT') {
-                    handleBrowserNotification(payload.new);
-                } else if (payload.eventType === 'UPDATE') {
-                    if (payload.old && payload.old.setor && payload.new.setor && payload.old.setor !== payload.new.setor) {
-                        handleBrowserNotification(payload.new);
-                    }
-                }
-                loadData();
-            })
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
-                const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
-                if(data) servicesData = data;
-                if(document.getElementById('servicesModal').classList.contains('active')) {
-                    renderServicesTable(); updateChecklistDashboard();
-                }
-            })
-            .subscribe();
-        }
-
-        function checkNotificationStatus() {
-            const savedSector = localStorage.getItem('notifySector');
-            const bell = document.getElementById('notifyBell');
-            const perm = Notification.permission;
-            
-            bell.className = 'notify-btn';
-            if (perm === 'denied') {
-                bell.classList.add('blocked');
-                bell.title = "Notificações BLOQUEADAS no Navegador";
-            } else if (savedSector && perm === 'granted') {
-                bell.classList.add('active');
-                bell.title = "Notificações ATIVAS: " + savedSector;
-            }
-        }
-
-        function openNotifyModal() {
-            const savedSector = localStorage.getItem('notifySector');
-            const statusText = document.getElementById('notifyStatusText');
-            const warning = document.getElementById('incognitoWarning');
-            const perm = Notification.permission;
-
-            if(savedSector) document.getElementById('userSectorNotify').value = savedSector;
-            
-            if (perm === 'denied') {
-                statusText.innerText = "STATUS: BLOQUEADO PELO NAVEGADOR";
-                statusText.style.color = "#dc2626";
-                warning.style.display = 'block';
-            } else if (perm === 'granted') {
-                statusText.innerText = savedSector ? "STATUS: ATIVADO (" + savedSector + ")" : "STATUS: PRONTO PARA ATIVAR";
-                statusText.style.color = "#10b981";
-                warning.style.display = 'none';
-            } else {
-                statusText.innerText = "STATUS: AGUARDANDO PERMISSÃO";
-                statusText.style.color = "#64748b";
-                warning.style.display = 'none';
-            }
-
-            document.getElementById('notifyModal').classList.add('active');
-        }
-
-        function closeNotifyModal() {
-            document.getElementById('notifyModal').classList.remove('active');
-        }
-
-        async function saveNotificationSettings() {
-            const sector = document.getElementById('userSectorNotify').value;
-            const permission = await Notification.requestPermission();
-            
-            if (permission === "granted") {
-                localStorage.setItem('notifySector', sector);
-                checkNotificationStatus();
-                showToast("Configurações salvas!");
-                
-                new Notification("Sincronização Ativa", {
-                    body: "Alertas ativados para o setor " + sector,
-                    icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
-                });
-                
-                closeNotifyModal();
-            } else {
-                checkNotificationStatus();
-                document.getElementById('incognitoWarning').style.display = 'block';
-                document.getElementById('notifyStatusText').innerText = "STATUS: BLOQUEADO";
-            }
-        }
-
-        function testNotification() {
-            if (Notification.permission !== "granted") {
-                saveNotificationSettings();
-                return;
-            }
-            const sector = document.getElementById('userSectorNotify').value;
-            new Notification("Teste do Sistema", {
-                body: "Se você recebeu isso, os alertas para o setor " + sector + " estão OK!",
-                icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png'
-            });
-        }
-
-        function disableNotifications() {
-            localStorage.removeItem('notifySector');
-            checkNotificationStatus();
-            showToast("Notificações desativadas.");
-            closeNotifyModal();
-        }
-
-        function handleBrowserNotification(noteData) {
-            const mySector = localStorage.getItem('notifySector');
-            if (!mySector || Notification.permission !== "granted") return;
-
-            const noteSector = (noteData.setor || "").trim().toUpperCase();
-            const mySectorUpper = mySector.toUpperCase();
-
-            const shouldNotify = (noteSector === mySectorUpper) || (noteSector === 'APROVAÇÃO' && mySectorUpper === 'COMPRAS');
-
-            if (shouldNotify) {
-                try {
-                    new Notification("Responsabilidade: " + noteSector, {
-                        body: `Forn: ${noteData.fornecedor}\nValor: R$ ${noteData.valor}`,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/906/906334.png',
-                        tag: 'note-event-' + noteData.id,
-                        renotify: true
-                    });
-                } catch(e) { console.error("Erro ao emitir alerta browser:", e); }
-            }
-        }
-
-        function processSapXml() {
-            const xmlInput = document.getElementById('sapXmlInput');
-            const xmlText = xmlInput.value;
-            if (!xmlText) { alert("Cole o XML primeiro."); return; }
-            const parser = new DOMParser();
-            const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-            const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
-            const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
-            const ide = xmlDoc.getElementsByTagName("ide")[0];
-            const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
-            const nNF = ide.getElementsByTagName("nNF")[0]?.textContent || "";
-            const serie = ide.getElementsByTagName("serie")[0]?.textContent || "1";
-            const natOp = ide.getElementsByTagName("natOp")[0]?.textContent || "VENDA";
-            const total = xmlDoc.getElementsByTagName("total")[0]?.getElementsByTagName("ICMSTot")[0];
-            const vNF = total?.getElementsByTagName("vNF")[0]?.textContent || "0.00";
-            const prot = xmlDoc.getElementsByTagName("infProt")[0];
-            const nProt = prot?.getElementsByTagName("nProt")[0]?.textContent || "";
-            const dhRecbto = prot?.getElementsByTagName("dhRecbto")[0]?.textContent || "";
-            let chave = xmlDoc.getElementsByTagName("infNFe")[0]?.getAttribute("Id")?.replace("NFe","") || "";
-            const chaveParcial = chave.length === 44 ? chave.substring(35, 43) : "ERRO";
-            const chaveDV = chave.length === 44 ? chave.charAt(43) : "";
-            const dups = xmlDoc.getElementsByTagName("dup");
-            let parcelasHtml = "Sem parcelas";
-            if(dups.length > 0) {
-                let pHtml = "";
-                for(let i=0; i<dups.length; i++) {
-                    let vDup = dups[i].getElementsByTagName("vDup")[0]?.textContent;
-                    if(vDup) {
-                        let vDupClean = parseFloat(vDup).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        pHtml += `<span class="parcela-btn" onclick="copyText('${vDupClean}')">${formatCurrency(vDup)}</span>`;
-                    }
-                }
-                parcelasHtml = "Parcelas (Clique para copiar): " + pHtml;
-            }
-            const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
-            const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
-            document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
-            const grid = document.getElementById('sapHeaderGrid');
-            grid.innerHTML = `
-                ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
-                ${createSapBox("REF NF", nNF + "-" + serie)}
-                ${createSapBox("VALOR TOTAL", fmtMoney(vNF))}
-                ${createSapBox("FORNECEDOR", shortName)}
-                ${createSapBox("PROTOCOLO", nProt)}
-                ${createSapBox("AUTORIZAÇÃO", fmtDateDots(dhRecbto))}
-                ${createSapBox("CHAVE (8 Dígitos)", chaveParcial)}
-                ${createSapBox("DÍGITO CHAVE", chaveDV, false)}
-            `;
-            grid.innerHTML += `<div style="grid-column: span 4; background: var(--surface); color: var(--text-main); padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem;">${parcelasHtml}</div>`;
-            rawSapItems = [];
-            const dets = xmlDoc.getElementsByTagName("det");
-            for(let i=0; i<dets.length; i++) {
-                const prod = dets[i].getElementsByTagName("prod")[0];
-                const imposto = dets[i].getElementsByTagName("imposto")[0];
-                const vProd = parseFloat(prod.getElementsByTagName("vProd")[0]?.textContent || 0);
-                const qCom = prod.getElementsByTagName("qCom")[0]?.textContent || "0";
-                const uCom = prod.getElementsByTagName("uCom")[0]?.textContent || "";
-                let vBC_ICMS = 0, vICMS = 0, pICMS = 0;
-                const icmsTag = imposto.getElementsByTagName("ICMS")[0];
-                if(icmsTag && icmsTag.children.length > 0) {
-                    const inner = icmsTag.children[0];
-                    vBC_ICMS = parseFloat(inner.getElementsByTagName("vBC")[0]?.textContent || 0);
-                    vICMS = parseFloat(inner.getElementsByTagName("vICMS")[0]?.textContent || 0);
-                    pICMS = parseFloat(inner.getElementsByTagName("pICMS")[0]?.textContent || 0);
-                }
-                let vIPI = 0, pIPI = 0;
-                const ipiTag = imposto.getElementsByTagName("IPI")[0];
-                if(ipiTag) {
-                    const ipiTrib = ipiTag.getElementsByTagName("IPITrib")[0];
-                    if(ipiTrib) {
-                        vIPI = parseFloat(ipiTrib.getElementsByTagName("vIPI")[0]?.textContent || 0);
-                        pIPI = parseFloat(ipiTrib.getElementsByTagName("pIPI")[0]?.textContent || 0);
-                    }
-                }
-                let vPIS = 0, pPIS = 0;
-                const pisTag = imposto.getElementsByTagName("PIS")[0];
-                if(pisTag) {
-                    const pisAliq = pisTag.getElementsByTagName("PISAliq")[0] || pisTag.getElementsByTagName("PISOutr")[0];
-                    if(pisAliq) {
-                        vPIS = parseFloat(pisAliq.getElementsByTagName("vPIS")[0]?.textContent || 0);
-                        pPIS = parseFloat(pisAliq.getElementsByTagName("pPIS")[0]?.textContent || 0);
-                    }
-                }
-                let vCOFINS = 0, pCOFINS = 0;
-                const cofinsTag = imposto.getElementsByTagName("COFINS")[0];
-                if(cofinsTag) {
-                    const cofinsAliq = cofinsTag.getElementsByTagName("COFINSAliq")[0] || cofinsTag.getElementsByTagName("COFINSOutr")[0];
-                    if(cofinsAliq) {
-                        vCOFINS = parseFloat(cofinsAliq.getElementsByTagName("vCOFINS")[0]?.textContent || 0);
-                        pCOFINS = parseFloat(cofinsAliq.getElementsByTagName("pCOFINS")[0]?.textContent || 0);
-                    }
-                }
-                rawSapItems.push({
-                    name: prod.getElementsByTagName("xProd")[0]?.textContent || `Item ${i+1}`,
-                    index: i + 1,
-                    vProd: vProd,
-                    qCom: qCom,
-                    uCom: uCom,
-                    vBC_XML: vBC_ICMS > 0 ? vBC_ICMS : vProd,
-                    vICMS: vICMS, pICMS: pICMS,
-                    vIPI: vIPI, pIPI: pIPI,
-                    vPIS: vPIS, pPIS: pPIS,
-                    vCOFINS: vCOFINS, pCOFINS: pCOFINS
-                });
-            }
-            document.getElementById('sapResults').style.display = 'block';
-            recalcSapItems();
-            xmlInput.value = '';
-        }
     </script>
-
-<style>
-        .update-bubble-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
-            display: none; /* Escondido por padrão */
-            justify-content: center;
-            align-items: center;
-            z-index: 11000;
-        }
-        .update-bubble {
-            background: var(--surface);
-            color: var(--text-main);
-            width: 90%;
-            max-width: 450px;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
-            border: 2px solid var(--primary);
-            text-align: center;
-            animation: popIn 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        }
-        @keyframes popIn {
-            from { transform: scale(0.8); opacity: 0; }
-            to { transform: scale(1); opacity: 1; }
-        }
-        .update-bubble h2 { margin-bottom: 1rem; color: var(--primary); font-weight: 800; }
-        .update-bubble p { font-size: 0.95rem; line-height: 1.6; margin-bottom: 1.5rem; color: var(--text-muted); }
-        .update-bubble ul { text-align: left; margin-bottom: 1.5rem; padding-left: 1.2rem; }
-        .update-bubble li { font-size: 0.85rem; margin-bottom: 8px; }
-        .btn-update-close {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            width: 100%;
-            transition: transform 0.2s;
-        }
-        .btn-update-close:hover { transform: translateY(-2px); }
-    </style>
 
     <div class="update-bubble-overlay" id="updateBubble">
         <div class="update-bubble">
             <span class="material-icons-round" style="font-size: 48px; color: var(--primary); margin-bottom: 1rem;">auto_awesome</span>
             <h2>Nova Atualização!</h2>
             <p>Confira o que mudou:</p>
-            
             <ul>
-                <li><b>Notificações:</b> Agora você pode optar por ativar as notificações e ficar informado toda vez que uma nova nota for adicionada ou tiver a responsabilidade transferida, para isso, basta deixar a aba do site aberta no navegador e você será notificado em segundo plano. (para ativar, vá até o botão ao lado do tema noturno) </li>
+                <li><b>Notificações:</b> Agora você pode optar por ativar as notificações e ficar informado toda vez que uma nova nota for adicionada...</li>
             </ul>
-
             <button class="btn-update-close" onclick="closeUpdateBubble()">Entendido!</button>
         </div>
     </div>
 
     <script>
         const AVISO_VERSAO = "1.8"; 
-
         function checkUpdateBubble() {
             const lastSeenVersion = localStorage.getItem('lastSeenUpdateVersion');
             if (lastSeenVersion !== AVISO_VERSAO) {
                 document.getElementById('updateBubble').style.display = 'flex';
             }
         }
-
         function closeUpdateBubble() {
             localStorage.setItem('lastSeenUpdateVersion', AVISO_VERSAO);
             document.getElementById('updateBubble').style.display = 'none';
         }
-
         window.addEventListener('load', checkUpdateBubble);
     </script>
-
 </body>
 </html>
