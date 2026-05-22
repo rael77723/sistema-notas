@@ -1864,7 +1864,7 @@
             logisticsState.carriers.unshift(carrier);
             saveLogisticsState();
             
-            notifyLogisticsEvent('FISCAL', 'Nova Carga MIGO Realizada', `Carga ${name} registrada. Notas aguardando MIRO.`);
+            notifyLogisticsEvent('FISCAL', 'Nova MIGO Realizada', `Carga ${name} registrada. Notas aguardando MIRO.`);
             
             nameInput.value = '';
             qtyInput.value = '';
@@ -1930,7 +1930,7 @@
                     saveLogisticsState();
                     renderReleaseModule();
                     
-                    notifyLogisticsEvent('FISCAL', 'Nova MIGO Realizada', `NF unitária adicionada na carga da transportadora ${carrier.baseName}. Aguardando MIRO.`);
+                    notifyLogisticsEvent('FISCAL', 'Nova MIGO Realizada', `NF unitária adicionada em ${carrier.baseName}. Aguardando MIRO.`);
                     showModernAlert("Nota Fiscal adicionada!", false);
                 }
             }
@@ -2128,13 +2128,16 @@
         }
 
         function markMiroOk(carrierId, nfIndex) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const nf = carrier.nfs[nfIndex];
-            nf.miroOk = true;
-            nf.miroTime = getBrasiliaTime();
-            saveLogisticsState();
-            renderReleaseModule();
-        }
+    const carrier = logisticsState.carriers.find(c => c.id === carrierId);
+    const nf = carrier.nfs[nfIndex];
+    nf.miroOk = true;
+    nf.miroTime = getBrasiliaTime();
+    saveLogisticsState();
+    renderReleaseModule();
+    
+    // Linha adicionada para disparar a notificação para todos os setores
+    notifyLogisticsEvent('GERAL', 'MIRO Finalizada', `A NF ${nf.number} da transportadora ${carrier.baseName} teve a MIRO concluída com sucesso.`);
+}
 
         // --- PROGRAMAÇÃO DE DOCA ---
         function openDocaModal() {
