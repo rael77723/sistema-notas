@@ -1745,15 +1745,17 @@
             const vBC_ICMS = parseFloat(icmsTag?.getElementsByTagName("vBC")[0]?.textContent || 0);
             const vICMS = parseFloat(icmsTag?.getElementsByTagName("vICMS")[0]?.textContent || 0);
             const pICMS = parseFloat(icmsTag?.getElementsByTagName("pICMS")[0]?.textContent || 0);
-            const vPisCalculado = round2(vTPrest * 0.0165); 
-            const vCofinsDin = round2(vTPrest * 0.0760) > 25 ? round2(vTPrest * 0.0649) : round2(vTPrest * 0.0760); 
-            const valorFinalNetSolicitado = round2(vTPrest - vPisCalculado - (vTPrest * 0.0649) - vICMS) + 0.01; 
-            const valorExato = vTPrest === 378.82 ? 302.52 : (vTPrest === 89.23 ? 67.21 : round2(vTPrest - (vTPrest * 0.0165) - (vTPrest * 0.0760) - vICMS));
+
+            // NOVA LÓGICA DE CÁLCULO PIS/COFINS/NET (Baseado na regra MP)
+            const basePisCofins = round2(vTPrest - vICMS);
+            const valPis = round2(basePisCofins * 0.0165);
+            const valCofins = round2(basePisCofins * 0.0760);
+            const valorExato = round2(basePisCofins - valPis - valCofins);
+
             const pIBS = parseFloat(xmlDoc.getElementsByTagName("pIBSUF")[0]?.textContent || 0);
             const pCBS = parseFloat(xmlDoc.getElementsByTagName("pCBS")[0]?.textContent || 0);
-            const basePisCofins = round2(vBC_ICMS - vICMS);
 
-            rawCteData = { net: valorExato, basePisCofins: basePisCofins, vBC_ICMS: vBC_ICMS, pICMS: pICMS, vICMS: vICMS, pCBS: pCBS, pIBS: pIBS, vTPrest: vTPrest, vPis: vPisCalculado, vCofins: round2(vTPrest * 0.0760) };
+            rawCteData = { net: valorExato, basePisCofins: basePisCofins, vBC_ICMS: vBC_ICMS, pICMS: pICMS, vICMS: vICMS, pCBS: pCBS, pIBS: pIBS, vTPrest: vTPrest, vPis: valPis, vCofins: valCofins };
 
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
@@ -1771,6 +1773,8 @@
             `;
             document.getElementById('cteValidationBox').innerText = "VALIDAÇÃO PREÇO NF: " + fmtMoney(vTPrest);
             const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            // Alterado para incluir base e alíquota estáticas em 0,01 para o IPI conforme solicitado
             const copyString = `${fmtCopy(valorExato)}\t${fmtCopy(pCBS)}\n${fmtCopy(basePisCofins)}\t7,60\n${fmtCopy(valorExato)}\t${fmtCopy(pIBS)}\n${fmtCopy(vBC_ICMS)}\t${fmtCopy(pICMS)}\n0,01\t0,01\n${fmtCopy(basePisCofins)}\t1,65`;
 
             const container = document.getElementById('cteItemsContainer');
@@ -1783,11 +1787,11 @@
                     <div class="sap-item-body active">
                         <div class="sap-tax-grid">
                             ${createTaxCol("CBS", valorExato, 0)}
-                            ${createTaxCol("COFINS", basePisCofins, round2(vTPrest * 0.0760))}
+                            ${createTaxCol("COFINS", basePisCofins, valCofins)}
                             ${createTaxCol("IBSS", valorExato, 0)}
                             ${createTaxCol("ICMS", vBC_ICMS, vICMS)}
-                            ${createTaxCol("IPI", 0.01, 0)}
-                            ${createTaxCol("PIS", basePisCofins, vPisCalculado)}
+                            ${createTaxCol("IPI", 0.01, 0.01)}
+                            ${createTaxCol("PIS", basePisCofins, valPis)}
                         </div>
                     </div>
                 </div>
