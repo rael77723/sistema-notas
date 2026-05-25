@@ -1152,7 +1152,7 @@
                 await loadData();
                 setupRealtime();
                 checkNotificationStatus();
-                initLogistics();
+                await initLogistics(); // Adicionado await para garantir sincronização na inicialização
 
                 if(urlParams.get('auto') === 'kpi') {
                     document.body.classList.add('auto-print-mode');
@@ -1193,7 +1193,22 @@
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
                 if(data) servicesData = data;
                 if(document.getElementById('servicesModal').classList.contains('active')) { renderServicesTable(); updateChecklistDashboard(); }
-            }).subscribe();
+            })
+            // Novo listener para escutar mudanças na logística e propagar para as telas abertas instantaneamente
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'logistica_state' }, (payload) => {
+                if (payload.new && payload.new.state_data) {
+                    logisticsState = payload.new.state_data;
+                    localStorage.setItem('logistics_state', JSON.stringify(logisticsState));
+                    
+                    if (document.getElementById('releaseModule').style.display !== 'none') {
+                        renderReleaseModule();
+                    }
+                    if (document.getElementById('docaModal').classList.contains('active')) {
+                        renderDocaSchedules();
+                    }
+                }
+            })
+            .subscribe();
         }
 
         function notifyLogisticsEvent(targetSector, title, body) {
@@ -1793,16 +1808,35 @@
         // ============================================================
         let logisticsState = { date: '', schedules: [], carriers: [] };
 
-        function initLogistics() {
+        async function initLogistics() {
             const today = new Date().toLocaleDateString('pt-BR');
-            const saved = localStorage.getItem('logistics_state');
-            if(saved) {
-                const parsed = JSON.parse(saved);
-                if(parsed.date === today) { logisticsState = parsed; } 
-                else { logisticsState = { date: today, schedules: [], carriers: [] }; saveLogisticsState(); }
-            } else {
-                logisticsState = { date: today, schedules: [], carriers: [] };
-                saveLogisticsState();
+            try {
+                // Tenta buscar no banco de dados primeiro
+                const { data, error } = await supabase.from('logistica_state').select('state_data').eq('id', 1).single();
+                if (!error && data && data.state_data) {
+                    if (data.state_data.date === today) {
+                        logisticsState = data.state_data;
+                    } else {
+                        // Se o banco for de um dia anterior, zera e salva no banco
+                        logisticsState = { date: today, schedules: [], carriers: [] };
+                        await saveLogisticsState();
+                    }
+                } else {
+                    // Se não tiver dado na tabela, inicializa
+                    logisticsState = { date: today, schedules: [], carriers: [] };
+                    await saveLogisticsState();
+                }
+            } catch (err) {
+                console.warn("Aviso: Tabela logistica_state ausente no Supabase. Usando localStorage como fallback provisório.", err);
+                const saved = localStorage.getItem('logistics_state');
+                if(saved) {
+                    const parsed = JSON.parse(saved);
+                    if(parsed.date === today) { logisticsState = parsed; } 
+                    else { logisticsState = { date: today, schedules: [], carriers: [] }; saveLogisticsState(); }
+                } else {
+                    logisticsState = { date: today, schedules: [], carriers: [] };
+                    saveLogisticsState();
+                }
             }
 
             // Evento para colar múltiplas linhas na Docas
@@ -1825,7 +1859,18 @@
             }
         }
 
-        function saveLogisticsState() { localStorage.setItem('logistics_state', JSON.stringify(logisticsState)); }
+        async function saveLogisticsState() { 
+            // Salva no localStorage como backup de segurança de transição suave
+            localStorage.setItem('logistics_state', JSON.stringify(logisticsState)); 
+            
+            // Grava a ação no Supabase para espelhar para os outros clientes
+            try {
+                await supabase.from('logistica_state').upsert({ id: 1, state_data: logisticsState });
+            } catch (error) {
+                console.error("Erro na sincronização de Logística com o Supabase", error);
+            }
+        }
+        
         function getBrasiliaTime() { return new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute:'2-digit' }); }
 
         function openReleaseModule() {
@@ -2128,16 +2173,15 @@
         }
 
         function markMiroOk(carrierId, nfIndex) {
-    const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-    const nf = carrier.nfs[nfIndex];
-    nf.miroOk = true;
-    nf.miroTime = getBrasiliaTime();
-    saveLogisticsState();
-    renderReleaseModule();
-    
-    // Linha adicionada para disparar a notificação para todos os setores
-    notifyLogisticsEvent('GERAL', 'MIRO Finalizada', `A NF ${nf.number} da transportadora ${carrier.baseName} teve a MIRO concluída com sucesso.`);
-}
+            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
+            const nf = carrier.nfs[nfIndex];
+            nf.miroOk = true;
+            nf.miroTime = getBrasiliaTime();
+            saveLogisticsState();
+            renderReleaseModule();
+            
+            notifyLogisticsEvent('GERAL', 'MIRO Finalizada', `A NF ${nf.number} da transportadora ${carrier.baseName} teve a MIRO concluída com sucesso.`);
+        }
 
         // --- PROGRAMAÇÃO DE DOCA ---
         function openDocaModal() {
