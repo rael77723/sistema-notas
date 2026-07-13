@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AHT - Notas Fiscais para Correção</title>
+    <title>AHT - Central de Controle Fiscal</title>
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/906/906334.png" type="image/png">
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -405,7 +405,7 @@
         .modal-overlay.active { display: flex; animation: fadeInOverlay 0.2s ease both; }
         .modal { background: var(--surface); border-radius: var(--radius-xl); box-shadow: var(--shadow-xl); border: 1px solid var(--border); width: 95%; max-height: 95vh; overflow-y: auto; display: flex; flex-direction: column; animation: slideUpModal 0.3s var(--transition-spring) both; }
         .modal-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--surface); z-index: 5; border-radius: var(--radius-xl) var(--radius-xl) 0 0; }
-        .modal-header h2 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; }
+        .modal-header h2, .modal-header h3 { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; color: var(--text-main); letter-spacing: -0.01em; margin:0;}
         .close-btn { background: var(--bg-body-subtle); border: 1px solid var(--border); cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; border-radius: 50%; transition: all var(--transition-fast); flex-shrink: 0; }
         .close-btn:hover { background: #fee2e2; color: #dc2626; border-color: #fecaca; }
         .close-btn span { font-size: 20px; }
@@ -497,7 +497,7 @@
         body.dark-mode .services-table tbody tr:hover td { background: rgba(99,102,241,0.06); }
         .svc-input { width: 100%; height: 100%; padding: 0 8px; border: none; outline: none; font-size: 0.82rem; background: transparent; color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; }
         body.dark-mode .svc-input { color: var(--text-main); }
-        .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 700; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
+        .svc-select { display: block; width: 100%; height: 100%; border: none; outline: none; border-radius: 0; font-size: 0.7rem; font-weight: 700; text-align: center; text-transform: uppercase; appearance: none; cursor: pointer; padding: 0; margin: 0; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3c/polyline%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 4px center; background-size: 10px; }
         .svc-select option { background-color: white !important; color: #1e293b !important; font-weight: normal; }
         body.dark-mode .svc-select option { background-color: #1e293b !important; color: white !important; }
         .st-red { background: #fff1f2; color: #b91c1c; }
@@ -675,6 +675,34 @@
         .nf-row.miro-ok-active { background-color: #ecfdf5; border-color: #a7f3d0; }
         body.dark-mode .nf-row.miro-ok-active { background-color: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.3); }
 
+        /* ============================================================
+           ESTILOS ADICIONAIS - AGENDA DE DOCA
+        ============================================================ */
+        .solicitacoes-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+        .solicitacao-item { display: flex; justify-content: space-between; align-items: center; background: #fff5f5; padding: 12px 16px; border-radius: var(--radius-md); border: 1px solid #fee2e2; }
+        body.dark-mode .solicitacao-item { background: rgba(185,28,28,0.1); border-color: rgba(185,28,28,0.3); }
+        
+        .agenda-card { display: grid; grid-template-columns: 140px 2.4fr 2fr 120px; align-items: center; background: var(--surface); padding: 16px 24px; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-left: 6px solid var(--border-strong); gap: 16px; transition: transform 0.2s, box-shadow 0.2s; border-top: 1px solid var(--border); border-right: 1px solid var(--border); border-bottom: 1px solid var(--border);}
+        .agenda-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        
+        .card-status-agendado { border-left-color: var(--almox-color); }
+        .card-status-encaixe { border-left-color: var(--fiscal-color); position: relative; }
+        .card-status-concluido { border-left-color: var(--aprov-color); background-color: var(--aprov-bg); }
+        .card-status-pendente { border-left-color: var(--compras-color); background-color: var(--compras-bg); }
+        body.dark-mode .card-status-concluido { background-color: rgba(4, 120, 87, 0.05); }
+        body.dark-mode .card-status-pendente { background-color: rgba(185, 28, 28, 0.05); }
+
+        .agenda-card { position: relative; }
+        .card-alterado-flag::after { content: "⚠️Encaixe/Alterado"; position: absolute; top: -10px; right: 15px; background: var(--fiscal-color); color: white; font-size: 10px; font-weight: bold; padding: 2px 8px; border-radius: 10px; z-index: 2; }
+        
+        .time-highlight { font-size: 18px; font-weight: 700; color: var(--text-main); }
+        .dock-badge { display: inline-block; background: var(--bg-body-subtle); padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 13px; text-align: center; border: 1px solid var(--border); white-space: nowrap; }
+        .inline-input-field input { width: 90px; padding: 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text-main); }
+        body.dark-mode .inline-input-field input { background: #0d1528; }
+        .dropdown-content { display: none; position: absolute; right: 0; background-color: var(--surface); min-width: 180px; box-shadow: var(--shadow-lg); border-radius: var(--radius-md); z-index: 10; margin-top: 4px; border: 1px solid var(--border); overflow:hidden;}
+        .dropdown-content a { color: var(--text-main); padding: 12px 16px; text-decoration: none; display: block; font-size: 14px; transition: background 0.2s;}
+        .dropdown-content a:hover { background-color: var(--bg-body-subtle); }
+        .profile-selector-container:hover .dropdown-content { display: block; }
     </style>
 </head>
 <body>
@@ -716,7 +744,10 @@
                     </button>
                     <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Logística e Portaria</div>
-                    <button class="fab-menu-item accent-purple" onclick="openReleaseModule(); closeFabMenu()" style="grid-column: span 2;">
+                    <button class="fab-menu-item accent-green" onclick="openAgendaDoca(); closeFabMenu()">
+                        <span class="material-icons-round">calendar_month</span> AGENDA DE DOCA
+                    </button>
+                    <button class="fab-menu-item accent-purple" onclick="openReleaseModule(); closeFabMenu()">
                         <span class="material-icons-round">local_shipping</span> CONTROLE DE LIBERAÇÃO
                     </button>
                     <div class="fab-menu-divider"></div>
@@ -791,39 +822,62 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="docaModal">
-        <div class="modal" style="max-width: 600px;">
-            <div class="modal-header">
-                <h2>Programação de Doca</h2>
-                <button class="close-btn" onclick="closeDocaModal()"><span>&times;</span></button>
+    <div class="main-content" id="modulo-agenda-doca" style="display: none; overflow-y: hidden;">
+        <div class="card-bubble" style="padding: 1.25rem 1.5rem; background: var(--surface-elevated); display: flex; flex-direction: column; height: 100%; overflow: visible; border-radius: var(--radius-xl);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: 1rem; flex-shrink: 0; overflow: visible;">
+                <h2 style="font-family: 'Syne', sans-serif; font-size: 1.2rem; color: var(--primary); line-height: 2; padding: 2px 0; margin: 0; overflow: visible; display: block;">Agenda - Recebimento de Doca</h2>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    
+                    <div class="date-navigator" style="display: flex; align-items: center; gap: 12px; background: var(--bg-body-subtle); padding: 6px 12px; border-radius: var(--radius-md);">
+                        <button id="btn-date-prev" class="icon-btn" style="padding:2px;"><span class="material-icons-round">chevron_left</span></button>
+                        <span id="display-date" style="font-weight: 700; font-size: 0.85rem; min-width: 80px; text-align: center;">00/00/0000</span>
+                        <button id="btn-date-next" class="icon-btn" style="padding:2px;"><span class="material-icons-round">chevron_right</span></button>
+                    </div>
+                    
+                    <div class="profile-selector-container" style="position: relative; display: inline-block;">
+                        <button id="btn-profile-role" class="nav-btn" style="background:#0f172a; height: 32px; padding: 0 12px;">
+                            <span id="current-role-badge" style="margin-right:6px; font-weight:700;">Visitante</span>
+                            <span class="material-icons-round" style="font-size:16px;">account_circle</span>
+                        </button>
+                        <div id="dropdown-roles" class="dropdown-content">
+                            <a href="#" onclick="selectRole('COMPRAS')">Compras / LOG</a>
+                            <a href="#" onclick="selectRole('ALMOXARIFADO')">Almoxarifado</a>
+                            <a href="#" onclick="selectRole('VISITANTE')">Visitante (Leitura)</a>
+                        </div>
+                    </div>
+
+                    <button class="reset-btn" onclick="closeAgendaDoca()"><span class="material-icons-round" style="font-size:16px;">arrow_back</span> VOLTAR</button>
+                </div>
             </div>
-            <div class="modal-body">
-                <div style="background: var(--aprov-bg); color: var(--aprov-color); padding: 10px; border-radius: 8px; margin-bottom: 1rem; font-size: 0.8rem; font-weight: 600;">
-                    <span class="material-icons-round" style="font-size: 14px; vertical-align: middle;">lightbulb</span> 
-                    Dica: Você pode copiar várias transportadoras do Excel e colar no campo abaixo para adicionar todas de uma vez.
-                </div>
-                <div style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 1.5rem;">
-                    <div class="form-group" style="flex: 2;">
-                        <label>Transportadora Prevista</label>
-                        <input type="text" id="schedCarrier" class="input-field" placeholder="Ex: RTE Rodonaves">
+
+            <div id="panel-retention-alert" style="display: none; justify-content: space-between; align-items: center; padding: 14px 20px; border-radius: var(--radius-md); margin-bottom: 16px; background-color: var(--fiscal-bg); border-left: 4px solid var(--fiscal-color); flex-shrink: 0;">
+                <div><span>⚠️ <strong>Atenção:</strong> A Agenda de Doca mantém no máximo 35 dias de histórico. Registros mais antigos são removidos automaticamente.</span></div>
+                <button id="btn-execute-purge" class="btn-ghost" style="color:var(--compras-color); border-color:var(--compras-border);">Executar Limpeza Agora</button>
+            </div>
+
+            <div id="panel-solicitacoes-pendentes" style="display: none; background: var(--surface); border: 1px solid var(--compras-color); padding: 16px; border-radius: var(--radius-lg); margin-bottom: 20px; flex-shrink: 0;">
+                <h3 style="margin-top: 0; color: var(--compras-color); font-size: 16px; font-weight:700; font-family:'Syne', sans-serif;">Solicitações de Alteração Pendentes (Almoxarifado)</h3>
+                <div id="list-solicitacoes-pendentes" class="solicitacoes-grid">
                     </div>
-                    <div class="form-group" style="flex: 1;">
-                        <label>Horário (HH:MM)</label>
-                        <input type="time" id="schedTime" class="input-field">
-                    </div>
-                    <button class="btn-primary" style="height: 40px;" onclick="addSchedule()">ADICIONAR</button>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; margin-bottom: 20px; flex-shrink: 0;">
+                <div style="display: flex; gap: 12px;">
+                    <button id="btn-novo-agendamento" class="btn-primary" style="display: none;">+ Novo Agendamento</button>
+                    <button id="btn-insercao-massa" class="btn-ghost" style="display: none;">📋 Inserção em Massa</button>
                 </div>
-                
-                <table style="width: 100%; border-collapse: collapse;">
-                    <thead>
-                        <tr>
-                            <th style="border:1px solid var(--border); padding:8px;">Transportadora</th>
-                            <th style="border:1px solid var(--border); padding:8px; text-align:center;">Horário Previsto</th>
-                            <th style="border:1px solid var(--border); padding:8px; width:40px;"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="schedTableBody"></tbody>
-                </table>
+                <div style="display: flex; gap: 12px;">
+                    <button id="btn-exportar-dados" class="excel-btn" style="background:#0ea5e9;">Exportar Agenda</button>
+                    <button id="btn-ver-logs" class="btn-ghost">Exibir Log de Alterações</button>
+                </div>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 14px; flex: 1; min-height: 0; overflow-y: auto; padding-right: 4px;">
+                <div id="agenda-empty-state" style="display: none; text-align: center; padding: 40px; background: var(--bg-body-subtle); border-radius: var(--radius-lg); color: var(--text-muted); border: 1px dashed var(--border-strong);">
+                    Nenhum agendamento registrado para este dia.
+                </div>
+                <div id="timeline-cards-list" style="display: flex; flex-direction: column; gap: 14px;">
+                    </div>
             </div>
         </div>
     </div>
@@ -854,7 +908,7 @@
                     <span class="material-icons-round" style="font-size: 18px; vertical-align: middle;">send</span> TESTAR NOTIFICAÇÃO AGORA
                 </button>
                 <div style="background: #eff6ff; padding: 1rem; border-radius: 8px; border: 1px solid #bfdbfe; font-size: 0.8rem; color: #1d4ed8;">
-                    <strong>Observação:</strong> Compras será notificado das notas que entrarem em aprovação.
+                    <strong>Observação:</strong> Compras será notificado das notas que entrarem in aprovação.
                 </div>
             </div>
             <div class="form-footer" style="justify-content: space-between;">
@@ -1070,10 +1124,207 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-auth">
+      <div class="modal" style="max-width: 450px;">
+        <div class="modal-header">
+          <h3 id="auth-title">Autenticação de Perfil</h3>
+          <button class="close-btn" onclick="closeAgendaModal('modal-auth')"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p>Digite a senha de acesso para o perfil <strong id="auth-role-name"></strong>:</p>
+          <input type="password" id="auth-password-input" class="input-field" placeholder="Insira a senha...">
+          <div class="form-footer">
+            <button onclick="closeAgendaModal('modal-auth')" class="btn-ghost">Cancelar</button>
+            <button id="btn-confirm-auth" class="btn-primary">Confirmar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-agendamento">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>Agendar Recebimento</h3>
+          <button class="close-btn" onclick="closeAgendaModal('modal-agendamento')"><span>&times;</span></button>
+        </div>
+        <form id="form-agendamento">
+          <div class="modal-body">
+            <div class="form-group">
+                <label>Fornecedor:</label>
+                <input type="text" id="form-fornecedor" class="input-field" required>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label>Tipo de Solicitação:</label>
+                <select id="form-tipo-operacao" class="input-field" required>
+                  <option value="">Selecione...</option>
+                  <option value="RECEBIMENTO">RECEBIMENTO</option>
+                  <option value="COLETA">COLETA</option>
+                  <option value="OUTROS">OUTROS</option>
+                </select>
+            </div>
+            <div class="form-row" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:12px;">
+              <div class="form-group">
+                <label>Hora Início:</label>
+                <input type="time" id="form-hora-inicio" class="input-field" required>
+              </div>
+              <div class="form-group">
+                <label>Hora Fim:</label>
+                <input type="time" id="form-hora-fim" class="input-field" required>
+              </div>
+            </div>
+            <div class="form-group" style="margin-top:12px;">
+                <label>Observação (curta, somente Compras edita):</label>
+                <input type="text" id="form-observacao" class="input-field" maxlength="40" placeholder="Ex: Entregar na doca 1">
+            </div>
+            <div class="form-footer">
+              <button type="button" onclick="closeAgendaModal('modal-agendamento')" class="btn-ghost">Cancelar</button>
+              <button type="submit" class="btn-primary">Salvar</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-bulk">
+      <div class="modal" style="max-width: 500px;">
+        <div class="modal-header">
+          <h3>Adição de Fornecedores em Massa</h3>
+          <button class="close-btn" onclick="closeAgendaModal('modal-bulk')"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <div id="bulk-step-1">
+            <p style="margin-bottom:10px; font-size:0.85rem; color:var(--text-muted);">Cole a lista de fornecedores (um por linha):</p>
+            <textarea id="bulk-textarea" class="input-field" style="height: 150px; resize:vertical;" placeholder="Fornecedor A&#10;Fornecedor B&#10;Fornecedor C"></textarea>
+            <div class="form-footer">
+              <button onclick="closeAgendaModal('modal-bulk')" class="btn-ghost">Cancelar</button>
+              <button id="btn-bulk-next" class="btn-primary">Avançar: Definir Horários</button>
+            </div>
+          </div>
+          <div id="bulk-step-2" style="display:none;">
+            <p style="margin-bottom:10px; font-size:0.85rem; color:var(--text-muted);">Defina o horário de cada fornecedor antes de concluir:</p>
+            <div id="bulk-rows-container" style="display:flex; flex-direction:column; gap:8px; max-height: 320px; overflow-y:auto;"></div>
+            <div class="form-footer">
+              <button id="btn-bulk-back" class="btn-ghost">Voltar</button>
+              <button id="btn-confirm-bulk" class="btn-primary">Inserir na Agenda</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-solicitar-alt">
+      <div class="modal" style="max-width: 480px;">
+        <div class="modal-header">
+          <h3>Solicitar Alteração</h3>
+          <button class="close-btn" onclick="closeAgendaModal('modal-solicitar-alt')"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <p style="color:var(--text-muted); font-size:0.82rem; margin-bottom:14px;">Marque um ou mais campos que deseja alterar e informe os novos valores. Tudo será enviado em uma única solicitação.</p>
+
+          <div class="form-group alt-field-row" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:6px; min-width:170px; font-weight:600; font-size:0.85rem;">
+              <input type="checkbox" id="alt-chk-hora_inicio" onchange="toggleAltField('hora_inicio')"> Horário de Início
+            </label>
+            <input type="time" id="alt-val-hora_inicio" class="input-field" disabled>
+          </div>
+
+          <div class="form-group alt-field-row" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:6px; min-width:170px; font-weight:600; font-size:0.85rem;">
+              <input type="checkbox" id="alt-chk-hora_fim" onchange="toggleAltField('hora_fim')"> Horário de Término
+            </label>
+            <input type="time" id="alt-val-hora_fim" class="input-field" disabled>
+          </div>
+
+          <div class="form-group alt-field-row" style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+            <label style="display:flex; align-items:center; gap:6px; min-width:170px; font-weight:600; font-size:0.85rem;">
+              <input type="checkbox" id="alt-chk-fornecedor" onchange="toggleAltField('fornecedor')"> Texto (Fornecedor)
+            </label>
+            <input type="text" id="alt-val-fornecedor" class="input-field" disabled>
+          </div>
+
+          <div class="form-group alt-field-row" style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+            <label style="display:flex; align-items:center; gap:6px; min-width:170px; font-weight:600; font-size:0.85rem;">
+              <input type="checkbox" id="alt-chk-observacao_compras" onchange="toggleAltField('observacao_compras')"> Observação
+            </label>
+            <input type="text" id="alt-val-observacao_compras" class="input-field" maxlength="40" disabled>
+          </div>
+
+          <div class="form-footer">
+            <button onclick="closeAgendaModal('modal-solicitar-alt')" class="btn-ghost">Cancelar</button>
+            <button id="btn-confirm-solicitar-alt" class="btn-primary">Enviar Solicitação</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-logs">
+      <div class="modal" style="max-width: 750px;">
+        <div class="modal-header">
+          <h3>Log de Alterações</h3>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <button class="pdf-btn" onclick="exportLogsPDF()"><span class="material-icons-round" style="font-size:16px;">picture_as_pdf</span> BAIXAR LOGS DO DIA (PDF)</button>
+            <button class="close-btn" onclick="closeAgendaModal('modal-logs')"><span>&times;</span></button>
+          </div>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive" style="max-height: 400px; overflow-y:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.82rem;">
+              <thead style="position:sticky; top:0; background:var(--bg-body-subtle); z-index:1;">
+                <tr>
+                  <th style="padding:10px; border-bottom:2px solid var(--border); text-align:left;">Usuário</th>
+                  <th style="padding:10px; border-bottom:2px solid var(--border); text-align:left;">Fornecedor</th>
+                  <th style="padding:10px; border-bottom:2px solid var(--border); text-align:left;">Ação</th>
+                  <th style="padding:10px; border-bottom:2px solid var(--border); text-align:left;">Detalhes</th>
+                  <th style="padding:10px; border-bottom:2px solid var(--border); text-align:left;">Data/Hora</th>
+                </tr>
+              </thead>
+              <tbody id="table-logs-body">
+                </tbody>
+            </table>
+          </div>
+          <div class="form-footer">
+            <button onclick="closeAgendaModal('modal-logs')" class="btn-primary">Fechar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="genericConfirmModal">
+      <div class="modal confirm-modal" style="max-width: 400px;">
+        <div class="error-icon" style="background: var(--compras-bg, #fff5f5); color: var(--compras-color, #b91c1c); width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;">
+          <span class="material-icons-round" style="font-size:28px;">help_outline</span>
+        </div>
+        <h3 id="genericConfirmTitle">Confirmar Ação</h3>
+        <p id="genericConfirmMsg"></p>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button class="btn-ghost" onclick="closeGenericConfirm(false)">CANCELAR</button>
+          <button class="btn-primary" onclick="closeGenericConfirm(true)">OK</button>
+        </div>
+      </div>
+    </div>
+
     <script>
         // ============================================================
         // FUNÇÕES DE ALERTA MODERNIZADO E EVENTOS GERAIS
         // ============================================================
+        let _genericConfirmCallback = null;
+
+        // Substitui o confirm() nativo do navegador (que exibe "site diz") por um
+        // pop-up centralizado no layout do site, com botões OK/CANCELAR.
+        function showConfirmModal(message, onConfirm, title) {
+            document.getElementById('genericConfirmTitle').innerText = title || 'Confirmar Ação';
+            document.getElementById('genericConfirmMsg').innerText = message;
+            _genericConfirmCallback = onConfirm;
+            document.getElementById('genericConfirmModal').classList.add('active');
+        }
+
+        function closeGenericConfirm(result) {
+            document.getElementById('genericConfirmModal').classList.remove('active');
+            const cb = _genericConfirmCallback;
+            _genericConfirmCallback = null;
+            if (result && typeof cb === 'function') cb();
+        }
+
         function showModernAlert(msg, isError = true) {
             let alertBox = document.getElementById('modernAlertBox');
             if(!alertBox) {
@@ -1110,6 +1361,10 @@
                     else if (overlay.id === 'deleteModal') closeDeleteModal();
                     else if (overlay.id === 'errorModal') document.getElementById('errorModal').classList.remove('active');
                     else if (overlay.id === 'docaModal') closeDocaModal();
+                    else if (overlay.id === 'modal-auth') closeAgendaModal('modal-auth');
+                    else if (overlay.id === 'modal-agendamento') closeAgendaModal('modal-agendamento');
+                    else if (overlay.id === 'modal-bulk') closeAgendaModal('modal-bulk');
+                    else if (overlay.id === 'modal-logs') closeAgendaModal('modal-logs');
                     else overlay.classList.remove('active');
                 });
             }
@@ -1502,7 +1757,6 @@
             tbody.innerHTML = '';
             
             if (nfs.length === 0) {
-                // Ativa a marca d'água visual central se a tabela estiver vazia
                 if(watermark) watermark.style.display = 'flex';
             } else {
                 if(watermark) watermark.style.display = 'none';
@@ -1561,9 +1815,8 @@
         function getStatusClass(val) { if(!val) return ''; const v = val.toUpperCase(); if(v==='PENDENTE'||v==='CORREÇÃO') return 'st-red'; if(v==='RECEBIDO'||v==='LANÇADO') return 'st-green'; if(v==='NÃO PRESTADO') return 'st-blue'; if(v==='APROVAÇÃO') return 'st-yellow'; return ''; }
         function formatDate(dt) { if(!dt) return '-'; return dt.split('T')[0].split('-').reverse().join('/'); }
         async function toggleStatus(id, current) { await supabase.from('notas').update({corrigido: !current}).eq('id', id); loadData(); }
-        async function editRow(index) { const nf = nfs[index]; if(!nf) return; document.getElementById('editId').value = nf.id; document.getElementById('modalTitle').innerText = "Editar Nota"; document.getElementById('setor').value = nf.setor || ''; document.getElementById('tipo').value = nf.tipo || ''; document.getElementById('fornecedor').value = nf.fornecedor || ''; document.getElementById('valor').value = nf.valor || ''; document.getElementById('dataEmissao').value = nf.emissao || ''; document.getElementById('obsErro').value = nf.obs_erro || ''; document.getElementById('pedido').value = nf.pedido || ''; document.getElementById('linhaPedido').value = nf.linha_pedido || ''; document.getElementById('dataInclusao').value = nf.inclusao || ''; document.getElementById('dataVencimento').value = nf.vencimento || ''; document.getElementById('referencia').value = nf.referencia || ''; document.getElementById('chave').value = nf.chave || ''; document.getElementById('respCorrecao').value = nf.resp_correcao || ''; document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; document.getElementById('modalOverlay').classList.add('active'); }
+        async function editRow(index) { const nf = nfs[index]; if(!nf) return; document.getElementById('editId').value = nf.id; document.getElementById('modalTitle').innerText = "Editar Nota"; document.getElementById('setor').value = nf.setor || ''; document.getElementById('tipo').value = nf.tipo || ''; document.getElementById('fornecedor').value = nf.fornecedor || ''; document.getElementById('valor').value = nf.valor || ''; document.getElementById('dataEmissao').value = nf.emissao || ''; document.getElementById('obsErro').value = nf.obs_erro || ''; document.getElementById('pedido').value = nf.pedido || ''; document.getElementById('linhaPedido').value = nf.linha_pedido || ''; document.getElementById('dataInclusao').value = nf.inclusao || ''; document.getElementById('dataVencimento').value = nf.vencimento || ''; document.getElementById('referencia').value = nf.referencia || ''; document.getElementById('chave').value = nf.chave || ''; document.getElementById('respCorrecao').value = nf.resp_correcao || ''; document.getElementById('obsErro').value = nf.obs_erro || ''; document.getElementById('obsCorrecao').value = nf.obs_correcao || ''; document.getElementById('modalOverlay').classList.add('active'); }
         
-        // INTERCEPTADOR DE SUBMIT: Modificado para comportar o envio vindo do Módulo Logístico e Notificações
         document.getElementById('nfForm').addEventListener('submit', async(e)=>{ 
             e.preventDefault(); 
             const id = document.getElementById('editId').value; 
@@ -1590,7 +1843,6 @@
                 await supabase.from('notas').insert([data]); 
             }
             
-            // Verifica se a submissão foi solicitada pelo módulo logístico
             if(pendingDivergenceCtx) {
                 const carrier = logisticsState.carriers.find(c => c.id === pendingDivergenceCtx.carrierId);
                 const nf = carrier.nfs[pendingDivergenceCtx.nfIndex];
@@ -1709,7 +1961,6 @@
             document.getElementById('linhaPedido').value=""; 
             document.getElementById('obsErro').value=""; 
 
-            // Autopreencher se veio do fluxo logístico de PO
             if(pendingDivergenceCtx) {
                 const carrier = logisticsState.carriers.find(c => c.id === pendingDivergenceCtx.carrierId);
                 const nfInfo = carrier.nfs[pendingDivergenceCtx.nfIndex];
@@ -1746,7 +1997,6 @@
             const vICMS = parseFloat(icmsTag?.getElementsByTagName("vICMS")[0]?.textContent || 0);
             const pICMS = parseFloat(icmsTag?.getElementsByTagName("pICMS")[0]?.textContent || 0);
 
-            // NOVA LÓGICA DE CÁLCULO PIS/COFINS/NET (Baseado na regra MP)
             const basePisCofins = round2(vTPrest - vICMS);
             const valPis = round2(basePisCofins * 0.0165);
             const valCofins = round2(basePisCofins * 0.0760);
@@ -1774,7 +2024,6 @@
             document.getElementById('cteValidationBox').innerText = "VALIDAÇÃO PREÇO NF: " + fmtMoney(vTPrest);
             const fmtCopy = (v) => v.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
             
-            // Alterado para incluir base e alíquota estáticas em 0,01 para o IPI conforme solicitado
             const copyString = `${fmtCopy(valorExato)}\t${fmtCopy(pCBS)}\n${fmtCopy(basePisCofins)}\t7,60\n${fmtCopy(valorExato)}\t${fmtCopy(pIBS)}\n${fmtCopy(vBC_ICMS)}\t${fmtCopy(pICMS)}\n0,01\t0,01\n${fmtCopy(basePisCofins)}\t1,65`;
 
             const container = document.getElementById('cteItemsContainer');
@@ -1815,18 +2064,15 @@
         async function initLogistics() {
             const today = new Date().toLocaleDateString('pt-BR');
             try {
-                // Tenta buscar no banco de dados primeiro
                 const { data, error } = await supabase.from('logistica_state').select('state_data').eq('id', 1).single();
                 if (!error && data && data.state_data) {
                     if (data.state_data.date === today) {
                         logisticsState = data.state_data;
                     } else {
-                        // Se o banco for de um dia anterior, zera e salva no banco
                         logisticsState = { date: today, schedules: [], carriers: [] };
                         await saveLogisticsState();
                     }
                 } else {
-                    // Se não tiver dado na tabela, inicializa
                     logisticsState = { date: today, schedules: [], carriers: [] };
                     await saveLogisticsState();
                 }
@@ -1843,7 +2089,6 @@
                 }
             }
 
-            // Evento para colar múltiplas linhas na Docas
             const docaInput = document.getElementById('schedCarrier');
             if(docaInput) {
                 docaInput.addEventListener('paste', function(e) {
@@ -1864,10 +2109,7 @@
         }
 
         async function saveLogisticsState() { 
-            // Salva no localStorage como backup de segurança de transição suave
             localStorage.setItem('logistics_state', JSON.stringify(logisticsState)); 
-            
-            // Grava a ação no Supabase para espelhar para os outros clientes
             try {
                 await supabase.from('logistica_state').upsert({ id: 1, state_data: logisticsState });
             } catch (error) {
@@ -1879,6 +2121,7 @@
 
         function openReleaseModule() {
             document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById('modulo-agenda-doca').style.display = 'none';
             document.getElementById('releaseModule').style.display = 'flex';
             renderReleaseModule();
         }
@@ -1999,7 +2242,6 @@
                 carrier.nfs.forEach((nf, nIndex) => {
                     const rowClass = nf.miroOk ? 'miro-ok-active' : (nf.divergence && !nf.poCorrected ? 'divergence-active' : '');
                     
-                    // --- MONTAGEM DO HISTÓRICO SEQUENCIAL ---
                     let statusBadgeHtml = `<span class="badge bg-almox">MIGO: ${carrier.entryTime}</span>`;
                     
                     if(nf.migoDivergence) {
@@ -2028,32 +2270,26 @@
                         statusBadgeHtml += `<span class="badge bg-fiscal">AGUARDANDO MIRO</span>`;
                     }
 
-                    // --- MONTAGEM DOS BOTÕES DE AÇÃO ---
                     let btnHtml = '';
                     if(!nf.miroOk) {
-                        // MIGO Pending Button
                         if(!nf.migoDivergence) {
                              btnHtml += `<button class="btn-ghost" style="color:#d97706; border-color:#fcd34d; font-size:0.7rem; padding: 4px 8px; height:auto; margin-right:4px;" onclick="triggerMigoDivergenceFlow('${carrier.id}', ${nIndex})">PENDÊNCIA MIGO</button>`;
                         }
                         
-                        // MIGO Corrected Button
                         if(nf.migoDivergence && !nf.migoCorrected) {
                              btnHtml += `<button class="nav-btn" style="background:#059669; font-size:0.65rem; padding:4px 8px; height:auto; margin-right:4px;" onclick="correctMigo('${carrier.id}', ${nIndex})">CORRIGIR MIGO</button>`;
                         } else if(!nf.migoDivergence || nf.migoCorrected) {
                              btnHtml += `<button class="btn-ghost" style="color:#94a3b8; border-color:#e2e8f0; font-size:0.7rem; padding: 4px 8px; height:auto; margin-right:4px; cursor:not-allowed;" disabled>MIGO CORRIGIDA</button>`;
                         }
 
-                        // PO Pending Button
                         if(!nf.divergence) {
                             btnHtml += `<button class="btn-ghost" style="color:#b91c1c; border-color:#fecaca; font-size:0.7rem; padding: 4px 8px; height:auto; margin-right:4px;" onclick="triggerDivergenceFlow('${carrier.id}', ${nIndex})">PENDÊNCIA PO</button>`;
                         }
 
-                        // PO Corrected Button
                         if(nf.divergence && !nf.poCorrected) {
                             btnHtml += `<button class="nav-btn" style="background:#1d4ed8; font-size:0.65rem; padding:4px 8px; height:auto; margin-right:4px;" onclick="correctPO('${carrier.id}', ${nIndex})">CORRIGIR PO</button>`;
                         }
 
-                        // MIRO OK Button
                         btnHtml += `<button class="btn-primary" style="background:#2563eb; font-size:0.7rem; padding: 4px 8px; height:auto; box-shadow: 0 4px 14px rgba(37,99,235,0.35);" onclick="markMiroOk('${carrier.id}', ${nIndex})">MIRO OK</button>`;
                     }
 
@@ -2106,193 +2342,905 @@
             });
         }
 
-        function processNFs(carrierId) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const text = document.getElementById(`text-${carrierId}`).value;
-            const numbers = text.split('\n').map(n => n.trim()).filter(n => n !== '');
-            
-            if(numbers.length === 0) return;
-            if(carrier.nfs.length + numbers.length > carrier.qty) showModernAlert('Aviso: Quantidade inserida supera o declarado.', true);
+        // ============================================================
+        // LÓGICA AGENDA DE DOCA CORE
+        // ============================================================
+        const AgendaState = {
+          currentRole: 'VISITANTE',
+          currentDate: new Date().toISOString().split('T')[0],
+          cacheMemory: {},
+          cooldownActive: false
+        };
 
-            numbers.forEach(num => {
-                carrier.nfs.push({
-                    number: num,
-                    migoStatus: true,
-                    divergence: false,
-                    divergenceTime: null,
-                    poCorrected: false,
-                    poCorrectionTime: null,
-                    miroOk: false,
-                    miroTime: null,
-                    migoDivergence: false,
-                    migoDivergenceTime: null,
-                    migoCorrected: false,
-                    migoCorrectionTime: null
-                });
+        const RolePermissions = {
+          COMPRAS: { canCreate: true, canModifyInputs: false, canApprove: false },
+          ALMOXARIFADO: { canCreate: false, canModifyInputs: true, canApprove: true },
+          VISITANTE: { canCreate: false, canModifyInputs: false, canApprove: false }
+        };
+
+        function openAgendaDoca() {
+            document.getElementById('mainDashboard').style.display = 'none';
+            document.getElementById('releaseModule').style.display = 'none';
+            document.getElementById('modulo-agenda-doca').style.display = 'flex';
+            initAgendaDoca();
+        }
+        
+        function closeAgendaDoca() {
+            document.getElementById('modulo-agenda-doca').style.display = 'none';
+            document.getElementById('mainDashboard').style.display = 'flex';
+        }
+
+        function closeAgendaModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function initAgendaDoca() {
+          const savedRole = localStorage.getItem('agenda_doca_role');
+          if (savedRole) {
+            AgendaState.currentRole = savedRole;
+          }
+          
+          updateRoleUI();
+          setupDateNavigator();
+          setupAgendaActionButtons();
+          loadDateData(AgendaState.currentDate);
+          updateDateNavButtonsState();
+          checkRetentionAlert();
+          purgeOldAgendaData();
+          setupAgendaRealtime();
+
+          const purgeBtn = document.getElementById('btn-execute-purge');
+          if (purgeBtn) {
+            purgeBtn.onclick = async () => {
+              await purgeOldAgendaData();
+              loadDateData(AgendaState.currentDate);
+              showModernAlert('Limpeza de registros com mais de 35 dias executada.', false);
+            };
+          }
+        }
+
+        function selectRole(role) {
+          if (role === 'VISITANTE') {
+            AgendaState.currentRole = 'VISITANTE';
+            localStorage.setItem('agenda_doca_role', 'VISITANTE');
+            updateRoleUI();
+            loadDateData(AgendaState.currentDate);
+            return;
+          }
+          
+          document.getElementById('auth-role-name').innerText = role;
+          document.getElementById('auth-password-input').value = '';
+          document.getElementById('modal-auth').classList.add('active');
+          
+          document.getElementById('btn-confirm-auth').onclick = async () => {
+            const password = document.getElementById('auth-password-input').value;
+            
+            try {
+              const { data: isValid, error } = await supabase.rpc('validate_role_password', {
+                p_role: role,
+                p_password: password
+              });
+              
+              if (error) throw error;
+              
+              if (isValid) {
+                AgendaState.currentRole = role;
+                localStorage.setItem('agenda_doca_role', role);
+                closeAgendaModal('modal-auth');
+                updateRoleUI();
+                loadDateData(AgendaState.currentDate);
+                checkRetentionAlert();
+                showModernAlert("Autenticação efetuada com sucesso!", false);
+              } else {
+                showModernAlert("Senha incorreta para o perfil selecionado!", true);
+              }
+            } catch (err) {
+              console.error("Erro na validação RBAC:", err.message);
+              showModernAlert("Falha ao comunicar com o servidor de autenticação.", true);
+            }
+          };
+        }
+
+        function updateRoleUI() {
+          document.getElementById('current-role-badge').innerText = AgendaState.currentRole;
+          const perm = RolePermissions[AgendaState.currentRole];
+          
+          document.getElementById('btn-novo-agendamento').style.display = perm.canCreate ? 'block' : 'none';
+          document.getElementById('btn-insercao-massa').style.display = perm.canCreate ? 'block' : 'none';
+          document.getElementById('panel-solicitacoes-pendentes').style.display = perm.canApprove ? 'block' : 'none';
+        }
+
+        function setupDateNavigator() {
+          updateDateDisplay();
+          
+          document.getElementById('btn-date-prev').onclick = () => {
+            changeDate(-1);
+          };
+          
+          document.getElementById('btn-date-next').onclick = () => {
+            changeDate(1);
+          };
+        }
+
+        const AGENDA_RETENTION_DAYS = 35;
+
+        function getAgendaDateBounds() {
+          const today = new Date(); today.setHours(0,0,0,0);
+          const minDate = new Date(today); minDate.setDate(today.getDate() - AGENDA_RETENTION_DAYS);
+          const maxDate = new Date(today); maxDate.setDate(today.getDate() + AGENDA_RETENTION_DAYS);
+          return { minDate, maxDate };
+        }
+
+        function changeDate(daysOffset) {
+          let d = new Date(AgendaState.currentDate + 'T00:00:00');
+          d.setDate(d.getDate() + daysOffset);
+
+          const { minDate, maxDate } = getAgendaDateBounds();
+          if (d < minDate || d > maxDate) {
+            showModernAlert(`Não é possível navegar além de ${AGENDA_RETENTION_DAYS} dias para trás ou para frente a partir de hoje.`, true);
+            return;
+          }
+
+          AgendaState.currentDate = d.toISOString().split('T')[0];
+          updateDateDisplay();
+          loadDateData(AgendaState.currentDate);
+          updateDateNavButtonsState();
+        }
+
+        function updateDateNavButtonsState() {
+          const { minDate, maxDate } = getAgendaDateBounds();
+          const current = new Date(AgendaState.currentDate + 'T00:00:00');
+          const prevBtn = document.getElementById('btn-date-prev');
+          const nextBtn = document.getElementById('btn-date-next');
+          if (prevBtn) prevBtn.disabled = (current <= minDate);
+          if (nextBtn) nextBtn.disabled = (current >= maxDate);
+        }
+
+        async function purgeOldAgendaData() {
+          const { minDate } = getAgendaDateBounds();
+          const cutoffStr = minDate.toISOString().split('T')[0];
+          try {
+            const { data: oldRows, error: errSel } = await supabase.from('agenda_doca').select('id').lt('data_agendamento', cutoffStr);
+            if (errSel) throw errSel;
+            if (oldRows && oldRows.length > 0) {
+              const ids = oldRows.map(r => r.id);
+              await supabase.from('agenda_solicitacoes').delete().in('agenda_id', ids);
+              await supabase.from('agenda_logs').delete().in('agenda_id', ids);
+              await supabase.from('agenda_doca').delete().in('id', ids);
+            }
+            await supabase.from('agenda_logs').delete().lt('data_agendamento', cutoffStr).is('agenda_id', null);
+          } catch (err) {
+            console.warn('Falha ao executar limpeza automática de retenção (35 dias):', err.message);
+          }
+        }
+
+        function updateDateDisplay() {
+          const d = new Date(AgendaState.currentDate + 'T00:00:00');
+          document.getElementById('display-date').innerText = d.toLocaleDateString('pt-BR');
+        }
+
+        async function loadDateData(dateStr) {
+          const cacheKey = `agenda_${dateStr}`;
+          const cachedData = AgendaState.cacheMemory[cacheKey] || sessionStorage.getItem(cacheKey);
+          
+          if (cachedData) {
+            const parsedData = typeof cachedData === 'string' ? JSON.parse(cachedData) : cachedData;
+            renderAgendaCards(parsedData);
+            if(RolePermissions[AgendaState.currentRole].canApprove) fetchSolicitacoesPendentes();
+            
+            fetchFromSupabase(dateStr).then(freshData => {
+              if(JSON.stringify(freshData) !== JSON.stringify(parsedData)) {
+                AgendaState.cacheMemory[cacheKey] = freshData;
+                sessionStorage.setItem(cacheKey, JSON.stringify(freshData));
+                renderAgendaCards(freshData);
+              }
             });
-
-            saveLogisticsState();
-            renderReleaseModule();
-            notifyLogisticsEvent('FISCAL', 'Nova MIGO Realizada', `Notas da transportadora ${carrier.baseName} prontas para verificação. Aguardando MIRO.`);
+          } else {
+            document.getElementById('timeline-cards-list').innerHTML = '<div style="text-align: center; padding: 40px; color: var(--text-muted);">Carregando dados da Agenda...</div>';
+            const data = await fetchFromSupabase(dateStr);
+            AgendaState.cacheMemory[cacheKey] = data;
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+            renderAgendaCards(data);
+            if(RolePermissions[AgendaState.currentRole].canApprove) fetchSolicitacoesPendentes();
+          }
         }
 
-        function triggerDivergenceFlow(carrierId, nfIndex) {
-            pendingDivergenceCtx = { carrierId, nfIndex };
-            openXMLModal(); 
-            showModernAlert("Adicione o XML para enviar ao painel de Correções (Compras será notificado)", false);
+        async function fetchFromSupabase(dateStr) {
+          try {
+            const { data, error } = await supabase
+              .from('agenda_doca')
+              .select('*')
+              .eq('data_agendamento', dateStr)
+              .order('hora_inicio', { ascending: true });
+              
+            if (error) throw error;
+            return data || [];
+          } catch (err) {
+            console.error("Erro ao buscar dados do Supabase:", err);
+            return [];
+          }
         }
 
-        function triggerMigoDivergenceFlow(carrierId, nfIndex) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const nf = carrier.nfs[nfIndex];
-            nf.migoDivergence = true;
-            nf.migoDivergenceTime = getBrasiliaTime();
-            saveLogisticsState();
-            renderReleaseModule();
+        function renderAgendaCards(items) {
+          const container = document.getElementById('timeline-cards-list');
+          const emptyState = document.getElementById('agenda-empty-state');
+          
+          container.innerHTML = '';
+          
+          if (!items || items.length === 0) {
+            emptyState.style.display = 'block';
+            return;
+          }
+          emptyState.style.display = 'none';
+          
+          const isAlmoxarifado = RolePermissions[AgendaState.currentRole].canModifyInputs;
+          const isCompras = RolePermissions[AgendaState.currentRole].canCreate;
+
+          items.forEach(item => {
+            const card = document.createElement('div');
+            const statusClassMap = { 'AGENDADO': 'agendado', 'ALTERADO/ENCAIXE': 'encaixe', 'CONCLUIDO': 'concluido', 'PENDENTE': 'pendente' };
+            const statusClass = statusClassMap[item.status] || 'agendado';
+            const alteracaoFlagClass = item.houve_alteracao ? 'card-alterado-flag' : '';
+            card.className = `agenda-card card-status-${statusClass} ${alteracaoFlagClass}`;
             
-            notifyLogisticsEvent('ALMOXARIFADO', 'Pendência de MIGO', `A NF ${nf.number} da transportadora ${carrier.baseName} apresenta erro de MIGO e precisa de correção.`);
-            showModernAlert("Pendência de MIGO registrada. Almoxarifado notificado.", false);
-        }
+            const horaInicio = item.hora_inicio ? item.hora_inicio.substring(0, 5) : '--:--';
+            const horaFim = item.hora_fim ? item.hora_fim.substring(0, 5) : '--:--';
 
-        function correctMigo(carrierId, nfIndex) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const nf = carrier.nfs[nfIndex];
-            nf.migoCorrected = true;
-            nf.migoCorrectionTime = getBrasiliaTime();
-            saveLogisticsState();
-            renderReleaseModule();
+            const portariaStyle = 'font-weight:600; font-size:0.85rem; font-family: \'Plus Jakarta Sans\', sans-serif; color: var(--text-main);';
+            const inputPortariaHtml = isAlmoxarifado 
+              ? `<input type="time" value="${item.chegada_portaria || ''}" style="font-weight:600; font-size:0.85rem; font-family:'Plus Jakarta Sans', sans-serif;" onchange="updateCardField('${item.id}', 'chegada_portaria', this.value)">`
+              : `<span style="${portariaStyle}">${item.chegada_portaria ? item.chegada_portaria.substring(0, 5) : 'Não registrada'}</span>`;
+              
+            const inputDocaHtml = isAlmoxarifado
+              ? `<input type="time" value="${item.entrada_doca || ''}" style="font-weight:600; font-size:0.85rem; font-family:'Plus Jakarta Sans', sans-serif;" onchange="updateCardField('${item.id}', 'entrada_doca', this.value)">`
+              : `<span style="${portariaStyle}">${item.entrada_doca ? item.entrada_doca.substring(0, 5) : 'Não registrada'}</span>`;
+
+            const fornecedorEsc = String(item.fornecedor || '').replace(/'/g, "\\'");
+
+            let actionBtnHtml = '';
+            if (isCompras && item.status !== 'PENDENTE') {
+              actionBtnHtml = `<button onclick="solicitarModificacao('${item.id}', '${fornecedorEsc}')" class="btn-ghost" style="font-size:11px; padding:4px 8px;">Alterar</button>`;
+            } else if (isAlmoxarifado && item.status !== 'CONCLUIDO') {
+              actionBtnHtml = `<button onclick="concluirAgendamento('${item.id}', '${fornecedorEsc}')" class="btn-primary" style="font-size:11px; padding:4px 8px;">Concluir</button>`;
+            }
+            let exclusaoBtnHtml = '';
+            if (isCompras) {
+              exclusaoBtnHtml = `<button onclick="solicitarExclusao('${item.id}', '${fornecedorEsc}')" class="icon-btn delete" title="Solicitar Exclusão (requer aprovação do Almoxarifado)"><span class="material-icons-round" style="font-size:16px;">delete_outline</span></button>`;
+            }
             
-            notifyLogisticsEvent('FISCAL', 'MIGO Corrigida', `A NF ${nf.number} da transportadora ${carrier.baseName} teve a MIGO corrigida.`);
-        }
+            let statusBadge = 'bg-almox';
+            let statusLabel = item.status;
+            if(item.status === 'ALTERADO/ENCAIXE') { statusBadge = 'bg-fiscal'; statusLabel = 'AGENDADO'; }
+            if(item.status === 'CONCLUIDO') statusBadge = 'bg-aprov';
+            if(item.status === 'PENDENTE') statusBadge = 'bg-compras';
 
-        function correctPO(carrierId, nfIndex) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const nf = carrier.nfs[nfIndex];
-            nf.poCorrected = true;
-            nf.poCorrectionTime = getBrasiliaTime();
-            saveLogisticsState();
-            renderReleaseModule();
+            const tipoOperacaoBadge = item.tipo_operacao ? `<span class="dock-badge">${item.tipo_operacao}</span>` : '';
+            const observacaoBadge = item.observacao_compras ? `<span class="dock-badge" style="display:inline-block; width:auto; max-width:100%; margin-top:6px; font-size:11px; white-space:normal; word-break:break-word; overflow:visible; text-overflow:clip;" title="${item.observacao_compras}">${item.observacao_compras}</span>` : '';
+
+            card.innerHTML = `
+              <div class="time-highlight">${horaInicio} - ${horaFim}</div>
+              <div class="supplier-info">
+                <h4 style="margin: 0 0 4px 0; font-size: 16px; display:flex; align-items:center; flex-wrap:wrap; gap:8px;">
+                  <span>${item.fornecedor}</span>
+                  ${tipoOperacaoBadge}
+                </h4>
+                <small style="color:var(--text-muted)">Criado por: ${item.criado_por || 'Sistema'}</small>
+                ${observacaoBadge}
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div class="inline-input-field">
+                  <strong style="color:var(--text-muted); font-size:12px;">Portaria:</strong> ${inputPortariaHtml}
+                </div>
+                <div class="inline-input-field">
+                  <strong style="color:var(--text-muted); font-size:12px;">Na Doca:</strong> ${inputDocaHtml}
+                </div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:6px; align-items:center;">
+                <span class="badge ${statusBadge}" style="width:100%; text-align:center;">${statusLabel}</span>
+                <div style="display:flex; gap:6px; align-items:center;">${actionBtnHtml}${exclusaoBtnHtml}</div>
+              </div>
+            `;
             
-            notifyLogisticsEvent('FISCAL', 'PO Corrigido', `A NF ${nf.number} da transportadora ${carrier.baseName} teve o PO corrigido.`);
+            container.appendChild(card);
+          });
         }
 
-        function markMiroOk(carrierId, nfIndex) {
-            const carrier = logisticsState.carriers.find(c => c.id === carrierId);
-            const nf = carrier.nfs[nfIndex];
-            nf.miroOk = true;
-            nf.miroTime = getBrasiliaTime();
-            saveLogisticsState();
-            renderReleaseModule();
+        function setupAgendaRealtime() {
+          supabase.channel('custom-agenda-channel')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'agenda_doca' }, payload => {
+              const affectedDate = payload.new ? payload.new.data_agendamento : AgendaState.currentDate;
+              delete AgendaState.cacheMemory[`agenda_${affectedDate}`];
+              sessionStorage.removeItem(`agenda_${affectedDate}`);
+              
+              if(affectedDate === AgendaState.currentDate) {
+                loadDateData(AgendaState.currentDate);
+              }
+              
+              if(payload.eventType === 'UPDATE' && payload.new.status === 'CONCLUIDO' && AgendaState.currentRole === 'COMPRAS') {
+                showModernAlert(`O recebimento de ${payload.new.fornecedor} foi finalizado!`, false);
+              }
+            })
+            .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'agenda_solicitacoes' }, payload => {
+              if(AgendaState.currentRole === 'ALMOXARIFADO') {
+                showModernAlert("Alerta Almoxarifado: Nova solicitação de alteração pendente de Compras!", false);
+                fetchSolicitacoesPendentes();
+              }
+            })
+            .subscribe();
+        }
+
+        async function fetchSolicitacoesPendentes() {
+          try {
+            const { data, error } = await supabase
+              .from('agenda_solicitacoes')
+              .select('*, agenda_doca(fornecedor, data_agendamento)')
+              .eq('status', 'PENDENTE');
+              
+            if (error) throw error;
             
-            notifyLogisticsEvent('GERAL', 'MIRO Finalizada', `A NF ${nf.number} da transportadora ${carrier.baseName} teve a MIRO concluída com sucesso.`);
-        }
-
-        // --- PROGRAMAÇÃO DE DOCA ---
-        function openDocaModal() {
-            document.getElementById('docaModal').classList.add('active');
-            renderDocaSchedules();
-        }
-        function closeDocaModal() { document.getElementById('docaModal').classList.remove('active'); }
-
-        function addSchedule() {
-            const transp = document.getElementById('schedCarrier').value.trim();
-            const time = document.getElementById('schedTime').value;
-            if(!transp) return;
-
-            logisticsState.schedules.push({ carrier: transp, time: time });
-            logisticsState.schedules.sort((a,b) => a.time.localeCompare(b.time));
-            saveLogisticsState();
+            const container = document.getElementById('list-solicitacoes-pendentes');
+            const panel = document.getElementById('panel-solicitacoes-pendentes');
             
-            document.getElementById('schedCarrier').value = '';
-            document.getElementById('schedTime').value = '';
-            renderDocaSchedules();
+            container.innerHTML = '';
+            
+            if(!data || data.length === 0) {
+              panel.style.display = 'none';
+              return;
+            }
+            
+            panel.style.display = 'block';
+            
+            data.forEach(sol => {
+              const item = document.createElement('div');
+              item.className = 'solicitacao-item';
+              
+              const novosDados = sol.dados_novos || {};
+              let detalhesTexto;
+              if (sol.tipo_solicitacao === 'EXCLUSAO') {
+                detalhesTexto = `Compras solicitou a <strong>EXCLUSÃO</strong> do agendamento de <strong>${sol.agenda_doca?.fornecedor || 'Desconhecido'}</strong>.`;
+              } else {
+                const parts = [];
+                if (novosDados.hora_inicio) parts.push(`Início: ${novosDados.hora_inicio}`);
+                if (novosDados.hora_fim) parts.push(`Fim: ${novosDados.hora_fim}`);
+                if (novosDados.fornecedor) parts.push(`Texto: ${novosDados.fornecedor}`);
+                if (novosDados.observacao_compras !== undefined) parts.push(`Observação: ${novosDados.observacao_compras}`);
+                detalhesTexto = `Alteração para Fornecedor: <strong>${sol.agenda_doca?.fornecedor || 'Desconhecido'}</strong>. ${parts.join(', ')}`;
+              }
+              
+              item.innerHTML = `
+                <div style="font-size:0.85rem;">
+                  <strong style="color:var(--compras-color);">[${sol.tipo_solicitacao}]</strong> ${detalhesTexto}
+                </div>
+                <div style="display:flex; gap:8px;">
+                  <button onclick="processarSolicitacao('${sol.id}', 'APROVADO')" class="btn-primary" style="background:#10b981; padding:6px 12px; font-size:12px;">Aprovar</button>
+                  <button onclick="processarSolicitacao('${sol.id}', 'RECUSADO')" class="btn-ghost" style="color:#ef4444; border-color:#fecaca; padding:6px 12px; font-size:12px;">Recusar</button>
+                </div>
+              `;
+              container.appendChild(item);
+            });
+          } catch (err) {
+            console.error("Erro ao buscar solicitações pendentes:", err);
+          }
         }
 
-        function renderDocaSchedules() {
-            const tbody = document.getElementById('schedTableBody');
-            tbody.innerHTML = '';
-            logisticsState.schedules.forEach((s, idx) => {
-                tbody.innerHTML += `
-                    <tr>
-                        <td style="border:1px solid var(--border); padding:8px;">${s.carrier}</td>
-                        <td style="border:1px solid var(--border); padding:8px; text-align:center; font-weight:bold;">${s.time || '-'}</td>
-                        <td style="border:1px solid var(--border); padding:8px; text-align:center;">
-                            <button class="icon-btn delete" onclick="deleteSchedule(${idx})"><span class="material-icons-round" style="font-size:16px;">delete</span></button>
-                        </td>
-                    </tr>
+        async function processarSolicitacao(solId, novoStatus) {
+          try {
+            const { data: sol, error: errFetch } = await supabase
+              .from('agenda_solicitacoes')
+              .select('*, agenda_doca(fornecedor)')
+              .eq('id', solId)
+              .single();
+              
+            if(errFetch) throw errFetch;
+            const fornecedorRef = sol.agenda_doca?.fornecedor || '';
+            
+            await supabase.from('agenda_solicitacoes').update({ status: novoStatus }).eq('id', solId);
+
+            if (sol.tipo_solicitacao === 'EXCLUSAO') {
+              if (novoStatus === 'APROVADO') {
+                const { error: errDel } = await supabase.from('agenda_doca').delete().eq('id', sol.agenda_id);
+                if(errDel) throw errDel;
+                await registrarLog(sol.agenda_id, 'EXCLUSÃO APROVADA', 'Almoxarifado aprovou a exclusão solicitada por Compras.', sol.data_referencia, fornecedorRef);
+              } else {
+                await registrarLog(sol.agenda_id, 'EXCLUSÃO RECUSADA', 'Almoxarifado recusou a exclusão solicitada por Compras.', sol.data_referencia, fornecedorRef);
+              }
+              fetchSolicitacoesPendentes();
+              loadDateData(AgendaState.currentDate);
+              return;
+            }
+            
+            if (novoStatus === 'APROVADO') {
+              const { error: errUpdate } = await supabase
+                .from('agenda_doca')
+                .update({
+                  ...sol.dados_novos,
+                  status: 'ALTERADO/ENCAIXE',
+                  houve_alteracao: true
+                })
+                .eq('id', sol.agenda_id);
+                
+              if(errUpdate) throw errUpdate;
+              
+              await registrarLog(sol.agenda_id, 'APROVAÇÃO WORKFLOW', `Modificação (${sol.tipo_solicitacao}) aprovada pelo almoxarifado.`, sol.data_referencia, fornecedorRef);
+            } else {
+              await registrarLog(sol.agenda_id, 'RECUSA WORKFLOW', `Modificação (${sol.tipo_solicitacao}) rejeitada pelo almoxarifado.`, sol.data_referencia, fornecedorRef);
+            }
+            
+            fetchSolicitacoesPendentes();
+            loadDateData(AgendaState.currentDate);
+          } catch (err) {
+            showModernAlert("Erro ao processar fluxo de aprovação: " + err.message, true);
+          }
+        }
+
+        let AltRequestState = { agendaId: null, fornecedor: '' };
+        const ALT_CAMPOS = ['hora_inicio', 'hora_fim', 'fornecedor', 'observacao_compras'];
+
+        function solicitarModificacao(agendaId, fornecedor) {
+          AltRequestState.agendaId = agendaId;
+          AltRequestState.fornecedor = fornecedor || '';
+          ALT_CAMPOS.forEach(campo => {
+            document.getElementById(`alt-chk-${campo}`).checked = false;
+            const val = document.getElementById(`alt-val-${campo}`);
+            val.value = '';
+            val.disabled = true;
+          });
+          document.getElementById('modal-solicitar-alt').classList.add('active');
+        }
+
+        function toggleAltField(campo) {
+          const chk = document.getElementById(`alt-chk-${campo}`);
+          const val = document.getElementById(`alt-val-${campo}`);
+          val.disabled = !chk.checked;
+          if (chk.checked) { val.focus(); } else { val.value = ''; }
+        }
+
+        const ALT_CAMPO_LABELS = { hora_inicio: 'Horário de Início', hora_fim: 'Horário de Término', fornecedor: 'Texto (Fornecedor)', observacao_compras: 'Observação' };
+
+        async function submitSolicitarAlt() {
+          const agendaId = AltRequestState.agendaId;
+          if (!agendaId) return;
+
+          const dadosNovos = {};
+          const resumoPartes = [];
+
+          for (const campo of ALT_CAMPOS) {
+            const chk = document.getElementById(`alt-chk-${campo}`);
+            if (!chk.checked) continue;
+            const valorInput = document.getElementById(`alt-val-${campo}`);
+            const valor = valorInput.value.trim();
+
+            if (!valor) { showModernAlert(`Preencha o novo valor para "${ALT_CAMPO_LABELS[campo]}".`, true); return; }
+            if ((campo === 'hora_inicio' || campo === 'hora_fim') && !isValidTimeStr(valor)) { showModernAlert('Horário inválido.', true); return; }
+            if (campo === 'observacao_compras' && valor.length > 40) { showModernAlert('Observação muito longa (máx. 40 caracteres).', true); return; }
+
+            dadosNovos[campo] = valor;
+            resumoPartes.push(`${ALT_CAMPO_LABELS[campo]} para "${valor}"`);
+          }
+
+          if (Object.keys(dadosNovos).length === 0) { showModernAlert('Marque ao menos um campo para alterar.', true); return; }
+
+          try {
+            const { error } = await supabase
+              .from('agenda_solicitacoes')
+              .insert([{
+                agenda_id: agendaId,
+                tipo_solicitacao: 'ALTERACAO',
+                dados_novos: dadosNovos,
+                status: 'PENDENTE',
+                solicitado_por: AgendaState.currentRole,
+                data_referencia: AgendaState.currentDate
+              }]);
+
+            if (error) throw error;
+            closeAgendaModal('modal-solicitar-alt');
+            showModernAlert("Solicitação enviada! Aguardando aprovação em tempo real do Almox.", false);
+            registrarLog(agendaId, 'SOLICITAÇÃO DE ALTERAÇÃO', `Compras solicitou alteração de ${resumoPartes.join(', ')}`, AgendaState.currentDate, AltRequestState.fornecedor);
+          } catch(err) {
+            showModernAlert("Erro ao submeter solicitação: " + err.message, true);
+          }
+        }
+
+        function solicitarExclusao(agendaId, fornecedor) {
+          showConfirmModal(
+            'Deseja realmente solicitar a exclusão deste agendamento? A exclusão só ocorrerá após aprovação do Almoxarifado.',
+            async () => {
+              try {
+                const { error } = await supabase
+                  .from('agenda_solicitacoes')
+                  .insert([{
+                    agenda_id: agendaId,
+                    tipo_solicitacao: 'EXCLUSAO',
+                    dados_novos: {},
+                    status: 'PENDENTE',
+                    solicitado_por: AgendaState.currentRole,
+                    data_referencia: AgendaState.currentDate
+                  }]);
+                if (error) throw error;
+                showModernAlert('Solicitação de exclusão enviada para aprovação do Almoxarifado.', false);
+                registrarLog(agendaId, 'SOLICITAÇÃO DE EXCLUSÃO', 'Compras solicitou a exclusão deste agendamento.', AgendaState.currentDate, fornecedor);
+              } catch(err) {
+                showModernAlert('Erro ao solicitar exclusão: ' + err.message, true);
+              }
+            }
+          );
+        }
+
+        async function updateCardField(id, field, value) {
+          try {
+            const updateObj = {};
+            updateObj[field] = value;
+            
+            const { error } = await supabase
+              .from('agenda_doca')
+              .update(updateObj)
+              .eq('id', id);
+              
+            if (error) throw error;
+            
+            const cacheKey = `agenda_${AgendaState.currentDate}`;
+            const items = JSON.parse(sessionStorage.getItem(cacheKey)) || [];
+            const idx = items.findIndex(i => i.id === id);
+            let fornecedorRef = '';
+            if(idx !== -1) {
+              items[idx][field] = value;
+              fornecedorRef = items[idx].fornecedor || '';
+              sessionStorage.setItem(cacheKey, JSON.stringify(items));
+            }
+            
+            registrarLog(id, 'ATUALIZAÇÃO DE CAMPO', `Almoxarifado alterou campo ${field} para ${value}`, AgendaState.currentDate, fornecedorRef);
+          } catch(err) {
+            console.error("Erro ao salvar dados dinâmicos:", err);
+          }
+        }
+
+        async function concluirAgendamento(id, fornecedor) {
+          try {
+            const { error } = await supabase
+              .from('agenda_doca')
+              .update({ status: 'CONCLUIDO' })
+              .eq('id', id);
+              
+            if (error) throw error;
+            loadDateData(AgendaState.currentDate);
+            registrarLog(id, 'CONCLUSÃO', 'Recebimento marcado como Concluído.', AgendaState.currentDate, fornecedor);
+          } catch (err) {
+            showModernAlert("Erro ao concluir agendamento: " + err.message, true);
+          }
+        }
+
+        function setupAgendaActionButtons() {
+          document.getElementById('btn-novo-agendamento').onclick = () => {
+            document.getElementById('modal-agendamento').classList.add('active');
+          };
+          
+          document.getElementById('form-agendamento').onsubmit = async (e) => {
+            e.preventDefault();
+            const fornecedor = document.getElementById('form-fornecedor').value;
+            const tipo_operacao = document.getElementById('form-tipo-operacao').value;
+            const hora_inicio = document.getElementById('form-hora-inicio').value;
+            const hora_fim = document.getElementById('form-hora-fim').value;
+            const observacao_compras = (document.getElementById('form-observacao').value || '').slice(0, 40);
+
+            if (!tipo_operacao) { showModernAlert('Selecione o Tipo de Solicitação (Recebimento, Coleta ou Outros).', true); return; }
+            if (!isValidTimeStr(hora_inicio) || !isValidTimeStr(hora_fim)) { showModernAlert('Preencha horários válidos.', true); return; }
+            
+            try {
+              const { data, error } = await supabase
+                .from('agenda_doca')
+                .insert([{
+                  data_agendamento: AgendaState.currentDate,
+                  hora_inicio,
+                  hora_fim,
+                  fornecedor,
+                  tipo_operacao,
+                  observacao_compras,
+                  status: 'AGENDADO',
+                  criado_por: AgendaState.currentRole
+                }]).select();
+                
+              if (error) throw error;
+              
+              closeAgendaModal('modal-agendamento');
+              document.getElementById('form-agendamento').reset();
+              loadDateData(AgendaState.currentDate);
+              if(data && data[0]) registrarLog(data[0].id, 'INSERÇÃO', `Novo agendamento criado para o fornecedor ${fornecedor}`, AgendaState.currentDate, fornecedor);
+            } catch (err) {
+              showModernAlert("Erro ao salvar agendamento (Verifique se há choques de horários)", true);
+            }
+          };
+
+          document.getElementById('btn-insercao-massa').onclick = () => {
+            document.getElementById('bulk-textarea').value = '';
+            document.getElementById('bulk-step-1').style.display = 'block';
+            document.getElementById('bulk-step-2').style.display = 'none';
+            document.getElementById('modal-bulk').classList.add('active');
+          };
+
+          document.getElementById('btn-bulk-next').onclick = () => {
+            const text = document.getElementById('bulk-textarea').value;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if(lines.length === 0) { showModernAlert('Insira ao menos um fornecedor.', true); return; }
+
+            const rowsContainer = document.getElementById('bulk-rows-container');
+            rowsContainer.innerHTML = lines.map((name, idx) => `
+              <div class="bulk-row" data-name="${name.replace(/"/g, '&quot;')}" style="display:flex; flex-direction:column; gap:6px; background: var(--bg-body-subtle); padding:10px; border-radius: var(--radius-sm); border:1px solid var(--border);">
+                <span style="font-weight:600; font-size:0.85rem;">${name}</span>
+                <div style="display:grid; grid-template-columns:1fr 1fr 1.2fr; gap:8px;">
+                  <div>
+                    <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:2px;">Início</label>
+                    <input type="time" class="input-field bulk-row-inicio" style="width:100%;" required>
+                  </div>
+                  <div>
+                    <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:2px;">Fim</label>
+                    <input type="time" class="input-field bulk-row-fim" style="width:100%;" required>
+                  </div>
+                  <div>
+                    <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:2px;">Tipo</label>
+                    <select class="input-field bulk-row-tipo" style="width:100%;" required>
+                      <option value="">Selecione...</option>
+                      <option value="RECEBIMENTO">RECEBIMENTO</option>
+                      <option value="COLETA">COLETA</option>
+                      <option value="OUTROS">OUTROS</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:10px; color:var(--text-muted); display:block; margin-bottom:2px;">Observação (opcional)</label>
+                  <input type="text" class="input-field bulk-row-obs" maxlength="40" placeholder="Ex: Entregar na doca 1" style="width:100%;">
+                </div>
+              </div>
+            `).join('');
+
+            document.getElementById('bulk-step-1').style.display = 'none';
+            document.getElementById('bulk-step-2').style.display = 'block';
+          };
+
+          document.getElementById('btn-bulk-back').onclick = () => {
+            document.getElementById('bulk-step-1').style.display = 'block';
+            document.getElementById('bulk-step-2').style.display = 'none';
+          };
+
+          document.getElementById('btn-confirm-bulk').onclick = async () => {
+            const rowEls = Array.from(document.querySelectorAll('.bulk-row'));
+            if(rowEls.length === 0) return;
+
+            const missingData = rowEls.some(row => {
+              const inicio = row.querySelector('.bulk-row-inicio').value;
+              const fim = row.querySelector('.bulk-row-fim').value;
+              const tipo = row.querySelector('.bulk-row-tipo').value;
+              return !isValidTimeStr(inicio) || !isValidTimeStr(fim) || !tipo;
+            });
+            if(missingData) { showModernAlert('Preencha horário de início, fim e tipo de entrega para cada fornecedor.', true); return; }
+
+            const objectsToInsert = rowEls.map(row => ({
+              data_agendamento: AgendaState.currentDate,
+              fornecedor: row.dataset.name,
+              hora_inicio: row.querySelector('.bulk-row-inicio').value,
+              hora_fim: row.querySelector('.bulk-row-fim').value,
+              tipo_operacao: row.querySelector('.bulk-row-tipo').value,
+              observacao_compras: (row.querySelector('.bulk-row-obs').value || '').slice(0, 40),
+              status: 'AGENDADO',
+              criado_por: AgendaState.currentRole
+            }));
+
+            try {
+              const { error } = await supabase
+                .from('agenda_doca')
+                .insert(objectsToInsert);
+                
+              if (error) throw error;
+              
+              closeAgendaModal('modal-bulk');
+              loadDateData(AgendaState.currentDate);
+              registrarLog(null, 'INSERÇÃO EM MASSA', `${objectsToInsert.length} fornecedores adicionados em massa por Compras.`, AgendaState.currentDate);
+              showModernAlert(`${objectsToInsert.length} Fornecedores adicionados na Agenda!`, false);
+            } catch (err) {
+              showModernAlert("Erro na inserção em massa: " + err.message, true);
+            }
+          };
+
+          document.getElementById('btn-exportar-dados').onclick = function() {
+            if(AgendaState.cooldownActive) return;
+            
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = `Gerando...`;
+            AgendaState.cooldownActive = true;
+            
+            executeRelatorioExport();
+
+            let countdown = 19;
+            const interval = setInterval(() => {
+              btn.innerText = `Aguarde ${countdown}s...`;
+              btn.style.background = 'var(--border-strong)';
+              btn.style.color = 'var(--text-muted)';
+              countdown--;
+              
+              if(countdown < 0) {
+                clearInterval(interval);
+                btn.disabled = false;
+                btn.innerText = 'Exportar Agenda';
+                btn.style.background = '#0ea5e9';
+                btn.style.color = 'white';
+                AgendaState.cooldownActive = false;
+              }
+            }, 1000);
+          };
+
+          document.getElementById('btn-confirm-solicitar-alt').onclick = submitSolicitarAlt;
+
+          document.getElementById('btn-ver-logs').onclick = async () => {
+            try {
+              const { data, error } = await supabase
+                .from('agenda_logs')
+                .select('*')
+                .eq('data_agendamento', AgendaState.currentDate)
+                .order('criado_em', { ascending: false });
+                
+              if (error) throw error;
+              
+              const tbody = document.getElementById('table-logs-body');
+              tbody.innerHTML = '';
+              window.currentDayLogs = data || [];
+              
+              data.forEach(log => {
+                const tr = document.createElement('tr');
+                const parsed = parseLogEntry(log.detalhes);
+                tr.innerHTML = `
+                  <td style="padding:10px; border-bottom:1px solid var(--border);"><strong>${log.usuario || 'Sistema'}</strong></td>
+                  <td style="padding:10px; border-bottom:1px solid var(--border);">${parsed.fornecedor}</td>
+                  <td style="padding:10px; border-bottom:1px solid var(--border);"><span class="badge bg-fiscal">${log.acao}</span></td>
+                  <td style="padding:10px; border-bottom:1px solid var(--border);">${parsed.detalhes}</td>
+                  <td style="padding:10px; border-bottom:1px solid var(--border);">${formatLogDateTime(log.criado_em)}</td>
                 `;
-            });
+                tbody.appendChild(tr);
+              });
+              
+              document.getElementById('modal-logs').classList.add('active');
+            } catch(err) {
+              showModernAlert("Erro ao buscar logs de auditoria: " + err.message, true);
+            }
+          };
         }
-        function deleteSchedule(idx) { logisticsState.schedules.splice(idx, 1); saveLogisticsState(); renderDocaSchedules(); }
 
-        // --- RELATÓRIO PDF OTIMIZADO ---
-        function generateLogisticsPDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4');
-            doc.setFontSize(18);
-            doc.setTextColor(30, 41, 59);
-            doc.text(`Relatório PO/MIGO/MIRO`, 14, 20);
-            doc.setFontSize(11);
-            doc.setTextColor(100, 116, 139);
-            doc.text(`Data: ${logisticsState.date} | Gerado em: ${getBrasiliaTime()}`, 14, 28);
-            
-            const tableColumn = ["FORNECEDOR / TRANSPORTADORA", "Qtd. Notas", "ENTRADA MIGO", "PROGRAMAÇÃO RECEBIMENTO", "HISTÓRICO DE PROCESSO"];
-            const tableRows = [];
+        async function registrarLog(agendaId, acao, detalhes, dataRef, fornecedor) {
+          try {
+            const detalhesComFornecedor = fornecedor ? `[${fornecedor}] ${detalhes}` : detalhes;
+            await supabase.from('agenda_logs').insert([{
+              agenda_id: agendaId,
+              acao: acao,
+              detalhes: detalhesComFornecedor,
+              usuario: AgendaState.currentRole,
+              data_agendamento: dataRef || AgendaState.currentDate
+            }]);
+          } catch (err) {
+            console.error("Falha ao registrar log de auditoria:", err);
+          }
+        }
 
-            logisticsState.carriers.forEach(c => {
-                const baseNameUpper = c.baseName.toUpperCase();
-                const schedule = logisticsState.schedules.find(s => s.carrier.toUpperCase() === baseNameUpper);
-                const prevTime = schedule ? schedule.time : "Não Programado";
+        // Extrai o fornecedor embutido no início de "detalhes" (formato "[Fornecedor] texto...")
+        // para exibir em coluna própria nos logs, sem exigir nova coluna no banco.
+        function parseLogEntry(detalhesRaw) {
+          const raw = detalhesRaw || '-';
+          const match = raw.match(/^\[([^\]]+)\]\s*(.*)$/);
+          if (match) return { fornecedor: match[1], detalhes: match[2] || '-' };
+          return { fornecedor: '-', detalhes: raw };
+        }
 
-                let slaText = "";
-                if(c.nfs.length === 0) slaText = "Aguardando input de notas (Almoxarifado)";
-                else {
-                    c.nfs.forEach(n => {
-                        let stat = `MIGO (${c.entryTime})`;
-                        if(n.migoDivergence) stat += ` -> PEND. MIGO (${n.migoDivergenceTime})`;
-                        if(n.migoCorrected) stat += ` -> MIGO CORRIGIDA (${n.migoCorrectionTime})`;
-                        if(n.divergence) stat += ` -> PEND. PO (${n.divergenceTime})`;
-                        if(n.poCorrected) stat += ` -> PO CORRIGIDO (${n.poCorrectionTime})`;
-                        if(n.miroOk) stat += ` -> MIRO OK (${n.miroTime})`;
-                        else stat += ` -> AGUARDANDO MIRO`;
-                        
-                        slaText += `NF ${n.number}: ${stat}\n`;
-                    });
-                }
+        // Garante que o horário do log seja sempre exibido no fuso de Brasília,
+        // independentemente do fuso configurado no navegador do usuário.
+        function formatLogDateTime(criadoEm) {
+          if (!criadoEm) return '-';
+          return new Date(criadoEm).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+        }
 
-                tableRows.push([ c.fullName, c.nfs.length + " / " + c.qty, c.entryTime, prevTime, slaText.trim() ]);
+        function isValidTimeStr(value) {
+          return typeof value === 'string' && /^([01]\d|2[0-3]):([0-5]\d)$/.test(value);
+        }
+
+        function getStatusLabelParaExportacao(item) {
+          const status = item.status || '-';
+          if (status === 'CONCLUIDO') {
+            return item.houve_alteracao ? 'CONCLUÍDO (Encaixe)' : 'CONCLUÍDO';
+          }
+          if (status === 'ALTERADO/ENCAIXE') return 'AGENDADO (Encaixe)';
+          return status;
+        }
+
+        async function executeRelatorioExport() {
+          const cacheKey = `agenda_${AgendaState.currentDate}`;
+          const localItems = JSON.parse(sessionStorage.getItem(cacheKey)) || [];
+          if(localItems.length === 0) {
+            showModernAlert("Não há dados para exportar neste dia.", true);
+            return;
+          }
+          if(!window.jspdf) { showModernAlert("Biblioteca de PDF não carregada.", true); return; }
+
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('l', 'mm', 'a4');
+          const displayDate = new Date(AgendaState.currentDate + 'T00:00:00').toLocaleDateString('pt-BR');
+
+          doc.setFontSize(14);
+          doc.text(`Agenda - Recebimento de Doca (${displayDate})`, 14, 15);
+
+          const agendaColumns = ["Início", "Fim", "Fornecedor", "Tipo", "Observação", "Portaria", "Na Doca", "Status"];
+          const agendaRows = localItems.map(item => [
+            item.hora_inicio ? item.hora_inicio.substring(0,5) : '-',
+            item.hora_fim ? item.hora_fim.substring(0,5) : '-',
+            item.fornecedor || '-',
+            item.tipo_operacao || '-',
+            item.observacao_compras || '-',
+            item.chegada_portaria ? item.chegada_portaria.substring(0,5) : '-',
+            item.entrada_doca ? item.entrada_doca.substring(0,5) : '-',
+            getStatusLabelParaExportacao(item)
+          ]);
+
+          doc.autoTable({
+            head: [agendaColumns],
+            body: agendaRows,
+            startY: 20,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [14, 165, 233], textColor: 255, fontStyle: 'bold', halign: 'center' }
+          });
+
+          let logRows = [];
+          try {
+            const { data: logsData, error } = await supabase
+              .from('agenda_logs')
+              .select('*')
+              .eq('data_agendamento', AgendaState.currentDate)
+              .order('criado_em', { ascending: false });
+            if (error) throw error;
+            logRows = (logsData || []).map(log => {
+              const parsed = parseLogEntry(log.detalhes);
+              return [log.usuario || 'Sistema', parsed.fornecedor, log.acao || '-', parsed.detalhes, formatLogDateTime(log.criado_em)];
             });
+          } catch (err) {
+            console.error('Erro ao buscar logs para exportação:', err);
+          }
 
-            if(tableRows.length === 0) { showModernAlert("Não há dados logísticos registrados hoje para gerar PDF."); return; }
+          doc.addPage();
+          doc.setFontSize(14);
+          doc.text(`Log de Alterações (${displayDate})`, 14, 15);
+          doc.autoTable({
+            head: [["Usuário", "Fornecedor", "Ação", "Detalhes", "Data/Hora"]],
+            body: logRows.length > 0 ? logRows : [["-", "-", "-", "Nenhum registro de log para este dia.", "-"]],
+            startY: 20,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [71, 85, 105], textColor: 255, fontStyle: 'bold', halign: 'center' }
+          });
 
-            doc.autoTable({
-                head: [tableColumn],
-                body: tableRows,
-                startY: 35,
-                theme: 'striped',
-                styles: { fontSize: 8, cellPadding: 4, valign: 'middle', font: 'helvetica', lineColor: [221, 225, 239], lineWidth: 0.1 },
-                headStyles: { fillColor: [79, 70, 229], textColor: [255, 255, 255], fontStyle: 'bold', halign: 'left' },
-                alternateRowStyles: { fillColor: [248, 250, 252] },
-                columnStyles: { 
-                    0: { cellWidth: 50, fontStyle: 'bold', textColor: [30, 41, 59] }, 
-                    1: { halign: 'center' },
-                    2: { halign: 'center' },
-                    3: { halign: 'center' },
-                    4: { cellWidth: 120 } 
-                },
-                didParseCell: function(data) {
-                    if (data.section === 'body') {
-                        if (data.column.index === 4) {
-                            const val = data.cell.raw.toString();
-                            if (val.includes("MIRO OK")) data.cell.styles.textColor = [22, 101, 52];
-                            else if (val.includes("PEND.") || val.includes("Pendência")) { data.cell.styles.textColor = [185, 28, 28]; data.cell.styles.fontStyle = 'bold'; }
-                            else if (val.includes("AGUARDANDO") || val.includes("input")) data.cell.styles.textColor = [180, 83, 9];
-                        }
-                    }
-                }
-            });
-            
-            doc.save(`Relatorio_Logistica_Operacional_${logisticsState.date.replace(/\//g,'-')}.pdf`);
+          doc.save(`agenda_doca_${AgendaState.currentDate}.pdf`);
+        }
+
+        function exportLogsPDF() {
+          if(!window.jspdf) { showModernAlert("Biblioteca de PDF não carregada.", true); return; }
+          const logs = window.currentDayLogs || [];
+          const displayDate = new Date(AgendaState.currentDate + 'T00:00:00').toLocaleDateString('pt-BR');
+          const { jsPDF } = window.jspdf;
+          const doc = new jsPDF('l', 'mm', 'a4');
+          doc.setFontSize(14);
+          doc.text(`Log de Alterações (${displayDate})`, 14, 15);
+          const rows = logs.length > 0 ? logs.map(log => {
+            const parsed = parseLogEntry(log.detalhes);
+            return [log.usuario || 'Sistema', parsed.fornecedor, log.acao || '-', parsed.detalhes, formatLogDateTime(log.criado_em)];
+          }) : [["-", "-", "-", "Nenhum registro de log para este dia.", "-"]];
+          doc.autoTable({
+            head: [["Usuário", "Fornecedor", "Ação", "Detalhes", "Data/Hora"]],
+            body: rows,
+            startY: 20,
+            theme: 'grid',
+            styles: { fontSize: 8, cellPadding: 2 },
+            headStyles: { fillColor: [71, 85, 105], textColor: 255, fontStyle: 'bold', halign: 'center' }
+          });
+          doc.save(`log_alteracoes_${AgendaState.currentDate}.pdf`);
+        }
+
+        function checkRetentionAlert() {
+          document.getElementById('panel-retention-alert').style.display = 'none';
         }
     </script>
 
@@ -2313,16 +3261,15 @@
             <h2>Nova Atualização!</h2>
             <p>Confira o que mudou:</p>
             <ul>
-                <li><b>Novo Módulo:</b> Controle de Liberação do Pátio.</li>
-                <li><b>Rastreabilidade:</b> Histórico de processos</li>
-                <li><b>Aparência:</b> Outros ajustes.</li>
+                <li><b>Novo Módulo:</b> AGENDA DE DOCA.</li>
+                <li><b>⚠️:</b> Atualmente em teste.</li>
             </ul>
             <button class="btn-update-close" onclick="closeUpdateBubble()">Entendido!</button>
         </div>
     </div>
 
     <script>
-        const AVISO_VERSAO = "2.2"; 
+        const AVISO_VERSAO = "2.3"; 
         function checkUpdateBubble() {
             const lastSeenVersion = localStorage.getItem('lastSeenUpdateVersion');
             if (lastSeenVersion !== AVISO_VERSAO) { document.getElementById('updateBubble').style.display = 'flex'; }
