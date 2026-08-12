@@ -743,6 +743,11 @@
                         <span class="material-icons-round">table_view</span> EXPORTAR EXCEL
                     </button>
                     <div class="fab-menu-divider"></div>
+                    <div class="fab-menu-label">Consulta SIEG</div>
+                    <button class="fab-menu-item accent-blue" onclick="openSiegModal(); closeFabMenu()" style="grid-column: span 2;">
+                        <span class="material-icons-round">vpn_key</span> CONSULTAR CHAVES
+                    </button>
+                    <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Logística e Portaria</div>
                     <button class="fab-menu-item accent-green" onclick="openAgendaDoca(); closeFabMenu()">
                         <span class="material-icons-round">calendar_month</span> AGENDA DE DOCA
@@ -968,6 +973,53 @@
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Itens e Impostos (Edite o número para reordenar)</h3>
                     <div id="sapItemsContainer"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="siegModal">
+        <div class="modal" style="width: 95%; max-width: 640px; height: auto; max-height: 90vh;">
+            <div class="modal-header">
+                <h2><span class="material-icons-round" style="vertical-align:middle; font-size:20px; margin-right:6px;">vpn_key</span>Consultar Chaves — SIEG</h2>
+                <button class="close-btn" onclick="closeSiegModal()"><span>&times;</span></button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+
+                <button class="btn-ghost" style="width:100%; border-color: var(--primary); color: var(--primary);" onclick="closeSiegModal(); openSapModal();">
+                    <span class="material-icons-round" style="font-size: 18px; vertical-align: middle;">dataset</span>
+                    Ir para SAP XML MP Helper
+                </button>
+
+                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                    <div class="form-group" style="flex:1; min-width:180px;">
+                        <label>Tipo de Documento</label>
+                        <select id="siegTipoDoc" class="input-field">
+                            <option value="nfe">NF-e</option>
+                            <option value="cte">CT-e</option>
+                            <option value="nfse">NFS-e</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex:1; min-width:220px;">
+                        <label>Ao consultar, eu prefiro...</label>
+                        <select id="siegModoEntrega" class="input-field">
+                            <option value="xml">Baixar o XML automaticamente</option>
+                            <option value="pdf">Abrir o PDF em nova guia</option>
+                            <option value="ambos">Baixar o XML e abrir o PDF</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:0.75rem; align-items:flex-end;">
+                    <div class="form-group" style="flex:1;">
+                        <label>Chave de Acesso (44 dígitos)</label>
+                        <input type="text" id="siegChaveInput" class="input-field" maxlength="44" inputmode="numeric" autocomplete="off" placeholder="Cole ou digite a chave de acesso...">
+                    </div>
+                    <button class="btn-primary" id="siegConsultarBtn" style="height:44px; white-space:nowrap;" onclick="consultarChaveSieg()">
+                        <span class="material-icons-round" style="font-size:18px; vertical-align:middle;">search</span> CONSULTAR
+                    </button>
+                </div>
+
+                <div id="siegResultado" style="font-size:0.85rem; padding:0.85rem 1rem; border-radius:10px; display:none;"></div>
             </div>
         </div>
     </div>
@@ -1541,6 +1593,168 @@
 
         function openSapModal() { document.getElementById('sapModal').classList.add('active'); document.getElementById('sapXmlInput').value = ''; document.getElementById('sapResults').style.display = 'none'; }
         function closeSapModal() { document.getElementById('sapModal').classList.remove('active'); }
+
+        /* ============================================================
+           CONSULTAR CHAVES — INTEGRAÇÃO API SIEG
+           ============================================================
+           A chave da API está armazenada nas variáveis de ambiente 
+           da Vercel. O código agora aponta de forma segura para o proxy 
+           (/api/sieg) bloqueando erros de CORS do navegador.
+        ============================================================ */
+
+        const SIEG_BASE_URL = "/api/sieg";
+        const SIEG_XML_TYPE = { nfe: 1, cte: 3, nfse: 4 };
+
+        function openSiegModal() {
+            document.getElementById('siegModal').classList.add('active');
+            document.getElementById('siegChaveInput').value = '';
+            const resultBox = document.getElementById('siegResultado');
+            resultBox.style.display = 'none';
+            resultBox.innerHTML = '';
+            setTimeout(() => document.getElementById('siegChaveInput').focus(), 150);
+        }
+        
+        function closeSiegModal() { document.getElementById('siegModal').classList.remove('active'); }
+
+        function siegMostrarStatus(msg, tipo) {
+            const box = document.getElementById('siegResultado');
+            const cores = {
+                info:    { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
+                sucesso: { bg: '#ecfdf5', border: '#a7f3d0', color: '#047857' },
+                erro:    { bg: '#fef2f2', border: '#fecaca', color: '#b91c1c' }
+            }[tipo || 'info'];
+            box.style.background = cores.bg;
+            box.style.border = `1px solid ${cores.border}`;
+            box.style.color = cores.color;
+            box.innerHTML = msg;
+            box.style.display = 'block';
+        }
+
+        function siegBase64ParaBlob(base64, mimeType) {
+            const byteChars = atob(base64);
+            const byteNumbers = new Array(byteChars.length);
+            for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
+            return new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
+        }
+
+        function siegBaixarArquivo(blob, nomeArquivo) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = nomeArquivo;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+        }
+
+        function siegAbrirPdfEmNovaGuia(blob) {
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        }
+
+        async function siegFetch(url, options) {
+            try {
+                const resp = await fetch(url, options);
+                if (!resp.ok) {
+                    let corpo = '';
+                    try { corpo = await resp.text(); } catch (e) {}
+                    throw new Error(`O servidor proxy respondeu com status ${resp.status}. ${corpo || ''}`.trim());
+                }
+                return await resp.json();
+            } catch (err) {
+                if (err instanceof TypeError) {
+                    throw new Error(
+                        'FALHA DE CONEXÃO: Não foi possível alcançar o servidor na Vercel. Verifique se a pasta api e o arquivo sieg.js foram enviados corretamente.'
+                    );
+                }
+                throw err;
+            }
+        }
+
+        function siegValidarChave(chave) {
+            const limpa = (chave || '').replace(/\D/g, '');
+            if (limpa.length !== 44) return null;
+            return limpa;
+        }
+
+        async function consultarChaveSieg() {
+            const tipoDoc = document.getElementById('siegTipoDoc').value;
+            const modo = document.getElementById('siegModoEntrega').value;
+            const chave = siegValidarChave(document.getElementById('siegChaveInput').value);
+            const btn = document.getElementById('siegConsultarBtn');
+
+            if (!chave) {
+                siegMostrarStatus('A chave de acesso precisa ter exatamente 44 dígitos numéricos.', 'erro');
+                return;
+            }
+            if (tipoDoc === 'nfse') {
+                siegMostrarStatus('A SIEG não disponibiliza DANFE/PDF via chave para NFS-e. Selecione "Baixar o XML automaticamente" para NFS-e.', 'info');
+                if (modo !== 'xml') return;
+            }
+
+            btn.disabled = true;
+            const textoOriginalBtn = btn.innerHTML;
+            btn.innerHTML = '<span class="material-icons-round" style="font-size:18px; vertical-align:middle;">hourglass_top</span> CONSULTANDO...';
+            siegMostrarStatus('Consultando a chave na SIEG, aguarde...', 'info');
+
+            try {
+                const tarefas = [];
+                if (modo === 'xml' || modo === 'ambos') tarefas.push(siegBaixarXmlPorChave(chave, tipoDoc));
+                if ((modo === 'pdf' || modo === 'ambos') && tipoDoc !== 'nfse') tarefas.push(siegAbrirPdfPorChave(chave, tipoDoc));
+
+                await Promise.all(tarefas);
+                siegMostrarStatus(`Consulta concluída com sucesso para a chave <b>${chave}</b>.`, 'sucesso');
+            } catch (err) {
+                console.error('Erro na consulta SIEG:', err);
+                const msg = (err && err.message) || 'Erro desconhecido.';
+                siegMostrarStatus(`<b>Erro ao consultar a chave:</b> ${msg}`, 'erro');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = textoOriginalBtn;
+            }
+        }
+
+        // Requisição adaptada apontando o path para a nossa função Serverless na Vercel
+        async function siegBaixarXmlPorChave(chave, tipoDoc) {
+            const url = `${SIEG_BASE_URL}?path=BaixarXmls`;
+            const body = {
+                XmlType: SIEG_XML_TYPE[tipoDoc],
+                Chave: chave,
+                Take: 1,
+                Skip: 0,
+                Downloadevent: false
+            };
+            const data = await siegFetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+
+            const lista = Array.isArray(data) ? data : (data.xmls || data.Xmls || data.result || []);
+            if (!lista || lista.length === 0) {
+                throw new Error('Nenhum XML foi retornado pela SIEG para essa chave.');
+            }
+            const blob = siegBase64ParaBlob(lista[0], 'application/xml');
+            siegBaixarArquivo(blob, `${chave}.xml`);
+        }
+
+        // Requisição adaptada apontando o path para a nossa função Serverless na Vercel
+        async function siegAbrirPdfPorChave(chave, tipoDoc) {
+            const endpoint = tipoDoc === 'cte' ? 'GerarDacteViaChave' : 'GerarDanfeViaChave';
+            const url = `${SIEG_BASE_URL}?path=api/Arquivos/${endpoint}&xmlKey=${chave}`;
+            const data = await siegFetch(url, { method: 'GET' });
+
+            const lista = Array.isArray(data) ? data : (data.pdfs || data.Pdfs || data.result || []);
+            if (!lista || lista.length === 0) {
+                throw new Error('Nenhum PDF foi retornado pela SIEG para essa chave.');
+            }
+            const blob = siegBase64ParaBlob(lista[0], 'application/pdf');
+            siegAbrirPdfEmNovaGuia(blob);
+        }
+
+        }
         function openCteModal() { document.getElementById('cteModal').classList.add('active'); document.getElementById('cteXmlInput').value = ''; document.getElementById('cteResults').style.display = 'none'; }
         function closeCteModal() { document.getElementById('cteModal').classList.remove('active'); }
 
