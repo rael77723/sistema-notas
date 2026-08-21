@@ -743,17 +743,18 @@
                         <span class="material-icons-round">table_view</span> EXPORTAR EXCEL
                     </button>
                     <div class="fab-menu-divider"></div>
-                    <div class="fab-menu-label">Consulta SIEG</div>
-                    <button class="fab-menu-item accent-blue" onclick="openSiegModal(); closeFabMenu()" style="grid-column: span 2;">
-                        <span class="material-icons-round">vpn_key</span> CONSULTAR CHAVES
-                    </button>
-                    <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Logística e Portaria</div>
                     <button class="fab-menu-item accent-green" onclick="openAgendaDoca(); closeFabMenu()">
                         <span class="material-icons-round">calendar_month</span> AGENDA DE DOCA
                     </button>
                     <button class="fab-menu-item accent-purple" onclick="openReleaseModule(); closeFabMenu()">
                         <span class="material-icons-round">local_shipping</span> CONTROLE DE LIBERAÇÃO
+                    </button>
+                    <button class="fab-menu-item accent-blue" onclick="openFretesModal(); closeFabMenu()">
+                        <span class="material-icons-round">receipt_long</span> CONTROLE DE FRETES
+                    </button>
+                    <button class="fab-menu-item accent-amber" onclick="openImportsModal(); closeFabMenu()">
+                        <span class="material-icons-round">flight_land</span> IMPORTAÇÕES
                     </button>
                     <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Painéis e Relatórios</div>
@@ -954,10 +955,13 @@
                     <button class="btn-primary" style="height: 80px;" onclick="processSapXml()">PROCESSAR XML</button>
                 </div>
                 <div id="sapResults">
-                    <h2 id="sapNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+                    <h2 id="sapNatOp" style="color: #334155; margin-bottom: 5px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+                    <div id="sapCnpjEmit" style="color:#64748b; font-size:0.85rem; margin: 0 0 15px 15px; font-weight:600;"></div>
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
                         <div id="validationBox" class="validator-box" style="flex:1; margin:0;">VALIDAÇÃO PREÇO NF: R$ 0,00</div>
                         <button class="btn-primary" style="background:#f97316; height:45px;" onclick="openNetModal()">VER PREÇOS NET</button>
+                        <button class="excel-btn" style="height:45px;" onclick="exportSapExcel()"><span class="material-icons-round" style="font-size:16px">table_view</span> EXPORTAR EXCEL</button>
+                        <button class="btn-primary" style="background:#16a34a; height:45px;" onclick="sendSapToCorrection()"><span class="material-icons-round" style="font-size:16px; vertical-align:middle;">assignment_turned_in</span> ENVIAR PARA CORREÇÃO</button>
                     </div>
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                     <div class="sap-header-grid" id="sapHeaderGrid"></div>
@@ -977,53 +981,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="siegModal">
-        <div class="modal" style="width: 95%; max-width: 640px; height: auto; max-height: 90vh;">
-            <div class="modal-header">
-                <h2><span class="material-icons-round" style="vertical-align:middle; font-size:20px; margin-right:6px;">vpn_key</span>Consultar Chaves — SIEG</h2>
-                <button class="close-btn" onclick="closeSiegModal()"><span>&times;</span></button>
-            </div>
-            <div class="modal-body" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
-
-                <button class="btn-ghost" style="width:100%; border-color: var(--primary); color: var(--primary);" onclick="closeSiegModal(); openSapModal();">
-                    <span class="material-icons-round" style="font-size: 18px; vertical-align: middle;">dataset</span>
-                    Ir para SAP XML MP Helper
-                </button>
-
-                <div style="display:flex; gap:1rem; flex-wrap:wrap;">
-                    <div class="form-group" style="flex:1; min-width:180px;">
-                        <label>Tipo de Documento</label>
-                        <select id="siegTipoDoc" class="input-field">
-                            <option value="nfe">NF-e</option>
-                            <option value="cte">CT-e</option>
-                            <option value="nfse">NFS-e</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="flex:1; min-width:220px;">
-                        <label>Ao consultar, eu prefiro...</label>
-                        <select id="siegModoEntrega" class="input-field">
-                            <option value="xml">Baixar o XML automaticamente</option>
-                            <option value="pdf">Abrir o PDF em nova guia</option>
-                            <option value="ambos">Baixar o XML e abrir o PDF</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div style="display:flex; gap:0.75rem; align-items:flex-end;">
-                    <div class="form-group" style="flex:1;">
-                        <label>Chave de Acesso (44 dígitos)</label>
-                        <input type="text" id="siegChaveInput" class="input-field" maxlength="44" inputmode="numeric" autocomplete="off" placeholder="Cole ou digite a chave de acesso...">
-                    </div>
-                    <button class="btn-primary" id="siegConsultarBtn" style="height:44px; white-space:nowrap;" onclick="consultarChaveSieg()">
-                        <span class="material-icons-round" style="font-size:18px; vertical-align:middle;">search</span> CONSULTAR
-                    </button>
-                </div>
-
-                <div id="siegResultado" style="font-size:0.85rem; padding:0.85rem 1rem; border-radius:10px; display:none;"></div>
-            </div>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="cteModal">
         <div class="modal" style="width: 95%; max-width: 1200px; height: auto; max-height: 90vh;">
             <div class="modal-header">
@@ -1036,10 +993,12 @@
                     <button class="btn-primary" style="height: 80px;" onclick="processCteXml()">PROCESSAR CT-E</button>
                 </div>
                 <div id="cteResults" style="display:none; margin-top:15px;">
-                    <h2 id="cteNatOp" style="color: #334155; margin-bottom: 15px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+                    <h2 id="cteNatOp" style="color: #334155; margin-bottom: 5px; font-size: 1.2rem; border-left: 5px solid var(--primary); padding-left: 10px;"></h2>
+                    <div id="cteCnpjEmit" style="color:#64748b; font-size:0.85rem; margin: 0 0 15px 15px; font-weight:600;"></div>
                     <div style="display:flex; gap:10px; align-items:center; margin-bottom:15px;">
                         <div id="cteValidationBox" class="validator-box" style="flex:1; margin:0;">VALIDAÇÃO PREÇO NF: R$ 0,00</div>
                         <button class="btn-primary" style="background:#f97316; height:45px;" onclick="openCteNetModal()">VER PREÇOS NET</button>
+                        <button class="excel-btn" style="height:45px;" onclick="exportCteExcel()"><span class="material-icons-round" style="font-size:16px">table_view</span> EXPORTAR EXCEL</button>
                     </div>
                     <h3 style="margin-bottom: 10px; color: var(--primary);">Dados do Cabeçalho (Clique para copiar)</h3>
                     <div class="sap-header-grid" id="cteHeaderGrid"></div>
@@ -1049,6 +1008,88 @@
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="fretesModal">
+        <div class="modal kpi-modal-container">
+            <div class="modal-header">
+                <h2>Controle de Fretes</h2>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button class="reset-btn" onclick="openFretesResetModal()"><span class="material-icons-round" style="font-size:16px">delete_forever</span> EXCLUIR TUDO</button>
+                    <button class="excel-btn" style="background-color: #107c41;" onclick="exportFretesExcel()"><span class="material-icons-round" style="font-size:16px">table_view</span> EXPORTAR EXCEL</button>
+                    <button class="close-btn" onclick="closeFretesModal()"><span>&times;</span></button>
+                </div>
+            </div>
+            <div class="services-modal-body" id="fretesBody">
+                <div class="dash-checklist-container">
+                    <div style="width: 110px; position: relative; height: 110px; flex-shrink:0;">
+                        <canvas id="fretesChart"></canvas>
+                    </div>
+                    <div class="checklist-stats-grid">
+                        <div class="dash-card-check dash-check-total"><span class="lbl">TOTAL DE FRETES</span><span class="cnt" id="fretesTotalCount">0</span></div>
+                        <div class="dash-card-check dash-check-pen"><span class="lbl">PENDENTE FISCAL</span><span class="cnt" id="fretesPendFiscalCount">0</span></div>
+                        <div class="dash-card-check dash-check-rec"><span class="lbl">LANÇADO</span><span class="cnt" id="fretesLancadoCount">0</span></div>
+                        <div class="dash-card-check dash-check-nop"><span class="lbl">PEND. CORREÇÃO/APROV.</span><span class="cnt" id="fretesPendOutrosCount">0</span></div>
+                    </div>
+                </div>
+                <div class="services-table-wrapper">
+                    <table class="services-table" id="fretesTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>PRESTADOR</th>
+                                <th>PEDIDO</th>
+                                <th>FATURA</th>
+                                <th>DATA ENVIO</th>
+                                <th>DATA VENC.</th>
+                                <th>VENCE EM</th>
+                                <th>QTD. CTES</th>
+                                <th>STATUS</th>
+                                <th>OBSERVAÇÃO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fretesTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addFreteRow()">+</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="fretesResetModal"><div class="modal" style="max-width:400px;text-align:center;padding:2rem;"><h3>Excluir toda a relação de fretes?</h3><p style="color:#64748b;margin:10px 0;">Essa ação é irreversível e apagará todos os fretes cadastrados.</p><input type="password" id="fretesResetPassword" class="input-field" style="margin:1rem 0;text-align:center;" placeholder="Senha..."><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeFretesResetModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmFretesReset()">Confirmar</button></div></div></div>
+
+    <div class="modal-overlay" id="freteDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir frete?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeFreteDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmFreteDelete()">Excluir</button></div></div></div>
+
+    <div class="modal-overlay" id="importsModal">
+        <div class="modal kpi-modal-container">
+            <div class="modal-header">
+                <h2>Importações</h2>
+                <button class="close-btn" onclick="closeImportsModal()"><span>&times;</span></button>
+            </div>
+            <div class="services-modal-body" id="importsBody">
+                <div class="services-table-wrapper">
+                    <table class="services-table" id="importsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>PROCESSO</th>
+                                <th>DUIMP</th>
+                                <th>DATA MIGO</th>
+                                <th>DATA MIRO</th>
+                                <th>INVOICES</th>
+                                <th>PEDIDOS</th>
+                                <th>STATUS</th>
+                                <th>OBSERVAÇÃO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="importsTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addImportRow()">+</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="importDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir importação?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeImportDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmImportDelete()">Excluir</button></div></div></div>
 
     <div class="net-modal-overlay" id="netModal">
         <div class="net-modal">
@@ -1444,7 +1485,11 @@
         let supabase;
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
         let rawSapItems = [];
-        let rawCteData = null; 
+        let rawCteData = null;
+        let currentSapNF = null;
+        let currentCteNF = null;
+        let fretesData = [], fretesChartInstance = null, freteToDeleteIndex = null;
+        let importsData = [], importToDeleteIndex = null;
 
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1593,167 +1638,6 @@
 
         function openSapModal() { document.getElementById('sapModal').classList.add('active'); document.getElementById('sapXmlInput').value = ''; document.getElementById('sapResults').style.display = 'none'; }
         function closeSapModal() { document.getElementById('sapModal').classList.remove('active'); }
-
-/* ============================================================
-           CONSULTAR CHAVES — INTEGRAÇÃO API SIEG
-           ============================================================
-           A chave da API está armazenada nas variáveis de ambiente 
-           da Vercel. O código agora aponta de forma segura para o proxy 
-           (/api/sieg) bloqueando erros de CORS do navegador.
-        ============================================================ */
-
-        const SIEG_BASE_URL = "/api/sieg";
-        const SIEG_XML_TYPE = { nfe: 1, cte: 3, nfse: 4 };
-
-        function openSiegModal() {
-            document.getElementById('siegModal').classList.add('active');
-            document.getElementById('siegChaveInput').value = '';
-            const resultBox = document.getElementById('siegResultado');
-            resultBox.style.display = 'none';
-            resultBox.innerHTML = '';
-            setTimeout(() => document.getElementById('siegChaveInput').focus(), 150);
-        }
-        
-        function closeSiegModal() { document.getElementById('siegModal').classList.remove('active'); }
-
-        function siegMostrarStatus(msg, tipo) {
-            const box = document.getElementById('siegResultado');
-            const cores = {
-                info:    { bg: '#eff6ff', border: '#bfdbfe', color: '#1d4ed8' },
-                sucesso: { bg: '#ecfdf5', border: '#a7f3d0', color: '#047857' },
-                erro:    { bg: '#fef2f2', border: '#fecaca', color: '#b91c1c' }
-            }[tipo || 'info'];
-            box.style.background = cores.bg;
-            box.style.border = `1px solid ${cores.border}`;
-            box.style.color = cores.color;
-            box.innerHTML = msg;
-            box.style.display = 'block';
-        }
-
-        function siegBase64ParaBlob(base64, mimeType) {
-            const byteChars = atob(base64);
-            const byteNumbers = new Array(byteChars.length);
-            for (let i = 0; i < byteChars.length; i++) byteNumbers[i] = byteChars.charCodeAt(i);
-            return new Blob([new Uint8Array(byteNumbers)], { type: mimeType });
-        }
-
-        function siegBaixarArquivo(blob, nomeArquivo) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = nomeArquivo;
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            setTimeout(() => URL.revokeObjectURL(url), 5000);
-        }
-
-        function siegAbrirPdfEmNovaGuia(blob) {
-            const url = URL.createObjectURL(blob);
-            window.open(url, '_blank');
-            setTimeout(() => URL.revokeObjectURL(url), 60000);
-        }
-
-        async function siegFetch(url, options) {
-            try {
-                const resp = await fetch(url, options);
-                if (!resp.ok) {
-                    let corpo = '';
-                    try { corpo = await resp.text(); } catch (e) {}
-                    throw new Error(`O servidor proxy respondeu com status ${resp.status}. ${corpo || ''}`.trim());
-                }
-                return await resp.json();
-            } catch (err) {
-                if (err instanceof TypeError) {
-                    throw new Error(
-                        'FALHA DE CONEXÃO: Não foi possível alcançar o servidor na Vercel. Verifique se a pasta api e o arquivo sieg.js foram enviados corretamente.'
-                    );
-                }
-                throw err;
-            }
-        }
-
-        function siegValidarChave(chave) {
-            const limpa = (chave || '').replace(/\D/g, '');
-            if (limpa.length !== 44) return null;
-            return limpa;
-        }
-
-        async function consultarChaveSieg() {
-            const tipoDoc = document.getElementById('siegTipoDoc').value;
-            const modo = document.getElementById('siegModoEntrega').value;
-            const chave = siegValidarChave(document.getElementById('siegChaveInput').value);
-            const btn = document.getElementById('siegConsultarBtn');
-
-            if (!chave) {
-                siegMostrarStatus('A chave de acesso precisa ter exatamente 44 dígitos numéricos.', 'erro');
-                return;
-            }
-            if (tipoDoc === 'nfse') {
-                siegMostrarStatus('A SIEG não disponibiliza DANFE/PDF via chave para NFS-e. Selecione "Baixar o XML automaticamente" para NFS-e.', 'info');
-                if (modo !== 'xml') return;
-            }
-
-            btn.disabled = true;
-            const textoOriginalBtn = btn.innerHTML;
-            btn.innerHTML = '<span class="material-icons-round" style="font-size:18px; vertical-align:middle;">hourglass_top</span> CONSULTANDO...';
-            siegMostrarStatus('Consultando a chave na SIEG, aguarde...', 'info');
-
-            try {
-                const tarefas = [];
-                if (modo === 'xml' || modo === 'ambos') tarefas.push(siegBaixarXmlPorChave(chave, tipoDoc));
-                if ((modo === 'pdf' || modo === 'ambos') && tipoDoc !== 'nfse') tarefas.push(siegAbrirPdfPorChave(chave, tipoDoc));
-
-                await Promise.all(tarefas);
-                siegMostrarStatus(`Consulta concluída com sucesso para a chave <b>${chave}</b>.`, 'sucesso');
-            } catch (err) {
-                console.error('Erro na consulta SIEG:', err);
-                const msg = (err && err.message) || 'Erro desconhecido.';
-                siegMostrarStatus(`<b>Erro ao consultar a chave:</b> ${msg}`, 'erro');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = textoOriginalBtn;
-            }
-        }
-
-        // Requisição adaptada apontando o path para a nossa função Serverless na Vercel
-        async function siegBaixarXmlPorChave(chave, tipoDoc) {
-            const url = `${SIEG_BASE_URL}?path=BaixarXmls`;
-            const body = {
-                XmlType: SIEG_XML_TYPE[tipoDoc],
-                Chave: chave,
-                Take: 1,
-                Skip: 0,
-                Downloadevent: false
-            };
-            const data = await siegFetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            });
-
-            const lista = Array.isArray(data) ? data : (data.xmls || data.Xmls || data.result || []);
-            if (!lista || lista.length === 0) {
-                throw new Error('Nenhum XML foi retornado pela SIEG para essa chave.');
-            }
-            const blob = siegBase64ParaBlob(lista[0], 'application/xml');
-            siegBaixarArquivo(blob, `${chave}.xml`);
-        }
-
-        // Requisição adaptada apontando o path para a nossa função Serverless na Vercel
-        async function siegAbrirPdfPorChave(chave, tipoDoc) {
-            const endpoint = tipoDoc === 'cte' ? 'GerarDacteViaChave' : 'GerarDanfeViaChave';
-            const url = `${SIEG_BASE_URL}?path=api/Arquivos/${endpoint}&xmlKey=${chave}`;
-            const data = await siegFetch(url, { method: 'GET' });
-
-            const lista = Array.isArray(data) ? data : (data.pdfs || data.Pdfs || data.result || []);
-            if (!lista || lista.length === 0) {
-                throw new Error('Nenhum PDF foi retornado pela SIEG para essa chave.');
-            }
-            const blob = siegBase64ParaBlob(lista[0], 'application/pdf');
-            siegAbrirPdfEmNovaGuia(blob);
-        }
-
         function openCteModal() { document.getElementById('cteModal').classList.add('active'); document.getElementById('cteXmlInput').value = ''; document.getElementById('cteResults').style.display = 'none'; }
         function closeCteModal() { document.getElementById('cteModal').classList.remove('active'); }
 
@@ -1818,6 +1702,7 @@
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const emitCNPJ = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("CNPJ")[0]?.textContent || "";
             const shortName = emitNome.split(' ').slice(0, 2).join(' ') + " - MP"; 
             const ide = xmlDoc.getElementsByTagName("ide")[0];
             const dhEmi = ide.getElementsByTagName("dhEmi")[0]?.textContent || "";
@@ -1848,6 +1733,8 @@
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('sapNatOp').innerText = "Natureza da Operação: " + natOp;
+            document.getElementById('sapCnpjEmit').innerText = "CNPJ Emitente: " + formatCNPJ(emitCNPJ);
+            currentSapNF = { fornecedor: emitNome, valor: vNF, emissao: dhEmi ? dhEmi.split('T')[0] : '', referencia: nNF + "-" + serie, chave: chave, cnpj: emitCNPJ, natOp: natOp };
             const grid = document.getElementById('sapHeaderGrid');
             grid.innerHTML = `
                 ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
@@ -1898,7 +1785,66 @@
             }
             document.getElementById('sapResults').style.display = 'block';
             recalcSapItems();
-            xmlInput.value = '';
+        }
+
+        function formatCNPJ(cnpj) {
+            if(!cnpj) return "-";
+            const clean = String(cnpj).replace(/\D/g, '');
+            if(clean.length !== 14) return cnpj;
+            return clean.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5");
+        }
+
+        function sendSapToCorrection() {
+            if(!currentSapNF) { showModernAlert("Processe um XML primeiro."); return; }
+            document.getElementById('editId').value = "";
+            document.getElementById('modalTitle').innerText = "Nota para Correção (XML MP)";
+            document.getElementById('setor').value = "FISCAL";
+            document.getElementById('tipo').value = "MERCADORIA";
+            document.getElementById('fornecedor').value = currentSapNF.fornecedor;
+            document.getElementById('valor').value = currentSapNF.valor;
+            document.getElementById('dataEmissao').value = currentSapNF.emissao;
+            document.getElementById('referencia').value = currentSapNF.referencia;
+            document.getElementById('chave').value = currentSapNF.chave;
+            document.getElementById('pedido').value = "";
+            document.getElementById('linhaPedido').value = "";
+            document.getElementById('obsErro').value = "";
+            closeSapModal();
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function exportSapExcel() {
+            if(!currentSapNF || rawSapItems.length === 0) { showModernAlert("Processe um XML primeiro."); return; }
+            const useItemTotal = document.getElementById('sapBaseToggle').checked;
+            const wb = XLSX.utils.book_new();
+            const wsHeader = XLSX.utils.aoa_to_sheet([
+                ['Fornecedor', currentSapNF.fornecedor],
+                ['CNPJ Emitente', formatCNPJ(currentSapNF.cnpj)],
+                ['Natureza da Operação', currentSapNF.natOp],
+                ['Emissão', currentSapNF.emissao],
+                ['Ref. NF', currentSapNF.referencia],
+                ['Chave', currentSapNF.chave],
+                ['Valor Total (NF)', currentSapNF.valor]
+            ]);
+            XLSX.utils.book_append_sheet(wb, wsHeader, 'Cabeçalho');
+            const itemRows = rawSapItems.map(item => {
+                const base = useItemTotal ? item.vProd : item.vBC_XML;
+                const valICMS = round2(base * (item.pICMS / 100));
+                const valIPI = round2(base * (item.pIPI / 100));
+                const basePisCofins = round2(base - valICMS);
+                const valPis = round2(basePisCofins * 0.0165);
+                const valCofins = round2(basePisCofins * 0.0760);
+                const baseCbs = round2(basePisCofins - valPis - valCofins);
+                return {
+                    'ITEM': item.name, 'QTD': item.qCom, 'UN': item.uCom, 'VALOR PRODUTO (vProd)': item.vProd,
+                    'BASE ICMS': base, 'ICMS %': item.pICMS, 'VALOR ICMS': valICMS,
+                    'IPI %': item.pIPI, 'VALOR IPI': valIPI,
+                    'BASE PIS/COFINS': basePisCofins, 'PIS %': 1.65, 'VALOR PIS': valPis,
+                    'COFINS %': 7.60, 'VALOR COFINS': valCofins, 'BASE CBS/IBS': baseCbs
+                };
+            });
+            const wsItems = XLSX.utils.json_to_sheet(itemRows);
+            XLSX.utils.book_append_sheet(wb, wsItems, 'Itens e Impostos');
+            XLSX.writeFile(wb, `sap_mp_${(currentSapNF.referencia||'nota').replace('/','-')}.xlsx`);
         }
 
         function createSapBox(label, value, copy=true) {
@@ -2141,6 +2087,182 @@
         function exportServicesExcel() { const dateTitle = document.getElementById('checklistDate').value || 'Geral'; const tableRows = []; tableRows.push(["FORNECEDOR", "TIPO", "ENVIO NF", "STATUS PO", "RESPONSAVEL", "SETOR", "COD", "CONTA", "PEDIDO", "OBSERVACAO", "TEXTO SAP"]); const trs = document.querySelectorAll('#svcTableBody tr'); trs.forEach(tr => { if (tr.style.display !== 'none') { const inputs = tr.querySelectorAll('input, select'); if (inputs.length > 0) { const rowData = [ inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value ]; tableRows.push(rowData); } } }); const wb = XLSX.utils.book_new(); const ws = XLSX.utils.aoa_to_sheet(tableRows); XLSX.utils.book_append_sheet(wb, ws, "Checklist"); XLSX.writeFile(wb, `checklist_${dateTitle.replace('/', '-')}.xlsx`); }
         async function exportServicesPDF() { const { jsPDF } = window.jspdf; const doc = new jsPDF('l', 'mm', 'a4'); const dateTitle = document.getElementById('checklistDate').value || 'Geral'; doc.setFontSize(14); doc.text(`Checklist de Serviços Fixos - ${dateTitle}`, 14, 15); const tableColumn = ["FORN.", "TIPO", "ENVIO NF", "STATUS PO", "RESP", "SETOR", "COD", "CONTA", "PED", "OBS", "SAP"]; const tableRows = []; const trs = document.querySelectorAll('#svcTableBody tr'); trs.forEach(tr => { if (tr.style.display !== 'none') { const inputs = tr.querySelectorAll('input, select'); if (inputs.length > 0) { const rowData = [inputs[0].value, inputs[1].value, inputs[2].value, inputs[3].value, inputs[4].value, inputs[5].value, inputs[6].value, inputs[7].value, inputs[8].value, inputs[9].value, inputs[10].value]; tableRows.push(rowData); } } }); doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2, valign: 'middle' }, headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }, columnStyles: { 0: { cellWidth: 35 }, 9: { cellWidth: 40 } }, didParseCell: function(data) { if (data.section === 'body') { if (data.column.index === 2 || data.column.index === 3) { const text = (data.cell.raw || '').toString().toUpperCase(); if (text.includes('PENDENTE') || text.includes('CORREÇÃO')) { data.cell.styles.fillColor = [254, 226, 226]; data.cell.styles.textColor = [185, 28, 28]; } else if (text.includes('RECEBIDO') || text.includes('LANÇADO')) { data.cell.styles.fillColor = [220, 252, 231]; data.cell.styles.textColor = [22, 101, 52]; } else if (text.includes('NÃO PRESTADO')) { data.cell.styles.fillColor = [239, 246, 255]; data.cell.styles.textColor = [29, 78, 216]; } else if (text.includes('APROVAÇÃO')) { data.cell.styles.fillColor = [255, 251, 235]; data.cell.styles.textColor = [180, 83, 9]; } data.cell.styles.fontStyle = 'bold'; } } } }); doc.save(`checklist_${dateTitle.replace('/','-')}.pdf`); }
         
+        // ============================================================
+        // MÓDULO: CONTROLE DE FRETES
+        // ============================================================
+        async function openFretesModal() {
+            document.getElementById('fretesModal').classList.add('active');
+            const { data } = await supabase.from('controle_fretes').select('*').order('created_at', {ascending:true});
+            if(data) fretesData = data;
+            renderFretesTable();
+            updateFretesDashboard();
+        }
+        function closeFretesModal() { document.getElementById('fretesModal').classList.remove('active'); }
+
+        function calcVenceEmDias(dataVenc) {
+            if(!dataVenc) return null;
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const venc = new Date(dataVenc + 'T00:00:00');
+            return Math.round((venc - hoje) / 86400000);
+        }
+        function formatVenceEm(dataVenc) {
+            const diff = calcVenceEmDias(dataVenc);
+            if(diff === null) return '-';
+            if(diff < 0) return `Vencido há ${Math.abs(diff)}d`;
+            if(diff === 0) return 'Vence hoje';
+            return `${diff}d`;
+        }
+        function venceEmClass(dataVenc) {
+            const diff = calcVenceEmDias(dataVenc);
+            if(diff === null) return '';
+            if(diff < 0) return 'st-red';
+            if(diff <= 5) return 'st-yellow';
+            return 'st-green';
+        }
+
+        function renderFretesTable() {
+            const tbody = document.getElementById('fretesTableBody'); tbody.innerHTML = '';
+            if(fretesData.length === 0) { tbody.innerHTML = '<tr><td colspan="10" style="text-align:center; padding:20px; color:#999;">Nenhum frete cadastrado.</td></tr>'; return; }
+            const statusOpts = ['Pendente Fiscal','Lançado','Pendente Correção','Pendente Aprovação'];
+            fretesData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const createInput = (field, val, type='text') => `<input class="svc-input" type="${type}" value="${val || ''}" onchange="updateFreteData(${row.id}, '${field}', this.value)">`;
+                const statusSelect = `<select class="svc-select ${getFreteStatusClass(row.status)}" onchange="updateFreteData(${row.id}, 'status', this.value); this.className='svc-select ' + getFreteStatusClass(this.value); updateFretesDashboard();">${statusOpts.map(o=>`<option value="${o}" ${o===row.status?'selected':''}>${o}</option>`).join('')}</select>`;
+                tr.innerHTML = `<td><button class="icon-btn delete" onclick="openFreteDeleteModal(${index})" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>` +
+                    `<td>${createInput('prestador', row.prestador)}</td>` +
+                    `<td>${createInput('pedido', row.pedido)}</td>` +
+                    `<td>${createInput('fatura', row.fatura)}</td>` +
+                    `<td>${createInput('data_envio', row.data_envio, 'date')}</td>` +
+                    `<td>${createInput('data_venc', row.data_venc, 'date')}</td>` +
+                    `<td><span class="badge ${venceEmClass(row.data_venc)}" style="display:inline-block;padding:4px 10px;border-radius:6px;font-weight:700;font-size:0.75rem;">${formatVenceEm(row.data_venc)}</span></td>` +
+                    `<td>${createInput('qtd_ctes', row.qtd_ctes)}</td>` +
+                    `<td>${statusSelect}</td>` +
+                    `<td>${createInput('observacao', row.observacao)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateFreteData(id, field, value) {
+            const payload = (field === 'data_envio' || field === 'data_venc') ? { [field]: value || null } : { [field]: value };
+            await supabase.from('controle_fretes').update(payload).eq('id', id);
+            const row = fretesData.find(f => f.id === id); if(row) row[field] = value;
+            if(field === 'data_venc') renderFretesTable();
+        }
+
+        async function addFreteRow() {
+            const { data, error } = await supabase.from('controle_fretes').insert([{ prestador: '', status: 'Pendente Fiscal' }]).select();
+            if(!error && data) { fretesData.push(data[0]); renderFretesTable(); updateFretesDashboard(); }
+        }
+
+        function getFreteStatusClass(val) {
+            if(!val) return '';
+            if(val === 'Pendente Fiscal' || val === 'Pendente Correção') return 'st-red';
+            if(val === 'Lançado') return 'st-green';
+            if(val === 'Pendente Aprovação') return 'st-yellow';
+            return '';
+        }
+
+        function updateFretesDashboard() {
+            const ctx = document.getElementById('fretesChart').getContext('2d');
+            if(fretesChartInstance) fretesChartInstance.destroy();
+            const statusOpts = ['Pendente Fiscal','Lançado','Pendente Correção','Pendente Aprovação'];
+            const counts = statusOpts.map(s => fretesData.filter(f => f.status === s).length);
+            document.getElementById('fretesTotalCount').innerText = fretesData.length;
+            document.getElementById('fretesPendFiscalCount').innerText = counts[0];
+            document.getElementById('fretesLancadoCount').innerText = counts[1];
+            document.getElementById('fretesPendOutrosCount').innerText = counts[2] + counts[3];
+            fretesChartInstance = new Chart(ctx, { type:'doughnut', data:{ labels: statusOpts, datasets:[{ data: counts, backgroundColor:['#b91c1c','#166534','#ea580c','#ca8a04'], borderWidth:0 }]}, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}}}});
+        }
+
+        function openFreteDeleteModal(index) { freteToDeleteIndex = index; document.getElementById('freteDeleteModal').classList.add('active'); }
+        function closeFreteDeleteModal() { document.getElementById('freteDeleteModal').classList.remove('active'); freteToDeleteIndex = null; }
+        async function confirmFreteDelete() {
+            const row = fretesData[freteToDeleteIndex]; if(!row) { closeFreteDeleteModal(); return; }
+            await supabase.from('controle_fretes').delete().eq('id', row.id);
+            fretesData.splice(freteToDeleteIndex, 1);
+            renderFretesTable(); updateFretesDashboard();
+            closeFreteDeleteModal();
+        }
+
+        function openFretesResetModal() { document.getElementById('fretesResetModal').classList.add('active'); }
+        function closeFretesResetModal() { document.getElementById('fretesResetModal').classList.remove('active'); document.getElementById('fretesResetPassword').value = ''; }
+        async function confirmFretesReset() {
+            if(document.getElementById('fretesResetPassword').value === 'Aht2025*') {
+                const ids = fretesData.map(f => f.id);
+                if(ids.length) await supabase.from('controle_fretes').delete().in('id', ids);
+                fretesData = [];
+                renderFretesTable(); updateFretesDashboard();
+                closeFretesResetModal();
+            } else {
+                closeFretesResetModal();
+                document.getElementById('errorModal').classList.add('active');
+            }
+        }
+
+        function exportFretesExcel() {
+            const rows = fretesData.map(f => ({
+                'PRESTADOR': f.prestador || '', 'PEDIDO': f.pedido || '', 'FATURA': f.fatura || '',
+                'DATA ENVIO': formatDate(f.data_envio), 'DATA VENC.': formatDate(f.data_venc),
+                'VENCE EM': formatVenceEm(f.data_venc), 'QTD. CTES': f.qtd_ctes || '', 'STATUS': f.status || '', 'OBSERVAÇÃO': f.observacao || ''
+            }));
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.json_to_sheet(rows);
+            XLSX.utils.book_append_sheet(wb, ws, 'Controle de Fretes');
+            XLSX.writeFile(wb, 'controle_fretes.xlsx');
+        }
+
+        // ============================================================
+        // MÓDULO: IMPORTAÇÕES
+        // ============================================================
+        async function openImportsModal() {
+            document.getElementById('importsModal').classList.add('active');
+            const { data } = await supabase.from('importacoes').select('*').order('created_at', {ascending:true});
+            if(data) importsData = data;
+            renderImportsTable();
+        }
+        function closeImportsModal() { document.getElementById('importsModal').classList.remove('active'); }
+
+        function renderImportsTable() {
+            const tbody = document.getElementById('importsTableBody'); tbody.innerHTML = '';
+            if(importsData.length === 0) { tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; color:#999;">Nenhuma importação cadastrada.</td></tr>'; return; }
+            importsData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const createInput = (field, val, type='text') => `<input class="svc-input" type="${type}" value="${val || ''}" onchange="updateImportData(${row.id}, '${field}', this.value)">`;
+                tr.innerHTML = `<td><button class="icon-btn delete" onclick="openImportDeleteModal(${index})" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>` +
+                    `<td>${createInput('processo', row.processo)}</td>` +
+                    `<td>${createInput('duimp', row.duimp)}</td>` +
+                    `<td>${createInput('data_migo', row.data_migo, 'date')}</td>` +
+                    `<td>${createInput('data_miro', row.data_miro, 'date')}</td>` +
+                    `<td>${createInput('invoices', row.invoices)}</td>` +
+                    `<td>${createInput('pedidos', row.pedidos)}</td>` +
+                    `<td><input class="svc-input" maxlength="20" value="${row.status || ''}" onchange="updateImportData(${row.id}, 'status', this.value)"></td>` +
+                    `<td>${createInput('observacao', row.observacao)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateImportData(id, field, value) {
+            if(field === 'status' && value.length > 20) value = value.substring(0, 20);
+            const payload = (field === 'data_migo' || field === 'data_miro') ? { [field]: value || null } : { [field]: value };
+            await supabase.from('importacoes').update(payload).eq('id', id);
+            const row = importsData.find(i => i.id === id); if(row) row[field] = value;
+        }
+
+        async function addImportRow() {
+            const { data, error } = await supabase.from('importacoes').insert([{ processo: '' }]).select();
+            if(!error && data) { importsData.push(data[0]); renderImportsTable(); }
+        }
+
+        function openImportDeleteModal(index) { importToDeleteIndex = index; document.getElementById('importDeleteModal').classList.add('active'); }
+        function closeImportDeleteModal() { document.getElementById('importDeleteModal').classList.remove('active'); importToDeleteIndex = null; }
+        async function confirmImportDelete() {
+            const row = importsData[importToDeleteIndex]; if(!row) { closeImportDeleteModal(); return; }
+            await supabase.from('importacoes').delete().eq('id', row.id);
+            importsData.splice(importToDeleteIndex, 1);
+            renderImportsTable();
+            closeImportDeleteModal();
+        }
+
         let pendingDivergenceCtx = null;
 
         function processXML() { 
@@ -2192,6 +2314,7 @@
             const parser = new DOMParser();
             const xmlDoc = parser.parseFromString(xmlText, "text/xml");
             const emitNome = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("xNome")[0]?.textContent || "";
+            const emitCNPJCte = xmlDoc.getElementsByTagName("emit")[0]?.getElementsByTagName("CNPJ")[0]?.textContent || "";
             const shortNameCte = emitNome.split(' ').slice(0, 2).join(' ') + " - FRETE";
             const ide = xmlDoc.getElementsByTagName("ide")[0];
             const nCT = ide.getElementsByTagName("nCT")[0]?.textContent || "";
@@ -2223,6 +2346,8 @@
             const fmtDateDots = (d) => d ? d.split('T')[0].split('-').reverse().join('.') : "";
             const fmtMoney = (v) => parseFloat(v).toLocaleString('pt-BR', {minimumFractionDigits: 2});
             document.getElementById('cteNatOp').innerText = "Natureza: " + natOp;
+            document.getElementById('cteCnpjEmit').innerText = "CNPJ Emitente: " + formatCNPJ(emitCNPJCte);
+            currentCteNF = { fornecedor: emitNome, referencia: referenciaFormatada, emissao: dhEmi ? dhEmi.split('T')[0] : '', chave: chave, natOp: natOp, cnpj: emitCNPJCte };
             const grid = document.getElementById('cteHeaderGrid');
             grid.innerHTML = `
                 ${createSapBox("EMISSÃO", fmtDateDots(dhEmi))}
@@ -2259,7 +2384,29 @@
                 </div>
             `;
             document.getElementById('cteResults').style.display = 'block';
-            xmlInput.value = '';
+        }
+
+        function exportCteExcel() {
+            if(!currentCteNF || !rawCteData) { showModernAlert("Processe um CT-e primeiro."); return; }
+            const wb = XLSX.utils.book_new();
+            const wsHeader = XLSX.utils.aoa_to_sheet([
+                ['Fornecedor', currentCteNF.fornecedor],
+                ['CNPJ Emitente', formatCNPJ(currentCteNF.cnpj)],
+                ['Natureza', currentCteNF.natOp],
+                ['Emissão', currentCteNF.emissao],
+                ['Ref. NF', currentCteNF.referencia],
+                ['Chave', currentCteNF.chave],
+                ['Valor Total do Frete (vTPrest)', rawCteData.vTPrest]
+            ]);
+            XLSX.utils.book_append_sheet(wb, wsHeader, 'Cabeçalho');
+            const wsTax = XLSX.utils.json_to_sheet([{
+                'BASE ICMS': rawCteData.vBC_ICMS, 'ICMS %': rawCteData.pICMS, 'VALOR ICMS': rawCteData.vICMS,
+                'BASE PIS/COFINS': rawCteData.basePisCofins, 'PIS %': 1.65, 'VALOR PIS': rawCteData.vPis,
+                'COFINS %': 7.60, 'VALOR COFINS': rawCteData.vCofins,
+                'CBS %': rawCteData.pCBS, 'IBS %': rawCteData.pIBS, 'NET (BASE CBS/IBS)': rawCteData.net
+            }]);
+            XLSX.utils.book_append_sheet(wb, wsTax, 'Impostos');
+            XLSX.writeFile(wb, `cte_frete_${(currentCteNF.referencia||'cte').replace('/','-')}.xlsx`);
         }
 
         // ============================================================
