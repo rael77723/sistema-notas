@@ -712,7 +712,7 @@
 
     <header>
         <div class="header-left">
-            <h1>AHT - Notas Fiscais para Correção</h1>
+            <h1 id="siteTitle" onclick="handleSecretTitleClick()" style="cursor:default; user-select:none;">AHT - Notas Fiscais para Correção</h1>
             <button class="theme-btn" onclick="toggleDarkMode()" title="Alternar Modo Noturno">
                 <span class="material-icons-round" id="themeIcon">dark_mode</span>
             </button>
@@ -1090,6 +1090,58 @@
     </div>
 
     <div class="modal-overlay" id="importDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir importação?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeImportDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmImportDelete()">Excluir</button></div></div></div>
+
+    <!-- ============================================================
+         ABA SECRETA — INTEGRAÇÃO COM TEAMS
+         Acionada com 5 cliques no título do site.
+    ============================================================ -->
+    <div class="modal-overlay" id="secretPasswordModal">
+        <div class="modal" style="max-width:360px;text-align:center;padding:2rem;">
+            <h3 style="margin-bottom:1rem;">Acesso Restrito</h3>
+            <p style="color:#64748b;margin-bottom:1rem;font-size:0.9rem;">Painel de integração com o Teams.</p>
+            <input type="password" id="secretPasswordInput" class="input-field" style="text-align:center;" placeholder="Senha..." onkeydown="if(event.key==='Enter') confirmSecretPassword()">
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:1.5rem;">
+                <button class="btn-ghost" onclick="closeSecretPasswordModal()">Cancelar</button>
+                <button class="btn-primary" onclick="confirmSecretPassword()">Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="teamsAdminModal">
+        <div class="modal kpi-modal-container" style="max-width:560px;">
+            <div class="modal-header">
+                <h2><span class="material-icons-round" style="vertical-align:-6px;">groups</span> Integração Teams</h2>
+                <button class="close-btn" onclick="closeTeamsAdminPanel()"><span>&times;</span></button>
+            </div>
+            <div class="services-modal-body" style="padding:1.5rem; display:flex; flex-direction:column; gap:14px;">
+                <p style="color:#64748b; font-size:0.85rem; margin-bottom:4px;">
+                    Envio manual de relatórios para os canais do Teams via Power Automate. O envio automático por tipo de NF (Frete / Material / Serviço) acontece sozinho ao cadastrar uma nova nota para correção.
+                </p>
+
+                <button class="btn-primary teams-admin-btn" onclick="enviarFretesRelatorio()">
+                    <span class="material-icons-round">receipt_long</span>
+                    Enviar Controle de Fretes (PDF + Excel) → ❗📊 KPIs
+                </button>
+
+                <button class="btn-primary teams-admin-btn" onclick="enviarImportacoesRelatorio()">
+                    <span class="material-icons-round">flight_land</span>
+                    Enviar Importações (PDF) → ❗📊 KPIs
+                </button>
+
+                <button class="btn-primary teams-admin-btn" onclick="enviarNotasPendentesRelatorio()">
+                    <span class="material-icons-round">fact_check</span>
+                    Enviar Notas Pendentes de Correção (PDF) → ❗📊 KPIs
+                </button>
+
+                <div id="teamsAdminStatus" style="min-height:20px; font-size:0.85rem; font-weight:600; text-align:center;"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .teams-admin-btn { display:flex; align-items:center; gap:10px; justify-content:flex-start; width:100%; text-align:left; padding:14px 16px; font-size:0.9rem; }
+        .teams-admin-btn:disabled { opacity:0.6; cursor:not-allowed; }
+    </style>
 
     <div class="net-modal-overlay" id="netModal">
         <div class="net-modal">
@@ -1481,7 +1533,25 @@
         // ============================================================
         const SUPABASE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
-        
+
+        // ============================================================
+        // INTEGRAÇÃO TEAMS — WEBHOOKS POWER AUTOMATE (ABA SECRETA)
+        // ============================================================
+        const TEAMS_WEBHOOKS = {
+            KPI: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ec946d97bef441e481efd869a0b0b40a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ncz1pX-XIGH0tBFMUSr_spysO2Zm944UcoZmv1qBFJ8',
+            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/87d55ec5e98f4e6ba3903286add80c89/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=a0taQ6G51aTgQSyTlMWoGKV2tBv751UjEvVHiv7crDM',
+            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8d552317b98d4c798a39c1d1a2af663e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=EgCnUVbGqDEu6ShjiFDbcj8lzI-Ysf4F6s6AUC4oWhE',
+            NFS_SERVICO: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9e637954adb94079a76bde4ad8d67877/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=eyOcKb0hFfAouWtI-jMQhD63Og9P4nWj-9vaOxJKRmA',
+            IMP_IMPORTACOES: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/af71801990e34a58bdcc8f30fb508396/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=p3EDd9mKiOm29iaYHNHTgjGi5F9uyn7PtEiDL5trrEc'
+        };
+        // Mapeia o campo "tipo" da nota para o canal de Teams e seu rótulo de exibição.
+        const TIPO_NF_CANAL = {
+            'CTE':        { webhookKey: 'CTE_FRETE',    nomeCanal: '🚚 CTe - Frete' },
+            'MERCADORIA': { webhookKey: 'NFE_MATERIAL', nomeCanal: '📦 NFe - Material' },
+            'SERVIÇO':    { webhookKey: 'NFS_SERVICO',  nomeCanal: '🛠️ NFs - Serviço' }
+        };
+        const SECRET_TAB_PASSWORD = 'Aht2025*';
+
         let supabase;
         let nfs = [], servicesData = [], chartInstance = null, checklistChartInstance = null, itemToDeleteId = null, isDeletingService = false;
         let rawSapItems = [];
@@ -1999,7 +2069,10 @@
             if(id) {
                 await supabase.from('notas').update(data).eq('id', id); 
             } else {
-                await supabase.from('notas').insert([data]); 
+                const { data: inserted, error: insertErr } = await supabase.from('notas').insert([data]).select();
+                if (!insertErr && inserted && inserted[0]) {
+                    dispatchNotaTeamsWebhook(inserted[0]); // dispara para o canal do Teams conforme o tipo da NF
+                }
             }
             
             if(pendingDivergenceCtx) {
@@ -3639,6 +3712,264 @@
             document.getElementById('updateBubble').style.display = 'none';
         }
         window.addEventListener('load', checkUpdateBubble);
+    </script>
+
+    <!-- ============================================================
+         SCRIPT — INTEGRAÇÃO TEAMS (ABA SECRETA + WEBHOOKS)
+    ============================================================ -->
+    <script>
+        // ---------- Gatilho dos 5 cliques no título ----------
+        let secretClickCount = 0;
+        let secretClickTimer = null;
+        function handleSecretTitleClick() {
+            secretClickCount++;
+            clearTimeout(secretClickTimer);
+            secretClickTimer = setTimeout(() => { secretClickCount = 0; }, 2000); // janela de 2s entre cliques
+            if (secretClickCount >= 5) {
+                secretClickCount = 0;
+                clearTimeout(secretClickTimer);
+                document.getElementById('secretPasswordInput').value = '';
+                document.getElementById('secretPasswordModal').classList.add('active');
+                document.getElementById('secretPasswordInput').focus();
+            }
+        }
+        function closeSecretPasswordModal() {
+            document.getElementById('secretPasswordModal').classList.remove('active');
+        }
+        function confirmSecretPassword() {
+            const val = document.getElementById('secretPasswordInput').value;
+            if (val === SECRET_TAB_PASSWORD) {
+                closeSecretPasswordModal();
+                openTeamsAdminPanel();
+            } else {
+                closeSecretPasswordModal();
+                document.getElementById('errorModal').classList.add('active');
+            }
+        }
+        function openTeamsAdminPanel() {
+            document.getElementById('teamsAdminStatus').innerText = '';
+            document.getElementById('teamsAdminModal').classList.add('active');
+        }
+        function closeTeamsAdminPanel() {
+            document.getElementById('teamsAdminModal').classList.remove('active');
+        }
+
+        function setAdminStatus(msg, isError) {
+            const el = document.getElementById('teamsAdminStatus');
+            el.innerText = msg;
+            el.style.color = isError ? '#b91c1c' : '#047857';
+        }
+
+        function setAdminButtonsDisabled(disabled) {
+            document.querySelectorAll('.teams-admin-btn').forEach(b => b.disabled = disabled);
+        }
+
+        // ---------- Helpers de geração de arquivo em base64 ----------
+        // jsPDF -> base64 puro (sem o prefixo "data:application/pdf;filename=...;base64,")
+        function pdfDocToBase64(doc) {
+            const dataUri = doc.output('datauristring');
+            return dataUri.substring(dataUri.indexOf(',') + 1);
+        }
+        // SheetJS workbook -> base64 puro
+        function workbookToBase64(wb) {
+            return XLSX.write(wb, { bookType: 'xlsx', type: 'base64' });
+        }
+
+        // ---------- Envio genérico ao webhook do Power Automate ----------
+        async function postToTeamsWebhook(webhookUrl, payload) {
+            const resp = await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            if (!resp.ok) throw new Error(`Falha no envio (HTTP ${resp.status})`);
+            return resp;
+        }
+
+        // ---------- Relatório: Controle de Fretes (PDF + Excel) → KPI ----------
+        async function enviarFretesRelatorio() {
+            setAdminButtonsDisabled(true);
+            setAdminStatus('Gerando e enviando...', false);
+            try {
+                const { data } = await supabase.from('controle_fretes').select('*').order('created_at', { ascending: true });
+                const rows = data || [];
+
+                // PDF
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+                doc.setFontSize(14);
+                doc.text('Controle de Fretes - AHT', 14, 15);
+                doc.autoTable({
+                    head: [['Prestador', 'Pedido', 'Fatura', 'Data Envio', 'Data Venc.', 'Vence em', 'Qtd. CTEs', 'Status', 'Observação']],
+                    body: rows.map(f => [
+                        f.prestador || '-', f.pedido || '-', f.fatura || '-',
+                        formatDate(f.data_envio), formatDate(f.data_venc), formatVenceEm(f.data_venc),
+                        f.qtd_ctes || '-', f.status || '-', f.observacao || '-'
+                    ]),
+                    startY: 20, theme: 'grid', styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }
+                });
+                const pdfBase64 = pdfDocToBase64(doc);
+
+                // Excel
+                const excelRows = rows.map(f => ({
+                    'PRESTADOR': f.prestador || '', 'PEDIDO': f.pedido || '', 'FATURA': f.fatura || '',
+                    'DATA ENVIO': formatDate(f.data_envio), 'DATA VENC.': formatDate(f.data_venc),
+                    'VENCE EM': formatVenceEm(f.data_venc), 'QTD. CTES': f.qtd_ctes || '', 'STATUS': f.status || '', 'OBSERVAÇÃO': f.observacao || ''
+                }));
+                const wb = XLSX.utils.book_new();
+                const ws = XLSX.utils.json_to_sheet(excelRows);
+                XLSX.utils.book_append_sheet(wb, ws, 'Controle de Fretes');
+                const excelBase64 = workbookToBase64(wb);
+
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
+                    tipo: 'relatorio_fretes',
+                    canal: 'KPI',
+                    titulo: 'Controle de Fretes - AHT',
+                    resumo: `${rows.length} frete(s) cadastrado(s).`,
+                    enviadoEm: new Date().toISOString(),
+                    arquivos: [
+                        { nomeArquivo: 'controle_fretes.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 },
+                        { nomeArquivo: 'controle_fretes.xlsx', tipoConteudo: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', conteudoBase64: excelBase64 }
+                    ]
+                });
+                setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
+            } catch (err) {
+                console.error(err);
+                setAdminStatus('Erro ao enviar: ' + err.message, true);
+            } finally {
+                setAdminButtonsDisabled(false);
+            }
+        }
+
+        // ---------- Relatório: Importações (somente PDF) → KPI ----------
+        async function enviarImportacoesRelatorio() {
+            setAdminButtonsDisabled(true);
+            setAdminStatus('Gerando e enviando...', false);
+            try {
+                const { data } = await supabase.from('importacoes').select('*').order('created_at', { ascending: true });
+                const rows = data || [];
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+                doc.setFontSize(14);
+                doc.text('Importações - AHT', 14, 15);
+                doc.autoTable({
+                    head: [['Processo', 'DUIMP', 'Data MIGO', 'Data MIRO', 'Invoices', 'Pedidos', 'Status', 'Observação']],
+                    body: rows.map(i => [
+                        i.processo || '-', i.duimp || '-', formatDate(i.data_migo), formatDate(i.data_miro),
+                        i.invoices || '-', i.pedidos || '-', i.status || '-', i.observacao || '-'
+                    ]),
+                    startY: 20, theme: 'grid', styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold', halign: 'center' }
+                });
+                const pdfBase64 = pdfDocToBase64(doc);
+
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
+                    tipo: 'relatorio_importacoes',
+                    canal: 'KPI',
+                    titulo: 'Importações - AHT',
+                    resumo: `${rows.length} importação(ões) cadastrada(s).`,
+                    enviadoEm: new Date().toISOString(),
+                    arquivos: [
+                        { nomeArquivo: 'importacoes.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 }
+                    ]
+                });
+                setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
+            } catch (err) {
+                console.error(err);
+                setAdminStatus('Erro ao enviar: ' + err.message, true);
+            } finally {
+                setAdminButtonsDisabled(false);
+            }
+        }
+
+        // ---------- Relatório: Notas Pendentes de Correção (somente PDF) → KPI ----------
+        async function enviarNotasPendentesRelatorio() {
+            setAdminButtonsDisabled(true);
+            setAdminStatus('Gerando e enviando...', false);
+            try {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('l', 'mm', 'a4');
+                doc.setFontSize(14);
+                doc.text('Notas para Correção - AHT', 14, 15);
+                doc.autoTable({
+                    head: [['Status', 'Setor', 'Tipo', 'Fornecedor', 'Pedido', 'Valor', 'Emissão', 'Vencimento', 'Erro']],
+                    body: nfs.map(nf => [
+                        nf.corrigido ? 'Corrigido' : 'Pendente', nf.setor || '-', nf.tipo || '-', nf.fornecedor || '-',
+                        nf.pedido || '-', nf.valor || '-', formatDate(nf.emissao), formatDate(nf.vencimento), nf.obs_erro || '-'
+                    ]),
+                    startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2 },
+                    headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold', halign: 'center' }
+                });
+                const pdfBase64 = pdfDocToBase64(doc);
+
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
+                    tipo: 'relatorio_notas_pendentes',
+                    canal: 'KPI',
+                    titulo: 'Notas para Correção - AHT',
+                    resumo: `${nfs.length} nota(s) na listagem.`,
+                    enviadoEm: new Date().toISOString(),
+                    arquivos: [
+                        { nomeArquivo: 'notas_correcao.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 }
+                    ]
+                });
+                setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
+            } catch (err) {
+                console.error(err);
+                setAdminStatus('Erro ao enviar: ' + err.message, true);
+            } finally {
+                setAdminButtonsDisabled(false);
+            }
+        }
+
+        // ---------- Envio automático por tipo de NF ao cadastrar nova nota ----------
+        // Chamado pelo listener do formulário (nfForm) somente quando é um INSERT (nota nova).
+        async function dispatchNotaTeamsWebhook(nf) {
+            const alvo = TIPO_NF_CANAL[nf.tipo];
+            if (!alvo) return; // tipo sem canal configurado (ex.: nenhum, ignora)
+            const webhookUrl = TEAMS_WEBHOOKS[alvo.webhookKey];
+            if (!webhookUrl) return;
+
+            const card = {
+                type: 'AdaptiveCard',
+                $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                version: '1.4',
+                body: [
+                    { type: 'TextBlock', text: `📄 Nota para Correção — ${nf.tipo}`, weight: 'Bolder', size: 'Medium', wrap: true },
+                    {
+                        type: 'FactSet',
+                        facts: [
+                            { title: 'Fornecedor:', value: nf.fornecedor || '-' },
+                            { title: 'Setor:', value: nf.setor || '-' },
+                            { title: 'Pedido:', value: nf.pedido || '-' },
+                            { title: 'Valor:', value: String(nf.valor || '-') },
+                            { title: 'Emissão:', value: formatDate(nf.emissao) },
+                            { title: 'Vencimento:', value: formatDate(nf.vencimento) },
+                            { title: 'Erro:', value: nf.obs_erro || '-' }
+                        ]
+                    }
+                ],
+                actions: [
+                    { type: 'Action.Submit', title: '✅ Corrigido', data: { notaId: nf.id, acao: 'CORRIGIDO' } },
+                    { type: 'Action.Submit', title: '🔎 Em Análise', data: { notaId: nf.id, acao: 'EM_ANALISE' } }
+                ]
+            };
+
+            try {
+                await postToTeamsWebhook(webhookUrl, {
+                    tipo: 'nota_correcao',
+                    canal: alvo.webhookKey,
+                    notaId: nf.id,
+                    resumo: `Nova nota (${nf.tipo}) do fornecedor ${nf.fornecedor || '-'} adicionada para correção.`,
+                    card: card
+                });
+                // Marca que a notificação foi disparada, para não duplicar em futuras edições.
+                await supabase.from('notas').update({ notificado_teams_em: new Date().toISOString() }).eq('id', nf.id);
+            } catch (err) {
+                console.error('Falha ao notificar Teams:', err);
+            }
+        }
     </script>
 
 </body>
