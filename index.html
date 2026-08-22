@@ -3776,63 +3776,79 @@
         }
 
         // ---------- Envio genérico ao webhook do Power Automate ----------
-        async function postToTeamsWebhook(webhookUrl, payload) {
+        // IMPORTANTE: os fluxos do Power Automate (ação "Post card in a chat or channel")
+        // esperam o próprio Adaptive Card na RAIZ do corpo enviado — sem nenhum envelope em volta.
+        async function postToTeamsWebhook(webhookUrl, cardPayload) {
             const resp = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(cardPayload)
             });
             if (!resp.ok) throw new Error(`Falha no envio (HTTP ${resp.status})`);
             return resp;
         }
 
-        // ---------- Relatório: Controle de Fretes (PDF + Excel) → KPI ----------
+        // ---------- Helper: monta uma tabela em Adaptive Card (schema 1.5) ----------
+        // Limita a quantidade de linhas exibidas para não gerar um cartão gigante no Teams.
+        function buildAdaptiveTable(headers, rows, maxRows = 20) {
+            const shown = rows.slice(0, maxRows);
+            const columns = headers.map(() => ({ width: 1 }));
+            const headerRow = {
+                type: 'TableRow',
+                cells: headers.map(h => ({ type: 'TableCell', items: [{ type: 'TextBlock', text: h, weight: 'Bolder', wrap: true, size: 'Small' }] }))
+            };
+            const dataRows = shown.map(rowValues => ({
+                type: 'TableRow',
+                cells: rowValues.map(v => ({ type: 'TableCell', items: [{ type: 'TextBlock', text: String(v ?? '-'), wrap: true, size: 'Small' }] }))
+            }));
+            const table = {
+                type: 'Table',
+                columns: columns,
+                rows: [headerRow, ...dataRows],
+                firstRowAsHeaders: false
+            };
+            const truncNote = rows.length > maxRows
+                ? [{ type: 'TextBlock', text: `Exibindo ${maxRows} de ${rows.length} registro(s). Use o site para ver a lista completa.`, isSubtle: true, size: 'Small', wrap: true }]
+                : [];
+            return [table, ...truncNote];
+        }
+
+        function buildSummaryCard(titulo, factRows, tableHeaders, tableRows) {
+            return {
+                type: 'AdaptiveCard',
+                $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
+                version: '1.5',
+                body: [
+                    { type: 'TextBlock', text: titulo, weight: 'Bolder', size: 'Medium', wrap: true },
+                    { type: 'FactSet', facts: factRows },
+                    ...buildAdaptiveTable(tableHeaders, tableRows)
+                ]
+            };
+        }
+
+        // ---------- Relatório: Controle de Fretes (cartão-resumo) → KPI ----------
         async function enviarFretesRelatorio() {
             setAdminButtonsDisabled(true);
             setAdminStatus('Gerando e enviando...', false);
             try {
                 const { data } = await supabase.from('controle_fretes').select('*').order('created_at', { ascending: true });
                 const rows = data || [];
+                const statusOpts = ['Pendente Fiscal', 'Lançado', 'Pendente Correção', 'Pendente Aprovação'];
+                const counts = statusOpts.map(s => rows.filter(f => f.status === s).length);
 
-                // PDF
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('l', 'mm', 'a4');
-                doc.setFontSize(14);
-                doc.text('Controle de Fretes - AHT', 14, 15);
-                doc.autoTable({
-                    head: [['Prestador', 'Pedido', 'Fatura', 'Data Envio', 'Data Venc.', 'Vence em', 'Qtd. CTEs', 'Status', 'Observação']],
-                    body: rows.map(f => [
-                        f.prestador || '-', f.pedido || '-', f.fatura || '-',
-                        formatDate(f.data_envio), formatDate(f.data_venc), formatVenceEm(f.data_venc),
-                        f.qtd_ctes || '-', f.status || '-', f.observacao || '-'
-                    ]),
-                    startY: 20, theme: 'grid', styles: { fontSize: 8, cellPadding: 2 },
-                    headStyles: { fillColor: [185, 28, 28], textColor: 255, fontStyle: 'bold', halign: 'center' }
-                });
-                const pdfBase64 = pdfDocToBase64(doc);
+                const card = buildSummaryCard(
+                    '📊 Controle de Fretes - AHT',
+                    [
+                        { title: 'Total de fretes:', value: String(rows.length) },
+                        { title: 'Pendente Fiscal:', value: String(counts[0]) },
+                        { title: 'Lançado:', value: String(counts[1]) },
+                        { title: 'Pend. Correção/Aprovação:', value: String(counts[2] + counts[3]) }
+                    ],
+                    ['Prestador', 'Pedido', 'Fatura', 'Venc.', 'Vence em', 'Status'],
+                    rows.map(f => [f.prestador, f.pedido, f.fatura, formatDate(f.data_venc), formatVenceEm(f.data_venc), f.status])
+                );
 
-                // Excel
-                const excelRows = rows.map(f => ({
-                    'PRESTADOR': f.prestador || '', 'PEDIDO': f.pedido || '', 'FATURA': f.fatura || '',
-                    'DATA ENVIO': formatDate(f.data_envio), 'DATA VENC.': formatDate(f.data_venc),
-                    'VENCE EM': formatVenceEm(f.data_venc), 'QTD. CTES': f.qtd_ctes || '', 'STATUS': f.status || '', 'OBSERVAÇÃO': f.observacao || ''
-                }));
-                const wb = XLSX.utils.book_new();
-                const ws = XLSX.utils.json_to_sheet(excelRows);
-                XLSX.utils.book_append_sheet(wb, ws, 'Controle de Fretes');
-                const excelBase64 = workbookToBase64(wb);
-
-                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
-                    tipo: 'relatorio_fretes',
-                    canal: 'KPI',
-                    titulo: 'Controle de Fretes - AHT',
-                    resumo: `${rows.length} frete(s) cadastrado(s).`,
-                    enviadoEm: new Date().toISOString(),
-                    arquivos: [
-                        { nomeArquivo: 'controle_fretes.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 },
-                        { nomeArquivo: 'controle_fretes.xlsx', tipoConteudo: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', conteudoBase64: excelBase64 }
-                    ]
-                });
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
                 setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
             } catch (err) {
                 console.error(err);
@@ -3842,7 +3858,7 @@
             }
         }
 
-        // ---------- Relatório: Importações (somente PDF) → KPI ----------
+        // ---------- Relatório: Importações (cartão-resumo) → KPI ----------
         async function enviarImportacoesRelatorio() {
             setAdminButtonsDisabled(true);
             setAdminStatus('Gerando e enviando...', false);
@@ -3850,31 +3866,14 @@
                 const { data } = await supabase.from('importacoes').select('*').order('created_at', { ascending: true });
                 const rows = data || [];
 
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('l', 'mm', 'a4');
-                doc.setFontSize(14);
-                doc.text('Importações - AHT', 14, 15);
-                doc.autoTable({
-                    head: [['Processo', 'DUIMP', 'Data MIGO', 'Data MIRO', 'Invoices', 'Pedidos', 'Status', 'Observação']],
-                    body: rows.map(i => [
-                        i.processo || '-', i.duimp || '-', formatDate(i.data_migo), formatDate(i.data_miro),
-                        i.invoices || '-', i.pedidos || '-', i.status || '-', i.observacao || '-'
-                    ]),
-                    startY: 20, theme: 'grid', styles: { fontSize: 8, cellPadding: 2 },
-                    headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold', halign: 'center' }
-                });
-                const pdfBase64 = pdfDocToBase64(doc);
+                const card = buildSummaryCard(
+                    '🌐 Importações - AHT',
+                    [{ title: 'Total de importações:', value: String(rows.length) }],
+                    ['Processo', 'DUIMP', 'MIGO', 'MIRO', 'Status'],
+                    rows.map(i => [i.processo, i.duimp, formatDate(i.data_migo), formatDate(i.data_miro), i.status])
+                );
 
-                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
-                    tipo: 'relatorio_importacoes',
-                    canal: 'KPI',
-                    titulo: 'Importações - AHT',
-                    resumo: `${rows.length} importação(ões) cadastrada(s).`,
-                    enviadoEm: new Date().toISOString(),
-                    arquivos: [
-                        { nomeArquivo: 'importacoes.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 }
-                    ]
-                });
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
                 setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
             } catch (err) {
                 console.error(err);
@@ -3884,36 +3883,24 @@
             }
         }
 
-        // ---------- Relatório: Notas Pendentes de Correção (somente PDF) → KPI ----------
+        // ---------- Relatório: Notas Pendentes de Correção (cartão-resumo) → KPI ----------
         async function enviarNotasPendentesRelatorio() {
             setAdminButtonsDisabled(true);
             setAdminStatus('Gerando e enviando...', false);
             try {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF('l', 'mm', 'a4');
-                doc.setFontSize(14);
-                doc.text('Notas para Correção - AHT', 14, 15);
-                doc.autoTable({
-                    head: [['Status', 'Setor', 'Tipo', 'Fornecedor', 'Pedido', 'Valor', 'Emissão', 'Vencimento', 'Erro']],
-                    body: nfs.map(nf => [
-                        nf.corrigido ? 'Corrigido' : 'Pendente', nf.setor || '-', nf.tipo || '-', nf.fornecedor || '-',
-                        nf.pedido || '-', nf.valor || '-', formatDate(nf.emissao), formatDate(nf.vencimento), nf.obs_erro || '-'
-                    ]),
-                    startY: 20, theme: 'grid', styles: { fontSize: 7, cellPadding: 2 },
-                    headStyles: { fillColor: [79, 70, 229], textColor: 255, fontStyle: 'bold', halign: 'center' }
-                });
-                const pdfBase64 = pdfDocToBase64(doc);
+                const pendentes = nfs.filter(nf => !nf.corrigido).length;
 
-                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, {
-                    tipo: 'relatorio_notas_pendentes',
-                    canal: 'KPI',
-                    titulo: 'Notas para Correção - AHT',
-                    resumo: `${nfs.length} nota(s) na listagem.`,
-                    enviadoEm: new Date().toISOString(),
-                    arquivos: [
-                        { nomeArquivo: 'notas_correcao.pdf', tipoConteudo: 'application/pdf', conteudoBase64: pdfBase64 }
-                    ]
-                });
+                const card = buildSummaryCard(
+                    '📄 Notas para Correção - AHT',
+                    [
+                        { title: 'Total na listagem:', value: String(nfs.length) },
+                        { title: 'Pendentes:', value: String(pendentes) }
+                    ],
+                    ['Tipo', 'Setor', 'Fornecedor', 'Valor', 'Venc.', 'Erro'],
+                    nfs.map(nf => [nf.tipo, nf.setor, nf.fornecedor, nf.valor, formatDate(nf.vencimento), nf.obs_erro])
+                );
+
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
                 setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
             } catch (err) {
                 console.error(err);
@@ -3957,13 +3944,9 @@
             };
 
             try {
-                await postToTeamsWebhook(webhookUrl, {
-                    tipo: 'nota_correcao',
-                    canal: alvo.webhookKey,
-                    notaId: nf.id,
-                    resumo: `Nova nota (${nf.tipo}) do fornecedor ${nf.fornecedor || '-'} adicionada para correção.`,
-                    card: card
-                });
+                // IMPORTANTE: o fluxo "Post card in a chat or channel" espera o próprio
+                // Adaptive Card na RAIZ do corpo da requisição (sem nenhum envelope em volta).
+                await postToTeamsWebhook(webhookUrl, card);
                 // Marca que a notificação foi disparada, para não duplicar em futuras edições.
                 await supabase.from('notas').update({ notificado_teams_em: new Date().toISOString() }).eq('id', nf.id);
             } catch (err) {
