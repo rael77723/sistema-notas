@@ -1247,6 +1247,7 @@
                         <div class="form-group"><label>Vencimento</label><input type="date" id="dataVencimento" class="input-field"></div>
                         <div class="form-group"><label>Ref.</label><input type="text" id="referencia" class="input-field"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Chave</label><input type="text" id="chave" class="input-field"></div>
+                        <div class="form-group" style="grid-column: span 2;"><label>Anexar Nota Fiscal (PDF/Imagem)</label><input type="file" id="anexoNF" class="input-field" accept="application/pdf,image/*"></div>
                         <div class="form-group"><label>Resp.</label><input type="text" id="respCorrecao" class="input-field"></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Erro</label><textarea id="obsErro" rows="2" class="input-field"></textarea></div>
                         <div class="form-group" style="grid-column: span 2;"><label>Correção</label><textarea id="obsCorrecao" rows="2" class="input-field"></textarea></div>
@@ -1550,6 +1551,17 @@
             'MERCADORIA': { webhookKey: 'NFE_MATERIAL', nomeCanal: '📦 NFe - Material' },
             'SERVIÇO':    { webhookKey: 'NFS_SERVICO',  nomeCanal: '🛠️ NFs - Serviço' }
         };
+        // Webhooks do fluxo "de resposta" (o que só posta uma mensagem de aviso quando alguém
+        // clica em Corrigido / Em Análise / Lançado no card). Cole aqui as URLs depois de criar
+        // os 3 fluxos novos no Power Automate — enquanto estiverem vazias, os botões ficam ocultos no card.
+        const TEAMS_RESPOSTA_WEBHOOKS = {
+            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f14ed636527b4f8aa345f1614c981f8c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=gnM8UDzDhSm8CAvKBmUreUj-5jEpDsrLOAioe6nOGv0',
+            NFE_MATERIAL: '',
+            NFS_SERVICO: ''
+        };
+        // URL da "página-ponte" (confirmar.html), hospedada no Supabase Storage — converte o clique
+        // (GET) do card do Teams em uma chamada POST para o fluxo de resposta correto.
+        const PAGINA_PONTE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co/storage/v1/object/public/site-paginas/confirmar.html';
         const SECRET_TAB_PASSWORD = 'Aht2025*';
 
         let supabase;
@@ -2065,6 +2077,20 @@
                 resp_correcao:document.getElementById('respCorrecao').value, 
                 obs_correcao:document.getElementById('obsCorrecao').value 
             }; 
+
+            // Se um arquivo de anexo (NF em PDF/imagem) foi selecionado, envia para o Supabase Storage
+            // e guarda o link público + o caminho do arquivo (usado depois para poder excluir).
+            const anexoInput = document.getElementById('anexoNF');
+            if (anexoInput && anexoInput.files && anexoInput.files[0]) {
+                try {
+                    const { url, path } = await uploadAnexoNota(anexoInput.files[0]);
+                    data.anexo_url = url;
+                    data.anexo_path = path;
+                } catch (err) {
+                    console.error('Falha ao enviar anexo:', err);
+                    showModernAlert('Não foi possível enviar o anexo da nota. A nota será salva sem o anexo.', true);
+                }
+            }
             
             if(id) {
                 await supabase.from('notas').update(data).eq('id', id); 
@@ -2124,7 +2150,32 @@
         function openResetModal() { document.getElementById('resetModal').classList.add('active'); }
         function closeResetModal() { document.getElementById('resetModal').classList.remove('active'); document.getElementById('resetPassword').value = ''; }
         function openDeleteModal(index, svc) { if(svc) { itemToDeleteId = servicesData[index].id; isDeletingService = true; } else { itemToDeleteId = nfs[index].id; isDeletingService = false; } document.getElementById('deleteModal').classList.add('active'); }
-        async function confirmDeleteRow() { const tbl = isDeletingService ? 'servicos' : 'notas'; await supabase.from(tbl).delete().eq('id', itemToDeleteId); if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); } closeDeleteModal(); }
+        async function confirmDeleteRow() {
+            const tbl = isDeletingService ? 'servicos' : 'notas';
+            // Antes de excluir a nota, se ela tiver um anexo no Storage, apaga o arquivo também
+            // (assim não fica ocupando espaço do plano gratuito do Supabase depois que a nota já foi tratada).
+            if (!isDeletingService) {
+                const nfAlvo = nfs.find(n => n.id === itemToDeleteId);
+                if (nfAlvo && nfAlvo.anexo_path) {
+                    try { await supabase.storage.from('notas-anexos').remove([nfAlvo.anexo_path]); }
+                    catch (err) { console.error('Falha ao excluir anexo do Storage:', err); }
+                }
+            }
+            await supabase.from(tbl).delete().eq('id', itemToDeleteId);
+            if(isDeletingService) { servicesData = servicesData.filter(s=>s.id!==itemToDeleteId); renderServicesTable(); updateChecklistDashboard(); } else { nfs = nfs.filter(n=>n.id!==itemToDeleteId); renderTable(); }
+            closeDeleteModal();
+        }
+
+        // Envia o arquivo da nota fiscal (PDF/imagem) para o bucket "notas-anexos" do Supabase Storage
+        // e retorna a URL pública + o caminho do arquivo (usado depois para poder excluir facilmente).
+        async function uploadAnexoNota(file) {
+            const nomeSeguro = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+            const path = `notas/${Date.now()}-${nomeSeguro}`;
+            const { error: uploadError } = await supabase.storage.from('notas-anexos').upload(path, file);
+            if (uploadError) throw uploadError;
+            const { data: pub } = supabase.storage.from('notas-anexos').getPublicUrl(path);
+            return { url: pub.publicUrl, path: path };
+        }
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
 
         function updateChecklistDashboard() {
@@ -3918,37 +3969,58 @@
             const webhookUrl = TEAMS_WEBHOOKS[alvo.webhookKey];
             if (!webhookUrl) return;
 
+            const body = [
+                { type: 'TextBlock', text: `📄 Nota para Correção — ${nf.tipo}`, weight: 'Bolder', size: 'Medium', wrap: true },
+                {
+                    type: 'FactSet',
+                    facts: [
+                        { title: 'Fornecedor:', value: nf.fornecedor || '-' },
+                        { title: 'Setor:', value: nf.setor || '-' },
+                        { title: 'Pedido:', value: nf.pedido || '-' },
+                        { title: 'Valor:', value: String(nf.valor || '-') },
+                        { title: 'Emissão:', value: formatDate(nf.emissao) },
+                        { title: 'Vencimento:', value: formatDate(nf.vencimento) },
+                        { title: 'Chave de Acesso:', value: nf.chave || '-' },
+                        { title: 'Erro:', value: nf.obs_erro || '-' }
+                    ]
+                }
+            ];
+
+            const actions = [];
+            // Botão do anexo só aparece se uma NF (PDF/imagem) foi realmente enviada no cadastro.
+            if (nf.anexo_url) {
+                actions.push({ type: 'Action.OpenUrl', title: '📎 Ver Nota Fiscal', url: nf.anexo_url });
+            }
+
+            // Botões de resposta (só entram no card se a URL do respectivo fluxo já tiver sido configurada
+            // em TEAMS_RESPOSTA_WEBHOOKS — veja as instruções para criar esses fluxos no Power Automate).
+            const respostaUrl = TEAMS_RESPOSTA_WEBHOOKS[alvo.webhookKey];
+            if (respostaUrl) {
+                const paramsBase = `fornecedor=${encodeURIComponent(nf.fornecedor || '-')}&pedido=${encodeURIComponent(nf.pedido || '-')}&referencia=${encodeURIComponent(nf.referencia || '-')}&valor=${encodeURIComponent(nf.valor || '-')}&tipo=${encodeURIComponent(nf.tipo || '-')}`;
+                // O clique no card sempre abre o link com GET, mas o fluxo do Power Automate exige POST.
+                // Por isso, o botão não vai direto no webhook — passa antes pela "página-ponte", que faz
+                // a chamada certa (POST) por trás dos panos.
+                const montarLinkResposta = (acao) => {
+                    const destinoFinal = `${respostaUrl}${respostaUrl.includes('?') ? '&' : '?'}acao=${acao}&${paramsBase}`;
+                    return `${PAGINA_PONTE_URL}?destino=${encodeURIComponent(destinoFinal)}`;
+                };
+                actions.push({ type: 'Action.OpenUrl', title: '✅ Corrigido', url: montarLinkResposta('CORRIGIDO') });
+                actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM_ANALISE') });
+                actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANCADO') });
+            }
+
             const card = {
                 type: 'AdaptiveCard',
                 $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
                 version: '1.4',
-                body: [
-                    { type: 'TextBlock', text: `📄 Nota para Correção — ${nf.tipo}`, weight: 'Bolder', size: 'Medium', wrap: true },
-                    {
-                        type: 'FactSet',
-                        facts: [
-                            { title: 'Fornecedor:', value: nf.fornecedor || '-' },
-                            { title: 'Setor:', value: nf.setor || '-' },
-                            { title: 'Pedido:', value: nf.pedido || '-' },
-                            { title: 'Valor:', value: String(nf.valor || '-') },
-                            { title: 'Emissão:', value: formatDate(nf.emissao) },
-                            { title: 'Vencimento:', value: formatDate(nf.vencimento) },
-                            { title: 'Erro:', value: nf.obs_erro || '-' }
-                        ]
-                    }
-                ],
-                actions: [
-                    { type: 'Action.Submit', title: '✅ Corrigido', data: { notaId: nf.id, acao: 'CORRIGIDO' } },
-                    { type: 'Action.Submit', title: '🔎 Em Análise', data: { notaId: nf.id, acao: 'EM_ANALISE' } }
-                ]
+                body: body,
+                actions: actions
             };
 
             try {
                 // IMPORTANTE: o fluxo "Post card in a chat or channel" espera o próprio
                 // Adaptive Card na RAIZ do corpo da requisição (sem nenhum envelope em volta).
                 await postToTeamsWebhook(webhookUrl, card);
-                // Marca que a notificação foi disparada, para não duplicar em futuras edições.
-                await supabase.from('notas').update({ notificado_teams_em: new Date().toISOString() }).eq('id', nf.id);
             } catch (err) {
                 console.error('Falha ao notificar Teams:', err);
             }
