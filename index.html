@@ -4036,12 +4036,12 @@
                 // Por isso, o botão não vai direto no webhook — passa antes pela "página-ponte", que faz
                 // a chamada certa (POST) por trás dos panos.
                 const montarLinkResposta = (acao) => {
-                    const destinoFinal = `${respostaUrl}${respostaUrl.includes('?') ? '&' : '?'}acao=${acao}&${paramsBase}`;
+                    const destinoFinal = `${respostaUrl}${respostaUrl.includes('?') ? '&' : '?'}acao=${encodeURIComponent(acao)}&${paramsBase}`;
                     return `${PAGINA_PONTE_URL}?destino=${encodeURIComponent(destinoFinal)}`;
                 };
-                actions.push({ type: 'Action.OpenUrl', title: '✅ Corrigido', url: montarLinkResposta('CORRIGIDO') });
-                actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM_ANALISE') });
-                actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANCADO') });
+                actions.push({ type: 'Action.OpenUrl', title: '✅ Corrigido', url: montarLinkResposta('CORRIGIDA') });
+                actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM ANÁLISE') });
+                actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANÇADA APÓS CORREÇÃO') });
             }
 
             const card = {
