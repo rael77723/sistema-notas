@@ -4,6 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AHT - Central de Controle Fiscal</title>
+
+    <!-- ============================================================
+         "PONTE" DE CONFIRMAÇÃO — TEAMS
+         Se o site for aberto com ?destino=... (é o que o botão do card
+         do Teams faz), mostra só uma telinha de confirmação e dispara
+         a chamada POST para o Power Automate por trás dos panos, em vez
+         de carregar o site inteiro. Fica logo no topo para rodar o mais
+         cedo possível.
+    ============================================================ -->
+    <script>
+        (function () {
+            var destino = new URLSearchParams(window.location.search).get('destino');
+            if (!destino) return; // acesso normal do site, segue o carregamento normal
+
+            document.write(
+                '<div id="ponteBox" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;text-align:center;padding-top:80px;color:#1e293b;">' +
+                '<div style="font-size:48px;">⏳</div><h2>Registrando...</h2><p style="color:#64748b;">Aguarde um instante.</p>' +
+                '</div>' +
+                '<style>body > *:not(#ponteBox){display:none!important}</style>'
+            );
+
+            fetch(decodeURIComponent(destino), { method: 'POST' })
+                .then(function (resp) {
+                    var box = document.getElementById('ponteBox');
+                    if (!box) return;
+                    box.innerHTML = resp.ok
+                        ? '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>'
+                        : '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+                })
+                .catch(function () {
+                    var box = document.getElementById('ponteBox');
+                    if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+                });
+        })();
+    </script>
+
     <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/906/906334.png" type="image/png">
     
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
@@ -1559,9 +1595,8 @@
             NFE_MATERIAL: '',
             NFS_SERVICO: ''
         };
-        // URL da "página-ponte" (confirmar.html), hospedada no Supabase Storage — converte o clique
-        // (GET) do card do Teams em uma chamada POST para o fluxo de resposta correto.
-        const PAGINA_PONTE_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co/storage/v1/object/public/site-paginas/confirmar.html';
+        // URL da "página-ponte" — é o próprio site (ele já sabe lidar com ?destino=... no topo do arquivo).
+        const PAGINA_PONTE_URL = 'https://sistema-notas-vert.vercel.app/';
         const SECRET_TAB_PASSWORD = 'Aht2025*';
 
         let supabase;
