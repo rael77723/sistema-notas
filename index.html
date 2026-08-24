@@ -2718,22 +2718,20 @@
 
         function copiarRetencaoParaAreaTransferencia() {
             const bruto = parseFloat(document.getElementById('retencaoValorBruto').value) || 0;
-            // Lê direto da TELA (checkbox marcado + campo de alíquota), em vez de confiar só na cópia
-            // em memória — garante que copia exatamente o que está sendo mostrado, linha por linha.
-            const valores = [formatMoeda(bruto)];
+            // Lê direto da TELA (checkbox marcado + campo de alíquota) e monta UMA LINHA por imposto
+            // marcado como aplicável (empilhadas), com Tipo / Base / Valor em colunas — assim, ao colar
+            // no Excel, cada imposto vira uma linha da planilha, uma embaixo da outra.
+            const linhas = [];
             retencaoData.forEach(row => {
                 const checkboxEl = document.getElementById(`retencaoAtivo-${row.tipo_imp}`);
                 const aliquotaEl = document.getElementById(`retencaoAliquota-${row.tipo_imp}`);
                 const ativo = checkboxEl ? checkboxEl.checked : false;
-                if (ativo) {
-                    const aliquota = parseFloat(aliquotaEl ? aliquotaEl.value : 0) || 0;
-                    const valorImp = arredondar2(bruto * aliquota / 100);
-                    valores.push(formatMoeda(valorImp));
-                } else {
-                    valores.push(' '); // espaço (não vazio) — evita que duas colunas vazias vizinhas sejam "engolidas" ao colar
-                }
+                if (!ativo) return; // só entram os impostos marcados como aplicável
+                const aliquota = parseFloat(aliquotaEl ? aliquotaEl.value : 0) || 0;
+                const valorImp = arredondar2(bruto * aliquota / 100);
+                linhas.push([row.tipo_imp, formatMoeda(bruto), formatMoeda(valorImp)].join('\t'));
             });
-            const texto = valores.join('\t');
+            const texto = linhas.join('\n');
 
             // Método alternativo (mais compatível) caso a Clipboard API falhe silenciosamente em algum navegador.
             const copiarViaTextarea = () => {
