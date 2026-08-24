@@ -18,25 +18,48 @@
             var destino = new URLSearchParams(window.location.search).get('destino');
             if (!destino) return; // acesso normal do site, segue o carregamento normal
 
+            var destinoDecodificado = decodeURIComponent(destino);
+            var infoUrl = new URL(destinoDecodificado);
+            var acao = infoUrl.searchParams.get('acao') || '-';
+            var fornecedor = infoUrl.searchParams.get('fornecedor') || '-';
+            var pedido = infoUrl.searchParams.get('pedido') || '-';
+
             document.write(
-                '<div id="ponteBox" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;text-align:center;padding-top:80px;color:#1e293b;">' +
-                '<div style="font-size:48px;">⏳</div><h2>Registrando...</h2><p style="color:#64748b;">Aguarde um instante.</p>' +
+                '<div id="ponteBox" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;text-align:center;padding-top:70px;color:#1e293b;max-width:420px;margin:0 auto;padding-left:20px;padding-right:20px;">' +
+                    '<div style="font-size:44px;">❓</div>' +
+                    '<h2>Confirmar ação</h2>' +
+                    '<p style="color:#64748b;">Marcar a nota do fornecedor <b>' + fornecedor + '</b> (pedido <b>' + pedido + '</b>) como:</p>' +
+                    '<p style="font-size:18px;font-weight:700;margin:14px 0;">' + acao + '</p>' +
+                    '<button id="btnConfirmarPonte" style="background:#4f46e5;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Confirmar</button>' +
+                    '<p style="color:#94a3b8;font-size:12px;margin-top:16px;">Se clicou por engano, pode simplesmente fechar esta aba.</p>' +
                 '</div>' +
                 '<style>body > *:not(#ponteBox){display:none!important}</style>'
             );
 
-            fetch(decodeURIComponent(destino), { method: 'POST' })
-                .then(function (resp) {
-                    var box = document.getElementById('ponteBox');
-                    if (!box) return;
-                    box.innerHTML = resp.ok
-                        ? '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>'
-                        : '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
-                })
-                .catch(function () {
-                    var box = document.getElementById('ponteBox');
-                    if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+            document.addEventListener('DOMContentLoaded', function () {
+                var btn = document.getElementById('btnConfirmarPonte');
+                if (!btn) return;
+                btn.addEventListener('click', function () {
+                    // Desativa o botão assim que clicado, para não dar pra mandar duas vezes clicando rápido.
+                    btn.disabled = true;
+                    btn.innerText = 'Enviando...';
+                    btn.style.opacity = '0.6';
+                    btn.style.cursor = 'default';
+
+                    fetch(destinoDecodificado, { method: 'POST' })
+                        .then(function (resp) {
+                            var box = document.getElementById('ponteBox');
+                            if (!box) return;
+                            box.innerHTML = resp.ok
+                                ? '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>'
+                                : '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+                        })
+                        .catch(function () {
+                            var box = document.getElementById('ponteBox');
+                            if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+                        });
                 });
+            });
         })();
     </script>
 
@@ -1592,7 +1615,7 @@
         // os 3 fluxos novos no Power Automate — enquanto estiverem vazias, os botões ficam ocultos no card.
         const TEAMS_RESPOSTA_WEBHOOKS = {
             CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f14ed636527b4f8aa345f1614c981f8c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=gnM8UDzDhSm8CAvKBmUreUj-5jEpDsrLOAioe6nOGv0',
-            NFE_MATERIAL: '',
+            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8df58ab840e64fb3b98f1b672fa41201/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Uteb2IGl2UMSOapi0dLGYznMZwbB0bCikKFKT9krBRo',
             NFS_SERVICO: ''
         };
         // URL da "página-ponte" — é o próprio site (ele já sabe lidar com ?destino=... no topo do arquivo).
