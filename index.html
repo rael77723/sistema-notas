@@ -853,6 +853,9 @@
                     <button class="fab-menu-item accent-amber" onclick="openMigoMiroModal(); closeFabMenu()">
                         <span class="material-icons-round">compare_arrows</span> MIGO x MIRO
                     </button>
+                    <button class="fab-menu-item accent-red" onclick="openRetencaoModal(); closeFabMenu()">
+                        <span class="material-icons-round">percent</span> RETENÇÃO DE IMPOSTOS
+                    </button>
                     <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Painéis e Relatórios</div>
                     <button class="fab-menu-item accent-slate" onclick="openConsideracoes(); closeFabMenu()">
@@ -1195,6 +1198,7 @@
         <div class="modal kpi-modal-container">
             <div class="modal-header">
                 <h2>MIGO x MIRO</h2>
+                <button class="icon-btn" title="Exportar PDF" onclick="exportMigoMiroPDF()" style="margin-right:8px;"><span class="material-icons-round">picture_as_pdf</span></button>
                 <button class="close-btn" onclick="closeMigoMiroModal()"><span>&times;</span></button>
             </div>
             <div class="services-modal-body" id="migoMiroBody">
@@ -1218,6 +1222,49 @@
     </div>
 
     <div class="modal-overlay" id="migoMiroDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir linha?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeMigoMiroDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmMigoMiroDelete()">Excluir</button></div></div></div>
+
+    <!-- ============================================================
+         ABA RETENÇÃO DE IMPOSTOS (NOTA DE SERVIÇOS)
+    ============================================================ -->
+    <div class="modal-overlay" id="retencaoModal">
+        <div class="modal kpi-modal-container">
+            <div class="modal-header">
+                <h2>Retenção de Impostos — Nota de Serviços</h2>
+                <button class="close-btn" onclick="closeRetencaoModal()"><span>&times;</span></button>
+            </div>
+            <div class="services-modal-body" style="padding:1.5rem;">
+                <div style="display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap; margin-bottom:18px;">
+                    <div class="form-group" style="min-width:220px;">
+                        <label>Valor Bruto da NF (R$)</label>
+                        <input type="number" step="0.01" id="retencaoValorBruto" class="input-field" placeholder="0,00" oninput="recalcularRetencao()">
+                    </div>
+                    <div style="background:#f1f5f9; border-radius:10px; padding:10px 18px;">
+                        <div style="font-size:0.75rem; color:#64748b; font-weight:600;">VALOR LÍQUIDO</div>
+                        <div id="retencaoValorLiquido" style="font-size:1.3rem; font-weight:800; color:#166534;">R$ 0,00</div>
+                    </div>
+                    <button class="btn-primary" onclick="copiarRetencaoParaAreaTransferencia()" style="height:42px; display:flex; align-items:center; gap:6px;">
+                        <span class="material-icons-round" style="font-size:18px;">content_copy</span> Copiar para Área de Transferência
+                    </button>
+                    <span id="retencaoCopiaStatus" style="font-size:0.85rem; color:#166534; font-weight:600;"></span>
+                </div>
+
+                <div class="services-table-wrapper">
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th>ALÍQUOTA (%)</th>
+                                <th>APLICÁVEL</th>
+                                <th>TIPO IMP.</th>
+                                <th>BASE</th>
+                                <th>VALOR IMP.</th>
+                            </tr>
+                        </thead>
+                        <tbody id="retencaoTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================================
          ABA SECRETA — INTEGRAÇÃO COM TEAMS
@@ -2580,6 +2627,110 @@
             migoMiroData.splice(migoMiroToDeleteIndex, 1);
             renderMigoMiroTable();
             closeMigoMiroDeleteModal();
+        }
+
+        function exportMigoMiroPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text('MIGO x MIRO - AHT', 14, 15);
+            doc.autoTable({
+                head: [['FORNECEDOR', 'TIPO DE MIGO', 'DATA MIGO', 'MOTIVO']],
+                body: migoMiroData.map(m => [m.fornecedor || '-', m.tipo_migo || '-', formatDate(m.data_migo), m.motivo || '-']),
+                startY: 20, theme: 'grid', styles: { fontSize: 8, cellPadding: 2 },
+                headStyles: { fillColor: [180, 83, 9], textColor: 255, fontStyle: 'bold', halign: 'center' }
+            });
+            doc.save('migo_x_miro.pdf');
+        }
+
+        // ============================================================
+        // ABA RETENÇÃO DE IMPOSTOS (NOTA DE SERVIÇOS)
+        // ============================================================
+        let retencaoData = []; // as 6 linhas fixas vindas do banco: {id, tipo_imp, aliquota, ativo, ordem}
+
+        async function openRetencaoModal() {
+            document.getElementById('retencaoModal').classList.add('active');
+            document.getElementById('retencaoValorBruto').value = ''; // valor bruto não é lembrado, é por nota
+            const { data } = await supabase.from('retencao_impostos').select('*').order('ordem', { ascending: true });
+            if (data) retencaoData = data;
+            renderRetencaoTable();
+            recalcularRetencao();
+        }
+        function closeRetencaoModal() { document.getElementById('retencaoModal').classList.remove('active'); }
+
+        function formatMoeda(v) {
+            return (Number(v) || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function renderRetencaoTable() {
+            const tbody = document.getElementById('retencaoTableBody');
+            tbody.innerHTML = '';
+            retencaoData.forEach(row => {
+                const tr = document.createElement('tr');
+                tr.id = `retencaoRow-${row.tipo_imp}`;
+                tr.innerHTML = `
+                    <td><input type="number" step="0.01" class="svc-input" id="retencaoAliquota-${row.tipo_imp}" value="${row.aliquota ?? ''}" ${row.ativo ? '' : 'disabled'} onchange="updateRetencaoAliquota('${row.tipo_imp}', this.value)"></td>
+                    <td style="text-align:center;"><input type="checkbox" id="retencaoAtivo-${row.tipo_imp}" ${row.ativo ? 'checked' : ''} onchange="updateRetencaoAtivo('${row.tipo_imp}', this.checked)" style="width:18px;height:18px;cursor:pointer;"></td>
+                    <td style="font-weight:700;">${row.tipo_imp}</td>
+                    <td id="retencaoBase-${row.tipo_imp}">R$ 0,00</td>
+                    <td id="retencaoValor-${row.tipo_imp}" style="font-weight:700;">-</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Recalcula tudo na tela sem reconstruir a tabela inteira (evita o "piscar").
+        function recalcularRetencao() {
+            const bruto = parseFloat(document.getElementById('retencaoValorBruto').value) || 0;
+            let totalRetido = 0;
+            retencaoData.forEach(row => {
+                const baseEl = document.getElementById(`retencaoBase-${row.tipo_imp}`);
+                const valorEl = document.getElementById(`retencaoValor-${row.tipo_imp}`);
+                if (!baseEl || !valorEl) return;
+                baseEl.innerText = 'R$ ' + formatMoeda(bruto);
+                if (row.ativo) {
+                    const valorImp = bruto * (Number(row.aliquota) || 0) / 100;
+                    valorEl.innerText = 'R$ ' + formatMoeda(valorImp);
+                    totalRetido += valorImp;
+                } else {
+                    valorEl.innerText = '-';
+                }
+            });
+            document.getElementById('retencaoValorLiquido').innerText = 'R$ ' + formatMoeda(bruto - totalRetido);
+        }
+
+        async function updateRetencaoAliquota(tipoImp, valor) {
+            await supabase.from('retencao_impostos').update({ aliquota: valor || 0 }).eq('tipo_imp', tipoImp);
+            const row = retencaoData.find(r => r.tipo_imp === tipoImp); if (row) row.aliquota = valor || 0;
+            recalcularRetencao();
+        }
+
+        async function updateRetencaoAtivo(tipoImp, ativo) {
+            await supabase.from('retencao_impostos').update({ ativo }).eq('tipo_imp', tipoImp);
+            const row = retencaoData.find(r => r.tipo_imp === tipoImp); if (row) row.ativo = ativo;
+            const inputAliquota = document.getElementById(`retencaoAliquota-${tipoImp}`);
+            if (inputAliquota) inputAliquota.disabled = !ativo;
+            recalcularRetencao();
+        }
+
+        function copiarRetencaoParaAreaTransferencia() {
+            const bruto = parseFloat(document.getElementById('retencaoValorBruto').value) || 0;
+            // Monta uma linha separada por TAB — assim, ao colar no Excel, cada valor cai na célula/coluna certa.
+            const valores = [formatMoeda(bruto)];
+            retencaoData.forEach(row => {
+                if (row.ativo) {
+                    const valorImp = bruto * (Number(row.aliquota) || 0) / 100;
+                    valores.push(formatMoeda(valorImp));
+                } else {
+                    valores.push(''); // mantém a coluna no lugar certo mesmo quando o imposto não foi retido
+                }
+            });
+            const texto = valores.join('\t');
+            navigator.clipboard.writeText(texto).then(() => {
+                const status = document.getElementById('retencaoCopiaStatus');
+                status.innerText = 'Copiado!';
+                setTimeout(() => status.innerText = '', 2000);
+            });
         }
 
 
