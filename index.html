@@ -2730,7 +2730,7 @@
                     const valorImp = arredondar2(bruto * aliquota / 100);
                     valores.push(formatMoeda(valorImp));
                 } else {
-                    valores.push(''); // mantém a coluna no lugar certo mesmo quando o imposto não foi retido
+                    valores.push(' '); // espaço (não vazio) — evita que duas colunas vazias vizinhas sejam "engolidas" ao colar
                 }
             });
             const texto = valores.join('\t');
