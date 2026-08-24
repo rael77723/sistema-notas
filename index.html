@@ -1245,7 +1245,6 @@
                     <button class="btn-primary" onclick="copiarRetencaoParaAreaTransferencia()" style="height:42px; display:flex; align-items:center; gap:6px;">
                         <span class="material-icons-round" style="font-size:18px;">content_copy</span> Copiar para Área de Transferência
                     </button>
-                    <span id="retencaoCopiaStatus" style="font-size:0.85rem; color:#166534; font-weight:600;"></span>
                 </div>
 
                 <div class="services-table-wrapper" style="max-height:none; width:fit-content;">
@@ -2735,11 +2734,26 @@
                 }
             });
             const texto = valores.join('\t');
-            navigator.clipboard.writeText(texto).then(() => {
-                const status = document.getElementById('retencaoCopiaStatus');
-                status.innerText = 'Copiado!';
-                setTimeout(() => status.innerText = '', 2000);
-            });
+
+            // Método alternativo (mais compatível) caso a Clipboard API falhe silenciosamente em algum navegador.
+            const copiarViaTextarea = () => {
+                const textarea = document.createElement('textarea');
+                textarea.value = texto;
+                textarea.style.position = 'fixed';
+                textarea.style.opacity = '0';
+                document.body.appendChild(textarea);
+                textarea.focus();
+                textarea.select();
+                try { document.execCommand('copy'); } catch (e) { /* ignora */ }
+                document.body.removeChild(textarea);
+                showToast('Copiado!');
+            };
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(texto).then(() => showToast('Copiado!')).catch(copiarViaTextarea);
+            } else {
+                copiarViaTextarea();
+            }
         }
 
 
