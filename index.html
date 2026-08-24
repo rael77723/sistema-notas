@@ -23,42 +23,77 @@
             var acao = infoUrl.searchParams.get('acao') || '-';
             var fornecedor = infoUrl.searchParams.get('fornecedor') || '-';
             var pedido = infoUrl.searchParams.get('pedido') || '-';
+            var notaId = infoUrl.searchParams.get('notaId') || '';
+
+            // Credenciais duplicadas aqui de propósito: esse script roda antes da biblioteca do
+            // Supabase carregar (fica no topo do <head> para ser rápido), então usamos fetch puro
+            // direto na API REST do Supabase em vez do cliente supabase-js.
+            var SUPA_URL = 'https://ucbkpyozkcxukpqehnxs.supabase.co';
+            var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
+            var supaHeaders = { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY };
+
+            function mostrarTelaJaRegistrado() {
+                var box = document.getElementById('ponteBox');
+                if (box) box.innerHTML = '<div style="font-size:44px;">ℹ️</div><h2>Essa ação já foi registrada</h2><p style="color:#64748b;">Alguém já marcou essa nota como "' + acao + '" antes. Não é possível registrar de novo.</p>';
+            }
+            function mostrarTelaErro() {
+                var box = document.getElementById('ponteBox');
+                if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+            }
+            function mostrarTelaSucesso() {
+                var box = document.getElementById('ponteBox');
+                if (box) box.innerHTML = '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>';
+            }
 
             document.write(
                 '<div id="ponteBox" style="font-family:-apple-system,Segoe UI,Arial,sans-serif;text-align:center;padding-top:70px;color:#1e293b;max-width:420px;margin:0 auto;padding-left:20px;padding-right:20px;">' +
-                    '<div style="font-size:44px;">❓</div>' +
-                    '<h2>Confirmar ação</h2>' +
-                    '<p style="color:#64748b;">Marcar a nota do fornecedor <b>' + fornecedor + '</b> (pedido <b>' + pedido + '</b>) como:</p>' +
-                    '<p style="font-size:18px;font-weight:700;margin:14px 0;">' + acao + '</p>' +
-                    '<button id="btnConfirmarPonte" style="background:#4f46e5;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Confirmar</button>' +
-                    '<p style="color:#94a3b8;font-size:12px;margin-top:16px;">Se clicou por engano, pode simplesmente fechar esta aba.</p>' +
+                    '<div style="font-size:44px;">⏳</div><h2>Verificando...</h2>' +
                 '</div>' +
                 '<style>body > *:not(#ponteBox){display:none!important}</style>'
             );
 
             document.addEventListener('DOMContentLoaded', function () {
-                var btn = document.getElementById('btnConfirmarPonte');
-                if (!btn) return;
-                btn.addEventListener('click', function () {
-                    // Desativa o botão assim que clicado, para não dar pra mandar duas vezes clicando rápido.
-                    btn.disabled = true;
-                    btn.innerText = 'Enviando...';
-                    btn.style.opacity = '0.6';
-                    btn.style.cursor = 'default';
+                if (!notaId) { mostrarTelaErro(); return; } // link antigo/incompleto, sem como checar duplicidade com segurança
 
-                    fetch(destinoDecodificado, { method: 'POST' })
-                        .then(function (resp) {
-                            var box = document.getElementById('ponteBox');
-                            if (!box) return;
-                            box.innerHTML = resp.ok
-                                ? '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>'
-                                : '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
-                        })
-                        .catch(function () {
-                            var box = document.getElementById('ponteBox');
-                            if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
+                // 1) Antes de mostrar o botão, checa no banco se essa nota+ação já foi confirmada antes.
+                fetch(SUPA_URL + '/rest/v1/teams_confirmacoes?nota_id=eq.' + encodeURIComponent(notaId) + '&acao=eq.' + encodeURIComponent(acao) + '&select=id', { headers: supaHeaders })
+                    .then(function (r) { return r.json(); })
+                    .then(function (linhas) {
+                        if (linhas && linhas.length > 0) { mostrarTelaJaRegistrado(); return; }
+
+                        // Ainda não foi confirmada — mostra o botão.
+                        var box = document.getElementById('ponteBox');
+                        box.innerHTML =
+                            '<div style="font-size:44px;">❓</div>' +
+                            '<h2>Confirmar ação</h2>' +
+                            '<p style="color:#64748b;">Marcar a nota do fornecedor <b>' + fornecedor + '</b> (pedido <b>' + pedido + '</b>) como:</p>' +
+                            '<p style="font-size:18px;font-weight:700;margin:14px 0;">' + acao + '</p>' +
+                            '<button id="btnConfirmarPonte" style="background:#4f46e5;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;">Confirmar</button>' +
+                            '<p style="color:#94a3b8;font-size:12px;margin-top:16px;">Se clicou por engano, pode simplesmente fechar esta aba.</p>';
+
+                        var btn = document.getElementById('btnConfirmarPonte');
+                        btn.addEventListener('click', function () {
+                            btn.disabled = true;
+                            btn.innerText = 'Enviando...';
+                            btn.style.opacity = '0.6';
+                            btn.style.cursor = 'default';
+
+                            // 2) Tenta "reservar" essa nota+ação no banco antes de avisar o Teams — se já existir
+                            // (alguém confirmou entre o passo 1 e agora), o próprio banco recusa o duplicado.
+                            fetch(SUPA_URL + '/rest/v1/teams_confirmacoes', {
+                                method: 'POST',
+                                headers: Object.assign({}, supaHeaders, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+                                body: JSON.stringify({ nota_id: notaId, acao: acao })
+                            }).then(function (reservaResp) {
+                                if (reservaResp.status === 409) { mostrarTelaJaRegistrado(); return; }
+                                if (!reservaResp.ok) { mostrarTelaErro(); return; }
+                                // 3) Só agora, com a reserva garantida, avisa de fato o canal do Teams.
+                                return fetch(destinoDecodificado, { method: 'POST' })
+                                    .then(function (resp) { resp.ok ? mostrarTelaSucesso() : mostrarTelaErro(); });
+                            }).catch(mostrarTelaErro);
                         });
-                });
+                    })
+                    .catch(mostrarTelaErro);
             });
         })();
     </script>
@@ -815,6 +850,9 @@
                     <button class="fab-menu-item accent-amber" onclick="openImportsModal(); closeFabMenu()">
                         <span class="material-icons-round">flight_land</span> IMPORTAÇÕES
                     </button>
+                    <button class="fab-menu-item accent-amber" onclick="openMigoMiroModal(); closeFabMenu()">
+                        <span class="material-icons-round">compare_arrows</span> MIGO x MIRO
+                    </button>
                     <div class="fab-menu-divider"></div>
                     <div class="fab-menu-label">Painéis e Relatórios</div>
                     <button class="fab-menu-item accent-slate" onclick="openConsideracoes(); closeFabMenu()">
@@ -1151,6 +1189,37 @@
     <div class="modal-overlay" id="importDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir importação?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeImportDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmImportDelete()">Excluir</button></div></div></div>
 
     <!-- ============================================================
+         ABA MIGO x MIRO
+    ============================================================ -->
+    <div class="modal-overlay" id="migoMiroModal">
+        <div class="modal kpi-modal-container">
+            <div class="modal-header">
+                <h2>MIGO x MIRO</h2>
+                <button class="close-btn" onclick="closeMigoMiroModal()"><span>&times;</span></button>
+            </div>
+            <div class="services-modal-body" id="migoMiroBody">
+                <div class="services-table-wrapper">
+                    <table class="services-table" id="migoMiroTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"></th>
+                                <th>FORNECEDOR</th>
+                                <th>TIPO DE MIGO</th>
+                                <th>DATA MIGO</th>
+                                <th>MOTIVO</th>
+                            </tr>
+                        </thead>
+                        <tbody id="migoMiroTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="add-row-btn-container"><button class="btn-plus-row" onclick="addMigoMiroRow()">+</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="migoMiroDeleteModal"><div class="modal" style="max-width:350px;text-align:center;padding:2rem;"><h3>Excluir linha?</h3><p style="color:#64748b;margin-bottom:1.5rem;">Essa ação não pode ser desfeita.</p><div style="display:flex;gap:10px;justify-content:center;"><button class="btn-ghost" onclick="closeMigoMiroDeleteModal()">Cancelar</button><button class="btn-primary" style="background:#b91c1c;" onclick="confirmMigoMiroDelete()">Excluir</button></div></div></div>
+
+    <!-- ============================================================
          ABA SECRETA — INTEGRAÇÃO COM TEAMS
          Acionada com 5 cliques no título do site.
     ============================================================ -->
@@ -1179,17 +1248,22 @@
 
                 <button class="btn-primary teams-admin-btn" onclick="enviarFretesRelatorio()">
                     <span class="material-icons-round">receipt_long</span>
-                    Enviar Controle de Fretes (PDF + Excel) → ❗📊 KPIs
+                    Enviar Controle de Fretes → ❗📊 KPIs
                 </button>
 
                 <button class="btn-primary teams-admin-btn" onclick="enviarImportacoesRelatorio()">
                     <span class="material-icons-round">flight_land</span>
-                    Enviar Importações (PDF) → ❗📊 KPIs
+                    Enviar Importações → ❗📊 KPIs
                 </button>
 
                 <button class="btn-primary teams-admin-btn" onclick="enviarNotasPendentesRelatorio()">
                     <span class="material-icons-round">fact_check</span>
-                    Enviar Notas Pendentes de Correção (PDF) → ❗📊 KPIs
+                    Enviar Notas Pendentes de Correção → ❗📊 KPIs
+                </button>
+
+                <button class="btn-primary teams-admin-btn" onclick="enviarChecklistRelatorio()">
+                    <span class="material-icons-round">checklist</span>
+                    Enviar Checklist → ❗📊 KPIs
                 </button>
 
                 <div id="teamsAdminStatus" style="min-height:20px; font-size:0.85rem; font-weight:600; text-align:center;"></div>
@@ -1630,6 +1704,7 @@
         let currentCteNF = null;
         let fretesData = [], fretesChartInstance = null, freteToDeleteIndex = null;
         let importsData = [], importToDeleteIndex = null;
+        let migoMiroData = [], migoMiroToDeleteIndex = null;
 
         window.onload = async function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -1684,7 +1759,9 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'servicos' }, async () => {
                 const { data } = await supabase.from('servicos').select('*').order('created_at', {ascending:true});
                 if(data) servicesData = data;
-                if(document.getElementById('servicesModal').classList.contains('active')) { renderServicesTable(); updateChecklistDashboard(); }
+                // Não reconstrói a tabela inteira aqui (isso que causava a tela "piscar" a cada alteração,
+                // já que toda edição sua ecoa de volta pelo tempo real do Supabase). Só mantém o gráfico em dia.
+                if(document.getElementById('servicesModal').classList.contains('active')) { updateChecklistDashboard(); }
             })
             // Novo listener para escutar mudanças na logística e propagar para as telas abertas instantaneamente
             .on('postgres_changes', { event: '*', schema: 'public', table: 'logistica_state' }, (payload) => {
@@ -2098,14 +2175,14 @@
                 const tr = document.createElement('tr');
                 const delTd = `<td><button class="icon-btn delete" onclick="openDeleteModal(${index}, true)" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>`;
                 const createInput = (field, val) => `<input class="svc-input" value="${val || ''}" onchange="updateServiceData(${row.id}, '${field}', this.value)">`;
-                const createSelect = (field, val, options) => { let cssClass = 'svc-select ' + getStatusClass(val); let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join(''); return `<select class="${cssClass}" onchange="updateServiceData(${row.id}, '${field}', this.value); this.className = 'svc-select ' + getStatusClass(this.value); updateChecklistDashboard();">${opts}</select>`; };
+                const createSelect = (field, val, options) => { let cssClass = 'svc-select ' + getStatusClass(val); let opts = options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt}</option>`).join(''); return `<select class="${cssClass}" onchange="this.className = 'svc-select ' + getStatusClass(this.value); updateServiceData(${row.id}, '${field}', this.value);">${opts}</select>`; };
                 tr.innerHTML = delTd + `<td>${createInput('fornecedor', row.fornecedor)}</td><td>${createInput('tipo_servico', row.tipo_servico)}</td><td>${createSelect('envio_nf', row.envio_nf, ['PENDENTE', 'RECEBIDO', 'NÃO PRESTADO'])}</td><td>${createSelect('status_po', row.status_po, ['PENDENTE', 'LANÇADO', 'NÃO PRESTADO', 'APROVAÇÃO', 'CORREÇÃO'])}</td><td>${createInput('responsavel', row.responsavel)}</td><td>${createInput('setor', row.setor)}</td><td>${createInput('cod_cadastro', row.cod_cadastro)}</td><td>${createInput('conta_razao', row.conta_razao)}</td><td>${createInput('pedido_compra', row.pedido_compra)}</td><td>${createInput('observacao', row.observacao)}</td><td>${createInput('texto_sap', row.texto_sap)}</td>`;
                 tbody.appendChild(tr);
             });
             applyServiceFilters();
         }
 
-        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; }
+        async function updateServiceData(id, field, value) { await supabase.from('servicos').update({ [field]: value }).eq('id', id); const row = servicesData.find(s => s.id === id); if(row) row[field] = value; if(field === 'envio_nf' || field === 'status_po') updateChecklistDashboard(); }
         async function addServiceRow() { const { data, error } = await supabase.from('servicos').insert([{ fornecedor: '', envio_nf: 'PENDENTE', status_po: 'PENDENTE' }]).select(); if(!error && data) { servicesData.push(data[0]); renderServicesTable(); updateChecklistDashboard(); } }
         async function saveChecklistDate(val) { await supabase.from('checklist_config').upsert({ id: 1, titulo_data: val }); }
         async function openConsideracoes() { document.getElementById('notesModal').classList.add('active'); const {data}=await supabase.from('consideracoes').select('texto').eq('id',1).single(); if(data)document.getElementById('notesArea').value=data.texto; }
@@ -2237,15 +2314,20 @@
         async function confirmReset() { if(document.getElementById('resetPassword').value === 'Aht2025') { await supabase.from('servicos').update({ envio_nf: 'PENDENTE', status_po: 'PENDENTE' }).neq('id', 0); loadData().then(() => { renderServicesTable(); updateChecklistDashboard(); closeResetModal(); }); } else { closeResetModal(); document.getElementById('errorModal').classList.add('active'); } }
 
         function updateChecklistDashboard() {
-            const ctx = document.getElementById('checkChart').getContext('2d');
-            if(checklistChartInstance) checklistChartInstance.destroy();
             const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
             const total = servicesData.length;
             const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
             const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
             const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
             document.getElementById('chkTotal').innerText = total; document.getElementById('chkRec').innerText = received; document.getElementById('chkPen').innerText = pending; document.getElementById('chkNop').innerText = notDone;
-            checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
+            // Atualiza o gráfico existente em vez de destruir e recriar — evita o "piscar" da tela a cada alteração.
+            if (checklistChartInstance) {
+                checklistChartInstance.data.datasets[0].data = [received, pending, notDone];
+                checklistChartInstance.update();
+            } else {
+                const ctx = document.getElementById('checkChart').getContext('2d');
+                checklistChartInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Rec', 'Pen', 'Não'], datasets: [{ data: [received, pending, notDone], backgroundColor: ['#166534', '#b91c1c', '#1d4ed8'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: {display: false} } } });
+            }
         }
 
         async function exportKPIPDF() { 
@@ -2309,7 +2391,7 @@
             fretesData.forEach((row, index) => {
                 const tr = document.createElement('tr');
                 const createInput = (field, val, type='text') => `<input class="svc-input" type="${type}" value="${val || ''}" onchange="updateFreteData(${row.id}, '${field}', this.value)">`;
-                const statusSelect = `<select class="svc-select ${getFreteStatusClass(row.status)}" onchange="updateFreteData(${row.id}, 'status', this.value); this.className='svc-select ' + getFreteStatusClass(this.value); updateFretesDashboard();">${statusOpts.map(o=>`<option value="${o}" ${o===row.status?'selected':''}>${o}</option>`).join('')}</select>`;
+                const statusSelect = `<select class="svc-select ${getFreteStatusClass(row.status)}" onchange="this.className='svc-select ' + getFreteStatusClass(this.value); updateFreteData(${row.id}, 'status', this.value);">${statusOpts.map(o=>`<option value="${o}" ${o===row.status?'selected':''}>${o}</option>`).join('')}</select>`;
                 tr.innerHTML = `<td><button class="icon-btn delete" onclick="openFreteDeleteModal(${index})" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>` +
                     `<td>${createInput('prestador', row.prestador)}</td>` +
                     `<td>${createInput('pedido', row.pedido)}</td>` +
@@ -2329,6 +2411,7 @@
             await supabase.from('controle_fretes').update(payload).eq('id', id);
             const row = fretesData.find(f => f.id === id); if(row) row[field] = value;
             if(field === 'data_venc') renderFretesTable();
+            if(field === 'status') updateFretesDashboard(); // só atualiza os cards depois que o dado local já foi de fato atualizado
         }
 
         async function addFreteRow() {
@@ -2345,15 +2428,20 @@
         }
 
         function updateFretesDashboard() {
-            const ctx = document.getElementById('fretesChart').getContext('2d');
-            if(fretesChartInstance) fretesChartInstance.destroy();
             const statusOpts = ['Pendente Fiscal','Lançado','Pendente Correção','Pendente Aprovação'];
             const counts = statusOpts.map(s => fretesData.filter(f => f.status === s).length);
             document.getElementById('fretesTotalCount').innerText = fretesData.length;
             document.getElementById('fretesPendFiscalCount').innerText = counts[0];
             document.getElementById('fretesLancadoCount').innerText = counts[1];
             document.getElementById('fretesPendOutrosCount').innerText = counts[2] + counts[3];
-            fretesChartInstance = new Chart(ctx, { type:'doughnut', data:{ labels: statusOpts, datasets:[{ data: counts, backgroundColor:['#b91c1c','#166534','#ea580c','#ca8a04'], borderWidth:0 }]}, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}}}});
+            // Atualiza o gráfico existente em vez de destruir e recriar — evita o "piscar" da tela a cada alteração.
+            if (fretesChartInstance) {
+                fretesChartInstance.data.datasets[0].data = counts;
+                fretesChartInstance.update();
+            } else {
+                const ctx = document.getElementById('fretesChart').getContext('2d');
+                fretesChartInstance = new Chart(ctx, { type:'doughnut', data:{ labels: statusOpts, datasets:[{ data: counts, backgroundColor:['#b91c1c','#166534','#ea580c','#ca8a04'], borderWidth:0 }]}, options:{ responsive:true, maintainAspectRatio:false, cutout:'65%', plugins:{legend:{display:false}}}});
+            }
         }
 
         function openFreteDeleteModal(index) { freteToDeleteIndex = index; document.getElementById('freteDeleteModal').classList.add('active'); }
@@ -2446,6 +2534,54 @@
         }
 
         let pendingDivergenceCtx = null;
+
+        // ============================================================
+        // ABA MIGO x MIRO
+        // ============================================================
+        async function openMigoMiroModal() {
+            document.getElementById('migoMiroModal').classList.add('active');
+            const { data } = await supabase.from('migo_miro').select('*').order('created_at', {ascending:true});
+            if(data) migoMiroData = data;
+            renderMigoMiroTable();
+        }
+        function closeMigoMiroModal() { document.getElementById('migoMiroModal').classList.remove('active'); }
+
+        function renderMigoMiroTable() {
+            const tbody = document.getElementById('migoMiroTableBody'); tbody.innerHTML = '';
+            if(migoMiroData.length === 0) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:20px; color:#999;">Nenhum registro cadastrado.</td></tr>'; return; }
+            migoMiroData.forEach((row, index) => {
+                const tr = document.createElement('tr');
+                const createInput = (field, val, type='text') => `<input class="svc-input" type="${type}" value="${val || ''}" onchange="updateMigoMiroData(${row.id}, '${field}', this.value)">`;
+                tr.innerHTML = `<td><button class="icon-btn delete" onclick="openMigoMiroDeleteModal(${index})" style="width:100%;justify-content:center;"><span class="material-icons-round" style="font-size:18px">delete</span></button></td>` +
+                    `<td>${createInput('fornecedor', row.fornecedor)}</td>` +
+                    `<td>${createInput('tipo_migo', row.tipo_migo)}</td>` +
+                    `<td>${createInput('data_migo', row.data_migo, 'date')}</td>` +
+                    `<td>${createInput('motivo', row.motivo)}</td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function updateMigoMiroData(id, field, value) {
+            const payload = (field === 'data_migo') ? { [field]: value || null } : { [field]: value };
+            await supabase.from('migo_miro').update(payload).eq('id', id);
+            const row = migoMiroData.find(m => m.id === id); if(row) row[field] = value;
+        }
+
+        async function addMigoMiroRow() {
+            const { data, error } = await supabase.from('migo_miro').insert([{ fornecedor: '' }]).select();
+            if(!error && data) { migoMiroData.push(data[0]); renderMigoMiroTable(); }
+        }
+
+        function openMigoMiroDeleteModal(index) { migoMiroToDeleteIndex = index; document.getElementById('migoMiroDeleteModal').classList.add('active'); }
+        function closeMigoMiroDeleteModal() { document.getElementById('migoMiroDeleteModal').classList.remove('active'); migoMiroToDeleteIndex = null; }
+        async function confirmMigoMiroDelete() {
+            const row = migoMiroData[migoMiroToDeleteIndex]; if(!row) { closeMigoMiroDeleteModal(); return; }
+            await supabase.from('migo_miro').delete().eq('id', row.id);
+            migoMiroData.splice(migoMiroToDeleteIndex, 1);
+            renderMigoMiroTable();
+            closeMigoMiroDeleteModal();
+        }
+
 
         function processXML() { 
             const xmlText=document.getElementById('xmlInput').value; 
@@ -3899,12 +4035,12 @@
 
         // ---------- Helper: monta uma tabela em Adaptive Card (schema 1.5) ----------
         // Limita a quantidade de linhas exibidas para não gerar um cartão gigante no Teams.
-        function buildAdaptiveTable(headers, rows, maxRows = 20) {
+        function buildAdaptiveTable(headers, rows, maxRows = 15, columnWidths = null) {
             const shown = rows.slice(0, maxRows);
-            const columns = headers.map(() => ({ width: 1 }));
+            const columns = headers.map((h, i) => ({ width: columnWidths ? columnWidths[i] : 1 }));
             const headerRow = {
                 type: 'TableRow',
-                cells: headers.map(h => ({ type: 'TableCell', items: [{ type: 'TextBlock', text: h, weight: 'Bolder', wrap: true, size: 'Small' }] }))
+                cells: headers.map(h => ({ type: 'TableCell', items: [{ type: 'TextBlock', text: h, weight: 'Bolder', wrap: true, size: 'Small' }], style: 'emphasis' }))
             };
             const dataRows = shown.map(rowValues => ({
                 type: 'TableRow',
@@ -3914,7 +4050,8 @@
                 type: 'Table',
                 columns: columns,
                 rows: [headerRow, ...dataRows],
-                firstRowAsHeaders: false
+                firstRowAsHeaders: false,
+                gridStyle: 'default'
             };
             const truncNote = rows.length > maxRows
                 ? [{ type: 'TextBlock', text: `Exibindo ${maxRows} de ${rows.length} registro(s). Use o site para ver a lista completa.`, isSubtle: true, size: 'Small', wrap: true }]
@@ -3922,15 +4059,23 @@
             return [table, ...truncNote];
         }
 
-        function buildSummaryCard(titulo, factRows, tableHeaders, tableRows) {
+        function buildSummaryCard(titulo, factRows, tableHeaders, tableRows, columnWidths) {
             return {
                 type: 'AdaptiveCard',
                 $schema: 'http://adaptivecards.io/schemas/adaptive-card.json',
                 version: '1.5',
                 body: [
                     { type: 'TextBlock', text: titulo, weight: 'Bolder', size: 'Medium', wrap: true },
-                    { type: 'FactSet', facts: factRows },
-                    ...buildAdaptiveTable(tableHeaders, tableRows)
+                    // ColumnSet em vez de FactSet: dá pra controlar a largura do rótulo, evitando quebra de linha estranha.
+                    ...factRows.map(f => ({
+                        type: 'ColumnSet',
+                        columns: [
+                            { type: 'Column', width: 'stretch', items: [{ type: 'TextBlock', text: f.title, wrap: true, size: 'Small', weight: 'Bolder' }] },
+                            { type: 'Column', width: 'auto', items: [{ type: 'TextBlock', text: String(f.value), wrap: true, size: 'Small', horizontalAlignment: 'Right' }] }
+                        ]
+                    })),
+                    { type: 'TextBlock', text: ' ', size: 'Small' },
+                    ...buildAdaptiveTable(tableHeaders, tableRows, 15, columnWidths)
                 ]
             };
         }
@@ -3948,13 +4093,14 @@
                 const card = buildSummaryCard(
                     '📊 Controle de Fretes - AHT',
                     [
-                        { title: 'Total de fretes:', value: String(rows.length) },
-                        { title: 'Pendente Fiscal:', value: String(counts[0]) },
+                        { title: 'Total:', value: String(rows.length) },
+                        { title: 'Pend. Fiscal:', value: String(counts[0]) },
                         { title: 'Lançado:', value: String(counts[1]) },
-                        { title: 'Pend. Correção/Aprovação:', value: String(counts[2] + counts[3]) }
+                        { title: 'Pend. Corr./Aprov.:', value: String(counts[2] + counts[3]) }
                     ],
-                    ['Prestador', 'Pedido', 'Fatura', 'Venc.', 'Vence em', 'Status'],
-                    rows.map(f => [f.prestador, f.pedido, f.fatura, formatDate(f.data_venc), formatVenceEm(f.data_venc), f.status])
+                    ['Prestador', 'Pedido', 'Vence em', 'Status'],
+                    rows.map(f => [f.prestador, f.pedido, formatVenceEm(f.data_venc), f.status]),
+                    [3, 2, 2, 2]
                 );
 
                 await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
@@ -3977,9 +4123,10 @@
 
                 const card = buildSummaryCard(
                     '🌐 Importações - AHT',
-                    [{ title: 'Total de importações:', value: String(rows.length) }],
-                    ['Processo', 'DUIMP', 'MIGO', 'MIRO', 'Status'],
-                    rows.map(i => [i.processo, i.duimp, formatDate(i.data_migo), formatDate(i.data_miro), i.status])
+                    [{ title: 'Total:', value: String(rows.length) }],
+                    ['Processo', 'Status', 'MIGO'],
+                    rows.map(i => [i.processo, i.status, formatDate(i.data_migo)]),
+                    [3, 2, 2]
                 );
 
                 await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
@@ -4002,11 +4149,45 @@
                 const card = buildSummaryCard(
                     '📄 Notas para Correção - AHT',
                     [
-                        { title: 'Total na listagem:', value: String(nfs.length) },
+                        { title: 'Total:', value: String(nfs.length) },
                         { title: 'Pendentes:', value: String(pendentes) }
                     ],
-                    ['Tipo', 'Setor', 'Fornecedor', 'Valor', 'Venc.', 'Erro'],
-                    nfs.map(nf => [nf.tipo, nf.setor, nf.fornecedor, nf.valor, formatDate(nf.vencimento), nf.obs_erro])
+                    ['Fornecedor', 'Tipo', 'Valor', 'Venc.'],
+                    nfs.map(nf => [nf.fornecedor, nf.tipo, nf.valor, formatDate(nf.vencimento)]),
+                    [3, 2, 2, 2]
+                );
+
+                await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
+                setAdminStatus('Enviado com sucesso para o canal KPIs!', false);
+            } catch (err) {
+                console.error(err);
+                setAdminStatus('Erro ao enviar: ' + err.message, true);
+            } finally {
+                setAdminButtonsDisabled(false);
+            }
+        }
+
+        // ---------- Relatório: Checklist (cartão-resumo, só Forn/Envio NF/Status PO) → KPI ----------
+        async function enviarChecklistRelatorio() {
+            setAdminButtonsDisabled(true);
+            setAdminStatus('Gerando e enviando...', false);
+            try {
+                const normalize = (str) => str ? str.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") : "";
+                const received = servicesData.filter(s => normalize(s.envio_nf).includes('RECEBIDO')).length;
+                const pending = servicesData.filter(s => normalize(s.envio_nf).includes('PENDENTE')).length;
+                const notDone = servicesData.filter(s => normalize(s.envio_nf).includes('NAO PRESTADO')).length;
+
+                const card = buildSummaryCard(
+                    '✅ Checklist - AHT',
+                    [
+                        { title: 'Total:', value: String(servicesData.length) },
+                        { title: 'NF Recebida:', value: String(received) },
+                        { title: 'NF Pendente:', value: String(pending) },
+                        { title: 'Não Prestado:', value: String(notDone) }
+                    ],
+                    ['Forn', 'Envio NF', 'Status PO'],
+                    servicesData.map(s => [s.fornecedor, s.envio_nf, s.status_po]),
+                    [3, 2, 2]
                 );
 
                 await postToTeamsWebhook(TEAMS_WEBHOOKS.KPI, card);
@@ -4054,7 +4235,7 @@
             // em TEAMS_RESPOSTA_WEBHOOKS — veja as instruções para criar esses fluxos no Power Automate).
             const respostaUrl = TEAMS_RESPOSTA_WEBHOOKS[alvo.webhookKey];
             if (respostaUrl) {
-                const paramsBase = `fornecedor=${encodeURIComponent(nf.fornecedor || '-')}&pedido=${encodeURIComponent(nf.pedido || '-')}&referencia=${encodeURIComponent(nf.referencia || '-')}&valor=${encodeURIComponent(nf.valor || '-')}&tipo=${encodeURIComponent(nf.tipo || '-')}`;
+                const paramsBase = `notaId=${encodeURIComponent(nf.id)}&fornecedor=${encodeURIComponent(nf.fornecedor || '-')}&pedido=${encodeURIComponent(nf.pedido || '-')}&referencia=${encodeURIComponent(nf.referencia || '-')}&valor=${encodeURIComponent(nf.valor || '-')}&tipo=${encodeURIComponent(nf.tipo || '-')}`;
                 // O clique no card sempre abre o link com GET, mas o fluxo do Power Automate exige POST.
                 // Por isso, o botão não vai direto no webhook — passa antes pela "página-ponte", que faz
                 // a chamada certa (POST) por trás dos panos.
