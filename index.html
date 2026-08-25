@@ -1718,11 +1718,11 @@
         // INTEGRAÇÃO TEAMS — WEBHOOKS POWER AUTOMATE (ABA SECRETA)
         // ============================================================
         const TEAMS_WEBHOOKS = {
-            KPI: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/ec946d97bef441e481efd869a0b0b40a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=ncz1pX-XIGH0tBFMUSr_spysO2Zm944UcoZmv1qBFJ8',
-            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/87d55ec5e98f4e6ba3903286add80c89/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=a0taQ6G51aTgQSyTlMWoGKV2tBv751UjEvVHiv7crDM',
-            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8d552317b98d4c798a39c1d1a2af663e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=EgCnUVbGqDEu6ShjiFDbcj8lzI-Ysf4F6s6AUC4oWhE',
-            NFS_SERVICO: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9e637954adb94079a76bde4ad8d67877/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=eyOcKb0hFfAouWtI-jMQhD63Og9P4nWj-9vaOxJKRmA',
-            IMP_IMPORTACOES: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/af71801990e34a58bdcc8f30fb508396/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=p3EDd9mKiOm29iaYHNHTgjGi5F9uyn7PtEiDL5trrEc'
+            KPI: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/55484ae814b54ae882792c95b58dced8/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uy195yZgK4bkqmB_ix3zy1cnCS08N38xwe5qohCOHW4',
+            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/e60c8f6ed7374f5a847b0be9ffc39270/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=5XWZTH78azWw9bi7jlBYaFSsBtmco2QEhZ1I6s3Le5w',
+            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/143714f557d646869e1c0a5f75eeae58/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=HTiMK6Gaww_1RtmNHjWwhoO6P4c7j7X_fqdRsVBSLPc',
+            NFS_SERVICO: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/d0e0ab1c826e4ef198bb6a5e27a01135/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=SA0QJEpg0j7m2JkT_6Jrr_CFbbHyoETGk0fcaCUB0GI',
+            IMP_IMPORTACOES: '' // canal ainda não recriado no time novo — preencha aqui quando (e se) recriar
         };
         // Mapeia o campo "tipo" da nota para o canal de Teams e seu rótulo de exibição.
         const TIPO_NF_CANAL = {
@@ -1734,9 +1734,9 @@
         // clica em Corrigido / Em Análise / Lançado no card). Cole aqui as URLs depois de criar
         // os 3 fluxos novos no Power Automate — enquanto estiverem vazias, os botões ficam ocultos no card.
         const TEAMS_RESPOSTA_WEBHOOKS = {
-            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/f14ed636527b4f8aa345f1614c981f8c/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=gnM8UDzDhSm8CAvKBmUreUj-5jEpDsrLOAioe6nOGv0',
-            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/8df58ab840e64fb3b98f1b672fa41201/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=Uteb2IGl2UMSOapi0dLGYznMZwbB0bCikKFKT9krBRo',
-            NFS_SERVICO: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/b708ae74b336445991cca93a97217736/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=97UlrAv6cZMHUTouzCfmyHmufVWalJi0O19oQ1BLH4g'
+            CTE_FRETE: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/5f82f9fff9664837975ef996ea21535a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=4BeXVHLIT_j8dOnvQpLnG-J9QaCBaFuLJlsXxXJ6gS8',
+            NFE_MATERIAL: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/13d1911c1c704e62a2c133d8a6d99ad6/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=GCOeNXhU2lf_ajvW96qjA2uqVk1eiTv0iZkk34Yjs-k',
+            NFS_SERVICO: 'https://default6cf18ffb42c64d7d98745c515ab0c6.ae.environment.api.powerplatform.com:443/powerautomate/automations/direct/workflows/9314b6de2e794ff58a853633d1ea5d0e/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=aHcCaHutVC3Qo42v0YP7WexrH1ixhC2rXYFtJ8hXJlc'
         };
         // URL da "página-ponte" — é o próprio site (ele já sabe lidar com ?destino=... no topo do arquivo).
         const PAGINA_PONTE_URL = 'https://sistema-notas-vert.vercel.app/';
@@ -4418,6 +4418,8 @@
                 actions.push({ type: 'Action.OpenUrl', title: '✅ Corrigido', url: montarLinkResposta('CORRIGIDA') });
                 actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM ANÁLISE') });
                 actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANÇADA APÓS CORREÇÃO') });
+                actions.push({ type: 'Action.OpenUrl', title: '🕒 Em Aprovação', url: montarLinkResposta('EM APROVAÇÃO') });
+                actions.push({ type: 'Action.OpenUrl', title: '👍 Aprovado', url: montarLinkResposta('APROVADA') });
             }
 
             const card = {
