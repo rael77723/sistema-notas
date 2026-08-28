@@ -23,6 +23,9 @@
             var acao = infoUrl.searchParams.get('acao') || '-';
             var fornecedor = infoUrl.searchParams.get('fornecedor') || '-';
             var pedido = infoUrl.searchParams.get('pedido') || '-';
+            var referencia = infoUrl.searchParams.get('referencia') || '-';
+            var valor = infoUrl.searchParams.get('valor') || '-';
+            var tipo = infoUrl.searchParams.get('tipo') || '-';
             var notaId = infoUrl.searchParams.get('notaId') || '';
 
             // Credenciais duplicadas aqui de propósito: esse script roda antes da biblioteca do
@@ -32,17 +35,31 @@
             var SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjYmtweW96a2N4dWtwcWVobnhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUxODQ0MzAsImV4cCI6MjA4MDc2MDQzMH0.GIMpplCcy7Qj0jVXP65Ba_xprBbwrbP2WmR8138sL1w';
             var supaHeaders = { apikey: SUPA_KEY, Authorization: 'Bearer ' + SUPA_KEY };
 
-            function mostrarTelaJaRegistrado() {
+            // ---------- Modo de teste das notificações de aprovação ----------
+            // Enquanto estiver true, o e-mail/chat que receberia a solicitação de aprovação é sempre
+            // trocado pelo endereço de teste abaixo (o nome exibido continua correto). Quando estiver
+            // tudo certo, troque para false para valer para os aprovadores reais.
+            var APROVACOES_MODO_TESTE = true;
+            var APROVACOES_EMAIL_TESTE = 'israel.cipriano@consultant.aht.at';
+            var LISTA_APROVADORES = [
+                { nome: 'Luciano', email: 'luciano.bitencourt@br.aht.at' },
+                { nome: 'Rafael', email: 'rafael.volkert@br.aht.at' },
+                { nome: 'Antonio', email: 'antonio.dellinocente@br.aht.at' },
+                { nome: 'Filipe', email: 'filipe.pinho@br.aht.at' },
+                { nome: 'Bruno', email: 'bruno.bettoni@aht.at' }
+            ];
+
+            function mostrarTelaJaRegistrado(mensagem) {
                 var box = document.getElementById('ponteBox');
-                if (box) box.innerHTML = '<div style="font-size:44px;">ℹ️</div><h2>Essa ação já foi registrada</h2><p style="color:#64748b;">Alguém já marcou essa nota como "' + acao + '" antes. Não é possível registrar de novo.</p>';
+                if (box) box.innerHTML = '<div style="font-size:44px;">ℹ️</div><h2>Essa ação já foi registrada</h2><p style="color:#64748b;">' + (mensagem || ('Alguém já marcou essa nota como "' + acao + '" antes.')) + '</p>';
             }
             function mostrarTelaErro() {
                 var box = document.getElementById('ponteBox');
                 if (box) box.innerHTML = '<div style="font-size:48px;color:#b91c1c;">⚠️</div><h2 style="color:#b91c1c;">Não foi possível registrar</h2><p style="color:#64748b;">Tente novamente em alguns instantes.</p>';
             }
-            function mostrarTelaSucesso() {
+            function mostrarTelaSucesso(texto) {
                 var box = document.getElementById('ponteBox');
-                if (box) box.innerHTML = '<div style="font-size:48px;">✅</div><h2>Registrado com sucesso</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>';
+                if (box) box.innerHTML = '<div style="font-size:48px;">✅</div><h2>' + (texto || 'Registrado com sucesso') + '</h2><p style="color:#64748b;">Você já pode fechar esta aba.</p>';
             }
 
             document.write(
@@ -52,16 +69,76 @@
                 '<style>body > *:not(#ponteBox){display:none!important}</style>'
             );
 
+            // Tenta reservar uma chave (nota_id + chaveAcao) no banco antes de agir — evita duplicidade.
+            // Retorna true se conseguiu reservar, false se já existia.
+            function reservarChave(chaveAcao) {
+                return fetch(SUPA_URL + '/rest/v1/teams_confirmacoes', {
+                    method: 'POST',
+                    headers: Object.assign({}, supaHeaders, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+                    body: JSON.stringify({ nota_id: notaId, acao: chaveAcao })
+                }).then(function (resp) { return resp.status !== 409 && resp.ok; });
+            }
+
             document.addEventListener('DOMContentLoaded', function () {
                 if (!notaId) { mostrarTelaErro(); return; } // link antigo/incompleto, sem como checar duplicidade com segurança
 
-                // 1) Antes de mostrar o botão, checa no banco se essa nota+ação já foi confirmada antes.
+                // ---------- Caso especial: pedir aprovação (mostra formulário, não confirmação simples) ----------
+                if (acao === 'SOLICITAR_APROVACAO') {
+                    var box = document.getElementById('ponteBox');
+                    box.innerHTML =
+                        '<div style="font-size:44px;">🔺</div>' +
+                        '<h2>Encaminhar para Aprovação</h2>' +
+                        '<p style="color:#64748b;">Nota do fornecedor <b>' + fornecedor + '</b> (pedido <b>' + pedido + '</b>)</p>' +
+                        '<div style="text-align:left; margin-top:16px;">' +
+                            '<label style="font-size:0.8rem; font-weight:700; color:#475569;">Aprovador</label>' +
+                            '<select id="selAprovador" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:6px 0 14px; font-size:14px;">' +
+                                LISTA_APROVADORES.map(function (a) { return '<option value="' + a.email + '">' + a.nome + '</option>'; }).join('') +
+                            '</select>' +
+                            '<label style="font-size:0.8rem; font-weight:700; color:#475569;">Motivo</label>' +
+                            '<textarea id="txtMotivo" rows="3" placeholder="Explique por que essa nota precisa de aprovação..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:6px 0 14px; font-size:14px; font-family:inherit; resize:vertical;"></textarea>' +
+                        '</div>' +
+                        '<button id="btnEnviarAprovacao" style="background:#4f46e5;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;">Enviar Solicitação</button>' +
+                        '<p style="color:#94a3b8;font-size:12px;margin-top:16px;">Se clicou por engano, pode simplesmente fechar esta aba.</p>';
+
+                    document.getElementById('btnEnviarAprovacao').addEventListener('click', function () {
+                        var btn = this;
+                        var emailEscolhido = document.getElementById('selAprovador').value;
+                        var nomeEscolhido = LISTA_APROVADORES.find(function (a) { return a.email === emailEscolhido; }).nome;
+                        var motivo = document.getElementById('txtMotivo').value.trim();
+                        if (!motivo) { alert('Preencha o motivo antes de enviar.'); return; }
+
+                        btn.disabled = true; btn.innerText = 'Enviando...'; btn.style.opacity = '0.6';
+
+                        reservarChave('SOLICITADO A ' + nomeEscolhido.toUpperCase()).then(function (ok) {
+                            if (!ok) { mostrarTelaJaRegistrado('O aprovador ' + nomeEscolhido + ' já foi notificado sobre esta nota anteriormente.'); return; }
+
+                            var emailEnvio = APROVACOES_MODO_TESTE ? APROVACOES_EMAIL_TESTE : emailEscolhido;
+                            // Link que o próprio aprovador vai clicar (do Teams pessoal ou do e-mail) para confirmar —
+                            // reaproveita essa mesma ponte, só que com a ação "APROVADO POR <NOME>".
+                            var acaoConfirmacao = 'APROVADO POR ' + nomeEscolhido.toUpperCase();
+                            var destinoConfirmacao = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent(acaoConfirmacao));
+                            var linkConfirmacao = window.location.origin + window.location.pathname + '?destino=' + encodeURIComponent(destinoConfirmacao);
+
+                            var urlEnvio = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent('SOLICITACAO_APROVACAO'))
+                                + '&aprovadorNome=' + encodeURIComponent(nomeEscolhido)
+                                + '&aprovadorEmail=' + encodeURIComponent(emailEnvio)
+                                + '&motivo=' + encodeURIComponent(motivo)
+                                + '&linkConfirmacao=' + encodeURIComponent(linkConfirmacao);
+
+                            fetch(urlEnvio, { method: 'POST' }).then(function (resp) {
+                                resp.ok ? mostrarTelaSucesso('Solicitação enviada para ' + nomeEscolhido) : mostrarTelaErro();
+                            }).catch(mostrarTelaErro);
+                        }).catch(mostrarTelaErro);
+                    });
+                    return;
+                }
+
+                // ---------- Caso normal: confirmação simples (Corrigido / Em Análise / Lançado / Aprovado por X) ----------
                 fetch(SUPA_URL + '/rest/v1/teams_confirmacoes?nota_id=eq.' + encodeURIComponent(notaId) + '&acao=eq.' + encodeURIComponent(acao) + '&select=id', { headers: supaHeaders })
                     .then(function (r) { return r.json(); })
                     .then(function (linhas) {
                         if (linhas && linhas.length > 0) { mostrarTelaJaRegistrado(); return; }
 
-                        // Ainda não foi confirmada — mostra o botão.
                         var box = document.getElementById('ponteBox');
                         box.innerHTML =
                             '<div style="font-size:44px;">❓</div>' +
@@ -78,16 +155,8 @@
                             btn.style.opacity = '0.6';
                             btn.style.cursor = 'default';
 
-                            // 2) Tenta "reservar" essa nota+ação no banco antes de avisar o Teams — se já existir
-                            // (alguém confirmou entre o passo 1 e agora), o próprio banco recusa o duplicado.
-                            fetch(SUPA_URL + '/rest/v1/teams_confirmacoes', {
-                                method: 'POST',
-                                headers: Object.assign({}, supaHeaders, { 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
-                                body: JSON.stringify({ nota_id: notaId, acao: acao })
-                            }).then(function (reservaResp) {
-                                if (reservaResp.status === 409) { mostrarTelaJaRegistrado(); return; }
-                                if (!reservaResp.ok) { mostrarTelaErro(); return; }
-                                // 3) Só agora, com a reserva garantida, avisa de fato o canal do Teams.
+                            reservarChave(acao).then(function (ok) {
+                                if (!ok) { mostrarTelaJaRegistrado(); return; }
                                 return fetch(destinoDecodificado, { method: 'POST' })
                                     .then(function (resp) { resp.ok ? mostrarTelaSucesso() : mostrarTelaErro(); });
                             }).catch(mostrarTelaErro);
@@ -4418,8 +4487,7 @@
                 actions.push({ type: 'Action.OpenUrl', title: '✅ Corrigido', url: montarLinkResposta('CORRIGIDA') });
                 actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM ANÁLISE') });
                 actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANÇADA APÓS CORREÇÃO') });
-                actions.push({ type: 'Action.OpenUrl', title: '🕒 Em Aprovação', url: montarLinkResposta('EM APROVAÇÃO') });
-                actions.push({ type: 'Action.OpenUrl', title: '👍 Aprovado', url: montarLinkResposta('APROVADA') });
+                actions.push({ type: 'Action.OpenUrl', title: '🔺 Aprovação', url: montarLinkResposta('SOLICITAR_APROVACAO') });
             }
 
             const card = {
