@@ -4530,8 +4530,11 @@
                 actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM ANÁLISE') });
                 actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANÇADA APÓS CORREÇÃO') });
                 actions.push({ type: 'Action.OpenUrl', title: '🔺 Aprovação', url: montarLinkResposta('SOLICITAR_APROVACAO') });
-                actions.push({ type: 'Action.OpenUrl', title: '🚫 Solicitar Recusa', url: montarLinkResposta('SOLICITAR_RECUSA') });
-                actions.push({ type: 'Action.OpenUrl', title: '❌ Recusa Realizada', url: montarLinkResposta('RECUSA REALIZADA') });
+                // Recusa só se aplica para Frete (CTE) e Material (MERCADORIA) — não para Serviço.
+                if (nf.tipo === 'CTE' || nf.tipo === 'MERCADORIA') {
+                    actions.push({ type: 'Action.OpenUrl', title: '🚫 Solicitar Recusa', url: montarLinkResposta('SOLICITAR_RECUSA') });
+                    actions.push({ type: 'Action.OpenUrl', title: '❌ Recusa Realizada', url: montarLinkResposta('RECUSA REALIZADA') });
+                }
             }
 
             const card = {
