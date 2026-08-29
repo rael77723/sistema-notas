@@ -109,7 +109,12 @@
 
                         btn.disabled = true; btn.innerText = 'Enviando...'; btn.style.opacity = '0.6';
 
-                        reservarChave('SOLICITADO A ' + nomeEscolhido.toUpperCase()).then(function (ok) {
+                        // Esse mesmo texto vira o "acao" enviado ao Power Automate — assim, a mensagem
+                        // genérica que já é postada no canal mostra "SOLICITADO APROVACAO <NOME>" em vez
+                        // de um texto fixo genérico, sem precisar de nenhuma etapa extra no fluxo.
+                        var chaveSolicitacao = 'SOLICITADO APROVACAO ' + nomeEscolhido.toUpperCase();
+
+                        reservarChave(chaveSolicitacao).then(function (ok) {
                             if (!ok) { mostrarTelaJaRegistrado('O aprovador ' + nomeEscolhido + ' já foi notificado sobre esta nota anteriormente.'); return; }
 
                             var emailEnvio = APROVACOES_MODO_TESTE ? APROVACOES_EMAIL_TESTE : emailEscolhido;
@@ -119,7 +124,7 @@
                             var destinoConfirmacao = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent(acaoConfirmacao));
                             var linkConfirmacao = window.location.origin + window.location.pathname + '?destino=' + encodeURIComponent(destinoConfirmacao);
 
-                            var urlEnvio = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent('SOLICITACAO_APROVACAO'))
+                            var urlEnvio = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent(chaveSolicitacao))
                                 + '&aprovadorNome=' + encodeURIComponent(nomeEscolhido)
                                 + '&aprovadorEmail=' + encodeURIComponent(emailEnvio)
                                 + '&motivo=' + encodeURIComponent(motivo)
