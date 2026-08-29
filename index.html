@@ -138,6 +138,43 @@
                     return;
                 }
 
+                // ---------- Caso especial: solicitar recusa (pede o nome de quem está solicitando) ----------
+                if (acao === 'SOLICITAR_RECUSA') {
+                    var box2 = document.getElementById('ponteBox');
+                    box2.innerHTML =
+                        '<div style="font-size:44px;">🚫</div>' +
+                        '<h2>Solicitar Recusa</h2>' +
+                        '<p style="color:#64748b;">Nota do fornecedor <b>' + fornecedor + '</b> (pedido <b>' + pedido + '</b>)</p>' +
+                        '<div style="text-align:left; margin-top:16px;">' +
+                            '<label style="font-size:0.8rem; font-weight:700; color:#475569;">Nome do Solicitante da Recusa</label>' +
+                            '<input type="text" id="txtNomeSolicitante" placeholder="Digite seu nome..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin:6px 0 14px; font-size:14px; box-sizing:border-box;">' +
+                        '</div>' +
+                        '<button id="btnConfirmarRecusa" style="background:#b91c1c;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;width:100%;">CONFIRMAR</button>' +
+                        '<p style="color:#94a3b8;font-size:12px;margin-top:16px;">Se clicou por engano, pode simplesmente fechar esta aba.</p>';
+
+                    document.getElementById('btnConfirmarRecusa').addEventListener('click', function () {
+                        var btn = this;
+                        var nomeSolicitante = document.getElementById('txtNomeSolicitante').value.trim();
+                        if (!nomeSolicitante) { alert('Preencha o seu nome antes de confirmar.'); return; }
+
+                        btn.disabled = true; btn.innerText = 'Enviando...'; btn.style.opacity = '0.6';
+
+                        // O nome fica embutido no próprio "acao" — assim a mensagem genérica já sai
+                        // pronta no canal ("...foi marcada como: SOLICITADO RECUSA POR FULANO"), e também
+                        // funciona como chave para não deixar a MESMA pessoa solicitar 2x para a mesma nota.
+                        var chaveRecusa = 'SOLICITADO RECUSA POR ' + nomeSolicitante.toUpperCase();
+
+                        reservarChave(chaveRecusa).then(function (ok) {
+                            if (!ok) { mostrarTelaJaRegistrado('Já existe uma solicitação de recusa registrada com esse nome para esta nota.'); return; }
+                            var urlEnvio = destinoDecodificado.replace(/acao=[^&]*/, 'acao=' + encodeURIComponent(chaveRecusa));
+                            fetch(urlEnvio, { method: 'POST' }).then(function (resp) {
+                                resp.ok ? mostrarTelaSucesso('Solicitação de recusa registrada') : mostrarTelaErro();
+                            }).catch(mostrarTelaErro);
+                        }).catch(mostrarTelaErro);
+                    });
+                    return;
+                }
+
                 // ---------- Caso normal: confirmação simples (Corrigido / Em Análise / Lançado / Aprovado por X) ----------
                 fetch(SUPA_URL + '/rest/v1/teams_confirmacoes?nota_id=eq.' + encodeURIComponent(notaId) + '&acao=eq.' + encodeURIComponent(acao) + '&select=id', { headers: supaHeaders })
                     .then(function (r) { return r.json(); })
@@ -4493,6 +4530,8 @@
                 actions.push({ type: 'Action.OpenUrl', title: '🔎 Em Análise', url: montarLinkResposta('EM ANÁLISE') });
                 actions.push({ type: 'Action.OpenUrl', title: '📤 Lançado Após Correção', url: montarLinkResposta('LANÇADA APÓS CORREÇÃO') });
                 actions.push({ type: 'Action.OpenUrl', title: '🔺 Aprovação', url: montarLinkResposta('SOLICITAR_APROVACAO') });
+                actions.push({ type: 'Action.OpenUrl', title: '🚫 Solicitar Recusa', url: montarLinkResposta('SOLICITAR_RECUSA') });
+                actions.push({ type: 'Action.OpenUrl', title: '❌ Recusa Realizada', url: montarLinkResposta('RECUSA REALIZADA') });
             }
 
             const card = {
